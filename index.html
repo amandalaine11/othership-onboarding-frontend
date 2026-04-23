@@ -2433,9 +2433,12 @@ function loadWaveSettings(){
     .then(data=>{
       if(data.success && data.waves){
         data.waves.forEach(w=>{
-          if(w.city==='NYC') WAVE_SETTINGS.NYC=w;
-          if(w.city==='Toronto') WAVE_SETTINGS.Toronto=w;
-        });
+      if(w.city==='NYC') WAVE_SETTINGS.NYC=w;
+      if(w.city==='Toronto') WAVE_SETTINGS.Toronto=w;
+      // Store training days per city
+      if(w.city==='NYC') WAVE_SETTINGS.NYC.trainingDays = w.trainingDays || 4;
+      if(w.city==='Toronto') WAVE_SETTINGS.Toronto.trainingDays = w.trainingDays || 3;
+    });
         const state=JSON.parse(localStorage.getItem('os_guide_state')||'{}');
         const city=state.city==='toronto'?'Toronto':'NYC';
         const ws=WAVE_SETTINGS[city];
