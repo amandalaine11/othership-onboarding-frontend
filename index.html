@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_44.html -->
+<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_45.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -377,7 +377,7 @@ select.form-input option{background:#271829;}
       <div class="task-check " onclick="toggleTask(&#39;vimeo-account&#39;)"></div>
       <div class="task-body">
         <div class="task-name">Create a Vimeo account</div>
-        <div class="task-desc">You'll need a free Vimeo account to track your training progress and pick up where you left off. Go to </div>
+        <div class="task-desc">You'll need a free Vimeo account to track your training progress and pick up where you left off. Go to vimeo.com and sign up for free.</div>
         
       </div>
     </div>
@@ -416,7 +416,7 @@ select.form-input option{background:#271829;}
       <div class="task-body">
         <div class="task-name">Complete your availability form</div>
         <div class="task-desc">Let us know your weekly availability for scheduling.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="file:///Users/amandalaine/Downloads/othership-onboarding-v5_44.html" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;availability&#39;);renderWeeks();},1500)">Open form →</a></div>
+        
       </div>
     </div>
   
@@ -1952,7 +1952,10 @@ function renderTask(t){
   else if(t.type==='cpr-upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${t.cta}</button></div>`;
   else if(t.type==='modal') actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${t.cta}</button></div>`;
   else if(t.type==='payroll') actionHTML=`<div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">${t.cta}</button></div>`;
-  else if(t.type==='link') actionHTML=`<div class="task-action"><a class="btn-sm btn-outline" href="${t.url}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},1500)">${t.cta} →</a></div>`;
+  else if(t.type==='link') {
+    const linkUrl = t.url || t.notionUrl || t.vimeoUrl || '';
+    actionHTML = linkUrl ? `<div class="task-action"><a class="btn-sm btn-outline" href="${linkUrl}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},1500)">${t.cta} →</a></div>` : '';
+  }
   else if(t.type==='city-link') actionHTML=`<div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">${t.cta} →</button></div>`;
   else if(t.type==='video') actionHTML=`<div class="task-action"><a class="btn-sm btn-outline" href="${t.vimeoUrl||'https://vimeo.com'}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},2000)">${t.cta} →</a></div>`;
   return `
