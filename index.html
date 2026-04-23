@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_42.html -->
+<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_43.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1970,9 +1970,10 @@ function getBadge(type){
 function getModal(name){
   const n = name.toLowerCase();
   if(n.includes('discord')) return 'modal-discord';
-  if(n.includes('mariana tek') && n.includes('set up')) return 'modal-mt';
+  if(n.includes('mariana tek')) return 'modal-mt';
   if(n.includes('honorary')) return 'modal-ha';
   if(n.includes('contract')) return 'modal-contract';
+  if(n.includes('breathwork') || n.includes('breathwork app')) return 'modal-breathwork';
   return null;
 }
 
