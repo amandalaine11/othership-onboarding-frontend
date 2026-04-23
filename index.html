@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_49.html -->
+<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_51.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -293,7 +293,7 @@ select.form-input option{background:#271829;}
 <!-- ══════════ GUIDE VIEW ══════════ -->
 <div id="view-guide" class="view active">
   <div class="guide-hero">
-    <div class="wave-badge" id="wave-badge">Wave 6 &nbsp;·&nbsp; Path 1</div>
+    <div class="wave-badge" id="wave-badge">Wave · Path 1</div>
     <h1>Welcome<br>Aboard,<br><em id="guide-first-name">test</em></h1>
     <p>Your onboarding is laid out week by week — each phase builds on the last. Stay close to the dates, lean into the training, and trust that everything you need is right here. The ship is ready. So are you.</p>
     <div class="guide-meta">
@@ -866,7 +866,7 @@ select.form-input option{background:#271829;}
 <div id="view-manager" class="view">
   <div class="mgr-header">
     <div>
-      <div class="mgr-eyebrow" id="mgr-city-label">Wave 6/7 — NYC + Toronto</div>
+      <div class="mgr-eyebrow" id="mgr-city-label">Wave · NYC + Toronto</div>
       <h1>Cohort<br><span>Dashboard</span></h1>
     </div>
     <div class="mgr-actions">
@@ -884,7 +884,7 @@ select.form-input option{background:#271829;}
   </div>
   <div class="table-section">
     <div class="table-top">
-      <div class="table-title" id="mgr-table-title">All guides — Wave 6/7</div>
+      <div class="table-title" id="mgr-table-title">All guides — Wave</div>
       <div class="filter-tabs">
         <button class="ftab active" onclick="filterG(&#39;all&#39;,this)">Active</button>
         <button class="ftab" onclick="filterG(&#39;needs&#39;,this)">Needs action</button>
@@ -1879,6 +1879,7 @@ function loadTasksFromNotion(){
     .then(r=>r.json())
     .then(data=>{
       if(!data.success || !data.tasks || !data.tasks.length) return;
+      console.log('Tasks from Notion:', data.tasks.length, 'Week 1 tasks:', data.tasks.filter(t=>t.week===1).map(t=>t.name));
       // Group tasks by week
       const weekMap = {};
       data.tasks.forEach(t => {
