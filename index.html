@@ -2345,10 +2345,13 @@ function renderManagerCards(guides){
         </div>
       </div>`;
 
-    const attendanceHTML=`
+   const cityTrainingDays = g.city === 'Toronto' 
+  ? (WAVE_SETTINGS.Toronto.trainingDays || 3)
+  : (WAVE_SETTINGS.NYC.trainingDays || 4);
+const attendanceHTML=`
       <div class="attendance-row">
         <span class="attendance-label">Training days</span>
-        ${[1,2,3,4].map(d=>`<button class="day-btn ${g.attendance[d-1]?'present':''}" onclick="toggleAttendance(${gi},${d-1},this)">D${d}</button>`).join('')}
+        ${Array.from({length: cityTrainingDays}, (_,d)=>`<button class="day-btn ${g.attendance[d]?'present':''}" onclick="toggleAttendance(${gi},${d},this)">D${d+1}</button>`).join('')}
       </div>`;
 
     const trainingHTML=`
