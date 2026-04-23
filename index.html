@@ -2119,7 +2119,7 @@ function renderTask(t){
     actionHTML = `<div class="task-action"><a class="btn-sm btn-outline" href="${linkUrl}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},1500)">${t.cta} →</a></div>`;
   }
   else if(t.type==='city-link') actionHTML=`<div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">${t.cta} →</button></div>`;
-  else if(t.type==='video') actionHTML=`<div class="task-action"><a class="btn-sm btn-outline" href="${t.vimeoUrl||t.url||'https://vimeo.com'}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},2000)">${t.cta} →</a></div>`;
+  else if(t.type==='video') actionHTML=`<div class="task-action"><a class="btn-sm btn-lemon" href="${t.vimeoUrl||t.url||'https://vimeo.com'}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},2000)">${t.cta} →</a></div>`;
   return `
     <div class="task">
       <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${t.id}')"></div>
