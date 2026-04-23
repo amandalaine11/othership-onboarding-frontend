@@ -1947,6 +1947,7 @@ function mapTaskType(type, name){
   if(n.includes('honorary')) return 'modal';
   if(n.includes('contract')) return 'modal';
   if(n.includes('cpr') || n.includes('certificate')) return 'cpr-upload';
+  const tl = (type||'').toLowerCase();
   if(tl === 'video') return 'video';
   if(tl === 'typeform') return 'link';
   if(tl === 'notion-link') return 'link';
