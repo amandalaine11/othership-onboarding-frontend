@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_48.html -->
+<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_49.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -293,7 +293,7 @@ select.form-input option{background:#271829;}
 <!-- ══════════ GUIDE VIEW ══════════ -->
 <div id="view-guide" class="view active">
   <div class="guide-hero">
-    <div class="wave-badge" id="wave-badge">Wave · Path 1</div>
+    <div class="wave-badge" id="wave-badge">Wave 6 &nbsp;·&nbsp; Path 1</div>
     <h1>Welcome<br>Aboard,<br><em id="guide-first-name">test</em></h1>
     <p>Your onboarding is laid out week by week — each phase builds on the last. Stay close to the dates, lean into the training, and trust that everything you need is right here. The ship is ready. So are you.</p>
     <div class="guide-meta">
@@ -866,7 +866,7 @@ select.form-input option{background:#271829;}
 <div id="view-manager" class="view">
   <div class="mgr-header">
     <div>
-      <div class="mgr-eyebrow" id="mgr-city-label">Wave · NYC + Toronto</div>
+      <div class="mgr-eyebrow" id="mgr-city-label">Wave 6/7 — NYC + Toronto</div>
       <h1>Cohort<br><span>Dashboard</span></h1>
     </div>
     <div class="mgr-actions">
@@ -884,7 +884,7 @@ select.form-input option{background:#271829;}
   </div>
   <div class="table-section">
     <div class="table-top">
-      <div class="table-title" id="mgr-table-title">All guides — Wave</div>
+      <div class="table-title" id="mgr-table-title">All guides — Wave 6/7</div>
       <div class="filter-tabs">
         <button class="ftab active" onclick="filterG(&#39;all&#39;,this)">Active</button>
         <button class="ftab" onclick="filterG(&#39;needs&#39;,this)">Needs action</button>
@@ -1946,31 +1946,33 @@ function mapTaskType(type, name){
   if(n.includes('honorary')) return 'modal';
   if(n.includes('contract')) return 'modal';
   if(n.includes('cpr') || n.includes('certificate')) return 'cpr-upload';
-  if(type === 'video') return 'video';
-  if(type === 'typeform') return 'link';
-  if(type === 'notion-link') return 'link';
-  if(type === 'upload') return 'cpr-upload';
+  if(tl === 'video') return 'video';
+  if(tl === 'typeform') return 'link';
+  if(tl === 'notion-link') return 'link';
+  if(tl === 'upload') return 'cpr-upload';
   return 'checkbox';
 }
 
 function getTaskCTA(type, name){
   const n = (name||'').toLowerCase();
+  const tl = (type||'').toLowerCase();
   if(n.includes('crew profile')) return 'Open profile form';
   if(n.includes('discord')) return 'Join Discord';
   if(n.includes('mariana tek')) return 'Set up account';
   if(n.includes('honorary')) return 'Read & sign';
   if(n.includes('contract')) return 'Read & sign';
   if(n.includes('cpr') || n.includes('certificate')) return 'Upload certificate';
-  if(type === 'video') return 'Watch training';
-  if(type === 'typeform') return 'Open form';
-  if(type === 'notion-link') return 'Open page';
-  if(type === 'upload') return 'Upload certificate';
+  if(tl === 'video') return 'Watch training';
+  if(tl === 'typeform') return 'Open form';
+  if(tl === 'notion-link') return 'Open page';
+  if(tl === 'upload') return 'Upload certificate';
   return 'Mark complete';
 }
 
 function getBadge(type){
-  if(type === 'video') return 'online';
-  if(type === 'notion-link') return 'notion';
+  const tl = (type||'').toLowerCase();
+  if(tl === 'video') return 'online';
+  if(tl === 'notion-link') return 'notion';
   return null;
 }
 
