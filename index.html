@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<!-- saved from url=(0067)file:///Users/amandalaine/Downloads/othership-onboarding-v5_39.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Othership — Guide Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./index_files/css2" rel="stylesheet">
+<style>
+:root {
+  --eggplant:#372338; --cloud:#ECE8E3; --rust:#A24E2B;
+  --lemon:#DBF572; --orchid:#CB72C4; --teal:#A7CFC9;
+  --moss:#707967; --deep:#261829;
+  --font-display:'Barlow Condensed',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--eggplant);color:var(--cloud);font-family:var(--font-body);font-size:15px;line-height:1.6;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.35;}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(55,35,56,0.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(236,232,227,0.08);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:var(--font-display);font-size:26px;letter-spacing:0.04em;color:var(--cloud);}
+.nav-logo span{color:var(--lemon);}
+.nav-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.06);border-radius:8px;padding:4px;}
+.nav-tab{padding:6px 16px;border-radius:6px;font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:rgba(236,232,227,0.45);transition:all 0.2s;font-family:var(--font-body);}
+.nav-tab.active{background:var(--lemon);color:var(--eggplant);}
+
+/* VIEWS */
+.view{display:none;animation:fadeUp 0.3s ease;}
+.view.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* HERO */
+.guide-hero{position:relative;padding:56px 40px 44px;overflow:hidden;border-bottom:1px solid rgba(236,232,227,0.07);}
+.guide-hero::after{content:'OTHERSHIP';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-family:var(--font-display);font-size:170px;color:rgba(219,245,114,0.035);pointer-events:none;white-space:nowrap;}
+.wave-badge{display:inline-flex;align-items:center;gap:7px;background:var(--lemon);color:var(--eggplant);font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:8px 18px;border-radius:20px;margin-bottom:22px;}
+.wave-badge::before{content:'';width:7px;height:7px;background:var(--eggplant);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+.guide-hero h1{font-family:var(--font-display);font-size:clamp(52px,8vw,90px);line-height:0.9;letter-spacing:0.02em;margin-bottom:18px;color:var(--cloud);text-transform:uppercase;font-weight:700;}
+.guide-hero h1 em{font-style:normal;color:var(--lemon);}
+.guide-hero p{font-size:15px;color:rgba(236,232,227,0.58);max-width:500px;font-weight:300;line-height:1.7;}
+.guide-meta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap;}
+.meta-chip{background:rgba(236,232,227,0.05);border:1px solid rgba(236,232,227,0.1);border-radius:8px;padding:8px 16px;font-size:12px;}
+.meta-chip strong{color:var(--lemon);font-weight:500;display:block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;}
+
+/* PROGRESS */
+.progress-bar-wrap{padding:18px 40px;border-bottom:1px solid rgba(236,232,227,0.06);}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.35);margin-bottom:7px;}
+.progress-label span:last-child{color:var(--lemon);}
+.progress-track{height:3px;background:rgba(236,232,227,0.08);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--lemon));border-radius:2px;transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);}
+
+/* WEEKS */
+.weeks{padding:28px 40px;display:flex;flex-direction:column;gap:10px;}
+.week{border:1px solid rgba(236,232,227,0.09);border-radius:14px;overflow:hidden;transition:border-color 0.2s;}
+.week.active-week{border-color:rgba(219,245,114,0.28);}
+.week.done-week{border-color:rgba(167,207,201,0.2);opacity:0.65;}
+.week-header{display:flex;align-items:center;gap:14px;padding:16px 22px;cursor:pointer;background:rgba(255,255,255,0.02);transition:background 0.15s;user-select:none;}
+.week-header:hover{background:rgba(255,255,255,0.04);}
+.week-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:15px;flex-shrink:0;border:1.5px solid rgba(236,232,227,0.18);color:rgba(236,232,227,0.35);transition:all 0.3s;}
+.active-week .week-icon{border-color:var(--lemon);color:var(--lemon);}
+.done-week .week-icon{background:var(--teal);border-color:var(--teal);color:var(--eggplant);font-size:13px;}
+.week-title-wrap{flex:1;}
+.week-label{font-size:14px;font-weight:500;color:var(--cloud);margin-bottom:1px;}
+.week-dates{font-size:11px;color:rgba(236,232,227,0.35);}
+.active-week .week-dates{color:rgba(219,245,114,0.6);}
+.week-tally{font-size:11px;letter-spacing:0.06em;color:rgba(236,232,227,0.3);}
+.active-week .week-tally{color:var(--lemon);}
+.week-chevron{font-size:13px;color:rgba(236,232,227,0.25);transition:transform 0.25s;}
+.week.open .week-chevron{transform:rotate(180deg);}
+.week-tasks{display:none;padding:4px 22px 18px;border-top:1px solid rgba(236,232,227,0.05);}
+.week.open .week-tasks{display:block;}
+
+/* TASKS */
+.task{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid rgba(236,232,227,0.04);}
+.task:last-child{border-bottom:none;}
+.task-check{width:20px;height:20px;border-radius:5px;border:1.5px solid rgba(236,232,227,0.22);background:transparent;cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.18s;}
+.task-check:hover{border-color:var(--lemon);}
+.task-check.checked{background:var(--teal);border-color:var(--teal);}
+.task-check.checked::after{content:'✓';color:var(--eggplant);font-size:11px;font-weight:700;}
+.task-body{flex:1;}
+.task-name{font-size:14px;font-weight:400;color:var(--cloud);margin-bottom:2px;transition:opacity 0.2s;}
+.task-check.checked~.task-body .task-name{opacity:0.38;text-decoration:line-through;text-decoration-color:rgba(236,232,227,0.25);}
+.task-desc{font-size:12px;color:rgba(236,232,227,0.38);font-weight:300;line-height:1.55;}
+.task-action{margin-top:7px;display:flex;gap:8px;flex-wrap:wrap;}
+
+/* BADGES */
+.badge{display:inline-block;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:7px;vertical-align:middle;}
+.badge-inship{background:rgba(162,78,43,0.2);color:#e07a50;border:1px solid rgba(162,78,43,0.3);}
+.badge-inperson{background:rgba(112,121,103,0.25);color:#a8b39f;border:1px solid rgba(112,121,103,0.3);}
+.badge-online{background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);}
+.badge-notion{background:rgba(219,245,114,0.1);color:rgba(219,245,114,0.7);border:1px solid rgba(219,245,114,0.2);}
+
+/* BUTTONS */
+.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border:none;transition:all 0.18s;font-family:var(--font-body);text-decoration:none;}
+.btn-lemon{background:var(--lemon);color:var(--eggplant);}
+.btn-lemon:hover{background:#cde84e;}
+.btn-outline{background:transparent;border:1px solid rgba(236,232,227,0.18);color:rgba(236,232,227,0.6);}
+.btn-outline:hover{border-color:var(--lemon);color:var(--lemon);}
+.btn-orchid{background:rgba(203,114,196,0.12);border:1px solid rgba(203,114,196,0.3);color:var(--orchid);}
+.btn-orchid:hover{background:rgba(203,114,196,0.22);}
+.btn-teal{background:rgba(167,207,201,0.15);border:1px solid rgba(167,207,201,0.3);color:var(--teal);}
+.btn-teal:hover{background:rgba(167,207,201,0.25);}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(22,13,24,0.88);backdrop-filter:blur(10px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#271829;border:1px solid rgba(236,232,227,0.1);border-radius:20px;width:95%;max-width:860px;max-height:92vh;overflow-y:auto;padding:48px;position:relative;animation:modalIn 0.28s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-sm{max-width:640px;}
+.modal-lg{max-width:660px;}
+@keyframes modalIn{from{transform:scale(0.93) translateY(18px);opacity:0}to{transform:none;opacity:1}}
+.modal-close{position:absolute;top:18px;right:18px;background:rgba(255,255,255,0.06);border:none;color:rgba(236,232,227,0.45);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.18s;}
+.modal-close:hover{background:rgba(255,255,255,0.12);color:var(--cloud);}
+.modal h2{font-family:var(--font-display);font-size:34px;letter-spacing:0.03em;margin-bottom:5px;color:var(--cloud);}
+.modal-sub{font-size:13px;color:rgba(236,232,227,0.4);margin-bottom:24px;font-weight:300;}
+
+/* FORM */
+.form-row{margin-bottom:16px;}
+.form-row label{display:block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(236,232,227,0.45);margin-bottom:5px;}
+.form-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(236,232,227,0.1);border-radius:8px;padding:10px 13px;color:var(--cloud);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color 0.18s;}
+.form-input:focus{border-color:var(--lemon);}
+.form-input::placeholder{color:rgba(236,232,227,0.18);}
+select.form-input option{background:#271829;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-section{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(219,245,114,0.55);margin:22px 0 13px;padding-bottom:7px;border-bottom:1px solid rgba(219,245,114,0.1);}
+.btn-submit{width:100%;padding:14px;background:var(--lemon);color:var(--eggplant);border:none;border-radius:10px;font-family:var(--font-display);font-size:21px;letter-spacing:0.06em;cursor:pointer;margin-top:6px;transition:all 0.2s;}
+.btn-submit:hover{background:#cde84e;transform:translateY(-1px);}
+
+/* HEADSHOT */
+.headshot-wrap{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+.headshot-preview{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.06);border:1.5px dashed rgba(236,232,227,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden;cursor:pointer;transition:all 0.2s;}
+.headshot-preview:hover{border-color:var(--lemon);}
+.headshot-preview img{width:100%;height:100%;object-fit:cover;}
+.headshot-hint{font-size:12px;color:rgba(236,232,227,0.35);font-weight:300;line-height:1.5;}
+.headshot-hint strong{color:rgba(236,232,227,0.6);display:block;margin-bottom:2px;font-weight:500;}
+
+/* UPLOAD */
+.upload-area{border:1.5px dashed rgba(236,232,227,0.18);border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.02);}
+.upload-area:hover{border-color:var(--teal);background:rgba(167,207,201,0.05);}
+.upload-area.has-file{border-color:var(--teal);background:rgba(167,207,201,0.07);}
+.upload-icon{font-size:26px;margin-bottom:6px;}
+.upload-hint-text{font-size:13px;color:rgba(236,232,227,0.4);}
+.upload-hint-text strong{color:var(--teal);}
+.upload-name{font-size:12px;color:var(--teal);margin-top:5px;}
+
+/* CONTENT PANELS */
+.content-panel{background:rgba(255,255,255,0.03);border:1px solid rgba(236,232,227,0.08);border-radius:10px;padding:28px;max-height:600px;overflow-y:auto;margin-bottom:20px;font-size:15px;line-height:1.82;color:rgba(236,232,227,0.75);}
+.content-panel::-webkit-scrollbar{width:4px;}
+.content-panel::-webkit-scrollbar-track{background:transparent;}
+.content-panel::-webkit-scrollbar-thumb{background:rgba(236,232,227,0.15);border-radius:2px;}
+.content-panel h3{font-family:var(--font-display);font-size:20px;letter-spacing:0.04em;color:var(--cloud);margin:18px 0 8px;}
+.content-panel h3:first-child{margin-top:0;}
+.content-panel h4{font-size:13px;font-weight:500;color:rgba(236,232,227,0.8);margin:14px 0 6px;}
+.content-panel p{margin-bottom:10px;}
+.content-panel ul,.content-panel ol{padding-left:18px;margin-bottom:10px;}
+.content-panel li{margin-bottom:5px;}
+.content-panel .highlight{background:rgba(219,245,114,0.07);border-left:2px solid rgba(219,245,114,0.35);padding:10px 14px;border-radius:0 6px 6px 0;margin-bottom:12px;font-style:italic;color:rgba(236,232,227,0.55);}
+.content-panel .city-block{background:rgba(255,255,255,0.04);border:1px solid rgba(236,232,227,0.08);border-radius:8px;padding:14px 16px;margin-bottom:10px;}
+.content-panel .city-block strong{color:var(--lemon);display:block;margin-bottom:6px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;}
+.content-panel a{color:var(--teal);text-decoration:none;}
+.content-panel a:hover{text-decoration:underline;}
+
+/* HA DOC */
+.ha-doc{background:rgba(255,255,255,0.03);border:1px solid rgba(236,232,227,0.08);border-radius:10px;padding:24px;max-height:340px;overflow-y:auto;margin-bottom:20px;font-size:13px;line-height:1.75;color:rgba(236,232,227,0.65);}
+.ha-doc::-webkit-scrollbar{width:4px;}
+.ha-doc::-webkit-scrollbar-track{background:transparent;}
+.ha-doc::-webkit-scrollbar-thumb{background:rgba(236,232,227,0.15);border-radius:2px;}
+.ha-doc h3{font-family:var(--font-display);font-size:18px;letter-spacing:0.04em;color:var(--cloud);margin:16px 0 6px;}
+.ha-doc h3:first-child{margin-top:0;}
+.ha-doc p{margin-bottom:10px;}
+.ha-doc ul{padding-left:18px;margin-bottom:10px;}
+.ha-doc li{margin-bottom:5px;}
+.ha-doc .ha-highlight{background:rgba(219,245,114,0.07);border-left:2px solid rgba(219,245,114,0.35);padding:10px 14px;border-radius:0 6px 6px 0;margin-bottom:12px;font-style:italic;color:rgba(236,232,227,0.55);}
+.sig-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;}
+.sig-note{font-size:11px;color:rgba(236,232,227,0.3);margin-bottom:14px;font-weight:300;}
+
+/* DISCORD PANEL */
+.discord-usernames{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+.discord-username{background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.3);color:#8fa0f8;font-size:12px;padding:4px 10px;border-radius:6px;font-weight:500;}
+
+/* MANAGER */
+.mgr-header{padding:32px 40px 22px;border-bottom:1px solid rgba(236,232,227,0.07);display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.mgr-header h1{font-family:var(--font-display);font-size:44px;letter-spacing:0.03em;line-height:1;color:var(--cloud);}
+.mgr-header h1 span{color:var(--lemon);}
+.mgr-eyebrow{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:8px;}
+.mgr-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-mgr{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:8px;font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border:none;font-family:var(--font-body);transition:all 0.18s;}
+.btn-mgr-primary{background:var(--lemon);color:var(--eggplant);}
+.btn-mgr-primary:hover{background:#cde84e;}
+.btn-mgr-outline{background:transparent;border:1px solid rgba(236,232,227,0.18);color:rgba(236,232,227,0.65);}
+.btn-mgr-outline:hover{border-color:var(--orchid);color:var(--orchid);}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:20px 40px;border-bottom:1px solid rgba(236,232,227,0.05);}
+.stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(236,232,227,0.07);border-radius:12px;padding:16px 18px;}
+.stat-num{font-family:var(--font-display);font-size:42px;line-height:1;color:var(--cloud);margin-bottom:3px;}
+.stat-num.c-lemon{color:var(--lemon);}
+.stat-num.c-teal{color:var(--teal);}
+.stat-num.c-rust{color:#e07a50;}
+.stat-label{font-size:13px;letter-spacing:0.07em;text-transform:uppercase;color:rgba(236,232,227,0.3);}
+
+.table-section{padding:22px 40px 40px;}
+.table-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.table-title{font-size:14px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:rgba(236,232,227,0.4);}
+.filter-tabs{display:flex;gap:3px;background:rgba(255,255,255,0.04);border-radius:8px;padding:3px;}
+.ftab{padding:5px 12px;border-radius:5px;font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:rgba(236,232,227,0.35);transition:all 0.15s;font-family:var(--font-body);}
+.ftab.active{background:rgba(255,255,255,0.09);color:var(--cloud);}
+
+/* GUIDE CARDS */
+.guide-cards{display:flex;flex-direction:column;gap:12px;}
+.gcard{background:rgba(255,255,255,0.025);border:1px solid rgba(236,232,227,0.07);border-radius:12px;padding:18px 20px;transition:border-color 0.18s;}
+.gcard:hover{border-color:rgba(236,232,227,0.14);}
+.gcard.needs{border-left:3px solid #e07a50;}
+.gcard.track{border-left:3px solid var(--teal);}
+.gcard.done{border-left:3px solid var(--moss);opacity:0.7;}
+.gcard-top{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start;margin-bottom:12px;}
+.gcard-name{font-size:17px;font-weight:500;color:var(--cloud);margin-bottom:2px;}
+.gcard-meta{font-size:13px;color:rgba(236,232,227,0.28);margin-bottom:6px;}
+.missing-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.mtag{font-size:12px;padding:3px 10px;border-radius:10px;font-weight:500;letter-spacing:0.04em;background:rgba(162,78,43,0.18);color:#e07a50;border:1px solid rgba(162,78,43,0.28);}
+.gcard-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+.gcard-pct{font-family:var(--font-display);font-size:30px;line-height:1;color:var(--cloud);}
+.gcard-bar{width:72px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+.gcard-fill{height:100%;border-radius:2px;}
+.gcard-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.btn-remind{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;border-radius:6px;font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border:1px solid rgba(203,114,196,0.28);background:rgba(203,114,196,0.07);color:var(--orchid);font-family:var(--font-body);transition:all 0.18s;}
+.btn-remind:hover{background:rgba(203,114,196,0.16);}
+.btn-floor-ready{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:6px;font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border:1px solid rgba(219,245,114,0.3);background:rgba(219,245,114,0.1);color:var(--lemon);font-family:var(--font-body);transition:all 0.18s;}
+.btn-floor-ready:hover{background:rgba(219,245,114,0.2);}
+
+/* FLOOR READY CHECKLIST */
+.floor-checklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;}
+.floor-check-item{display:flex;align-items:center;gap:7px;font-size:12px;padding:7px 10px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px solid rgba(236,232,227,0.06);}
+.floor-check-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.floor-check-dot.pass{background:var(--teal);}
+.floor-check-dot.fail{background:#e07a50;}
+.floor-check-dot.pending{background:rgba(236,232,227,0.2);}
+
+/* PASS/FAIL TOGGLES */
+.obs-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(236,232,227,0.04);}
+.obs-row:last-child{border-bottom:none;}
+.obs-label{font-size:12px;color:rgba(236,232,227,0.6);}
+.obs-btns{display:flex;gap:4px;}
+.obs-btn{padding:3px 10px;border-radius:4px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid rgba(236,232,227,0.15);background:transparent;color:rgba(236,232,227,0.4);font-family:var(--font-body);transition:all 0.15s;letter-spacing:0.04em;}
+.obs-btn.pass-active{background:rgba(167,207,201,0.2);border-color:var(--teal);color:var(--teal);}
+.obs-btn.fail-active{background:rgba(162,78,43,0.2);border-color:#e07a50;color:#e07a50;}
+
+/* TRAINING PROGRESS */
+.training-progress{margin-top:10px;border-top:1px solid rgba(236,232,227,0.06);padding-top:10px;}
+.training-progress-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:8px;}
+.training-week-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;}
+.training-week-name{font-size:11px;color:rgba(236,232,227,0.4);width:60px;flex-shrink:0;}
+.training-week-bar{flex:1;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+.training-week-fill{height:100%;border-radius:2px;background:var(--teal);}
+.training-week-pct{font-size:11px;color:rgba(236,232,227,0.35);width:36px;text-align:right;flex-shrink:0;}
+
+/* ATTENDANCE */
+.attendance-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.attendance-label{font-size:11px;color:rgba(236,232,227,0.35);letter-spacing:0.06em;text-transform:uppercase;}
+.day-btn{width:32px;height:32px;border-radius:6px;border:1px solid rgba(236,232,227,0.15);background:transparent;color:rgba(236,232,227,0.35);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all 0.15s;}
+.day-btn.present{background:rgba(167,207,201,0.2);border-color:var(--teal);color:var(--teal);}
+
+/* REMINDER */
+.reminder-preview{background:rgba(255,255,255,0.04);border:1px solid rgba(236,232,227,0.09);border-radius:10px;padding:16px;font-size:13px;line-height:1.72;color:rgba(236,232,227,0.7);margin:14px 0;font-weight:300;min-height:90px;white-space:pre-wrap;}
+.discord-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(88,101,242,0.14);border:1px solid rgba(88,101,242,0.28);color:#8fa0f8;font-size:10px;padding:3px 9px;border-radius:5px;margin-bottom:10px;font-weight:500;letter-spacing:0.04em;}
+.loading-dot::after{content:'…';animation:blink 1.4s steps(3,end) infinite;}
+@keyframes blink{0%{content:'.'}33%{content:'..'}66%,100%{content:'…'}}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--lemon);color:var(--eggplant);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(70px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);max-width:320px;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:600px){
+  .guide-hero,.weeks,.mgr-header,.stats-row,.table-section{padding-left:18px;padding-right:18px;}
+  .guide-hero::after{display:none;}
+  .form-grid{grid-template-columns:1fr;}
+  .sig-row{grid-template-columns:1fr;}
+  .floor-checklist{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">OTHER<span>SHIP</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView(&#39;guide&#39;,event)">My Journey</button>
+    <button class="nav-tab" onclick="switchView(&#39;manager&#39;,event)">Manager View</button>
+  </div>
+</nav>
+
+<!-- ══════════ GUIDE VIEW ══════════ -->
+<div id="view-guide" class="view active">
+  <div class="guide-hero">
+    <div class="wave-badge" id="wave-badge">Wave · Path 1</div>
+    <h1>Welcome<br>Aboard,<br><em id="guide-first-name">test</em></h1>
+    <p>Your onboarding is laid out week by week — each phase builds on the last. Stay close to the dates, lean into the training, and trust that everything you need is right here. The ship is ready. So are you.</p>
+    <div class="guide-meta">
+      <div class="meta-chip"><strong>Guide Level</strong>Navigator A</div>
+      <div class="meta-chip"><strong>Guide Path</strong>Path 1 — FF / SG / Social</div>
+      <div class="meta-chip"><strong>City</strong><span id="meta-city">New York City</span></div>
+      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">Apr 23, 2026</span></div>
+      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">Oct 23, 2026</span></div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-label"><span>Onboarding Progress</span><span id="pct-label">2% complete</span></div>
+    <div class="progress-track"><div class="progress-fill" id="main-fill" style="width: 2%;"></div></div>
+  </div>
+  <div class="weeks" id="weeks-container"><div class="week active-week open">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">1</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 1</div>
+          <div class="week-dates">Nov 30 – Dec 6</div>
+        </div>
+        <div class="week-tally">1/6</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check checked" onclick="toggleTask(&#39;profile&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete your crew profile</div>
+        <div class="task-desc">Name, contact details, headshot, uniform sizing, and class preferences.</div>
+        <div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">Open profile form</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;mt-profile&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Set up your Mariana Tek account</div>
+        <div class="task-desc">Create your Othership booking account or confirm your existing one. You'll receive 10 training credits once set up.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-mt&#39;)">Set up account</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;discord-join&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Join the Othership Discord<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Your main comms hub — all wave announcements, questions, and crew chat live here.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-discord&#39;)">Join Discord</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-journeyer&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Attend one Free Flow as a Journeyer<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Experience the space from the other side before you guide it. Your 10 Mariana Tek credits cover this booking.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;towel-pickup&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Pick up your Guide Towel Waving Towel<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">Please pick up your Guide Towel Waving Towel in order to start your Week 1 online training. Pop into the front desk and ask for your Guide Waving Towel — they will hand you your speciality Towel Waving Towel that you are to practice with at home.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 1<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Othership foundations — approx. 50 min. Watch before your Welcome Zoom.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">2</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 2</div>
+          <div class="week-dates">Dec 7 – Dec 13</div>
+        </div>
+        <div class="week-tally">0/10</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;welcome-zoom&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Welcome Zoom<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Live session with your Lead Guide and cohort. Look out for your Google Calendar invite with details.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w2&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 2<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Free Flow deep dive — approx. 225 min across the week.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;breathwork-journey&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Your Breathwork Journey</div>
+        <div class="task-desc">Get set up with unlimited access to the Othership Breathwork app. Read the steps and get started.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-breathwork&#39;)">Open &amp; read</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;crew-directory&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete Crew Directory Form</div>
+        <div class="task-desc">Fill out the Tally form to be added to the company-wide crew directory.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://tally.so/r/wzjNeZ" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;crew-directory&#39;);renderWeeks();},1500)">Open Tally form →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;honorary-agreements&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign Honorary Agreements</div>
+        <div class="task-desc">Read and sign the Honorary Agreements to acknowledge the Othership relationship.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-ha&#39;)">Read &amp; Sign</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;guide-rate&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Review your Guide Rate<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Familiarise yourself with your guide rate and pay structure.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">Review rates →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;payroll-setup&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Review Payroll Setup</div>
+        <div class="task-desc">Understand how you'll be paid for shadow shifts and training. Instructions are specific to your city.</div>
+        <div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">Review payroll info</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;cpr-signup&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for CPR/AED + First Aid Certification</div>
+        <div class="task-desc">Required before you can work on the floor — due by end of Week 8. Read the city-specific instructions.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-cpr&#39;)">Read instructions &amp; book</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-signup-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for FF Shadow Shift #1<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Sign up via the schedule below. Max 4 guides per slot.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;ff-signup-1&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;crew-sweat&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Attend Crew Sweat<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Mandatory in-person session. Look out for your Google Calendar invite with details.</div>
+        
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">3</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 3</div>
+          <div class="week-dates">Dec 14 – Dec 20</div>
+        </div>
+        <div class="week-tally">0/7</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w3&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 3<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Sound Guide intro and class formats — approx. 395 min across the week.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;dei&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Read: Diversity, Equity &amp; Inclusion<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Othership's commitment and yours — required reading.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/Diversity-Equity-and-Inclusion-287271660d72814fbe47c71423951c9d" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;dei&#39;);renderWeeks();},1500)">Read page →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;code-conduct&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Read: Code of Conduct</div>
+        <div class="task-desc">Othership's standards on deck before you hit the floor.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-conduct&#39;)">Read page</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;contract&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign your Guide Contract</div>
+        <div class="task-desc">Sent via email — sign as soon as possible to ensure you are paid for training.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-shadow-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete FF Shadow Shift #1<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Your first Free Flow observation — approx. 150 min. You are watching the Mentor Guide and asking questions.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-signup-2&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for FF Shadow Shift #2<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Sign up for your next observation via the schedule.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;ff-signup-2&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;towel-training-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Towel Waving Training #1<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">In-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.</div>
+        
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">4</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 4</div>
+          <div class="week-dates">Dec 21 – Dec 27</div>
+        </div>
+        <div class="week-tally">0/2</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w4&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 4<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Advanced Free Flow concepts — approx. 300 min across the week.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-signup-3&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for FF Shadow Shift #3 (Final Observation)<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Book your final Free Flow observation shift.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;ff-signup-3&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">5</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 5</div>
+          <div class="week-dates">Dec 28 – Jan 3</div>
+        </div>
+        <div class="week-tally">0/3</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w5&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 5<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Sound Guide advanced — approx. 388 min across the week.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-shadow-2&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete FF Shadow Shift #2<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Second Free Flow observation — approx. 150 min. You are watching the Mentor and trying certain elements.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;sg-signup-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for SG Shadow Shift #1<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Reach out to the Support Guide you're shadowing 24 hours before to give them a heads up. Shifts start 30 mins before class start time.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;sg-signup-1&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">6</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 6</div>
+          <div class="week-dates">Jan 4 – Jan 10</div>
+        </div>
+        <div class="week-tally">0/5</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w6&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 6<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Class facilitation and guest experience — approx. 111 min.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;ff-shadow-3&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete FF Shadow Shift #3 (Final Observation)<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Your final Free Flow observation — approx. 150 min. You are acting as a FF Guide; Mentors are observing and giving feedback.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;sg-shadow-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete SG Shadow #1<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">First Sound Guide shadow shift — approx. 120 min. Reach out 24 hours before. Shifts start 30 mins before class start time.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;sg-obs-signup-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for SG Observation #1<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Book your first Sound Guide observation slot. Only one guide can be observed as SG at a time.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;sg-obs-signup-1&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;towel-training-2&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Towel Waving Training #2<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">Second in-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.</div>
+        
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">7</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 7</div>
+          <div class="week-dates">Jan 11 – Jan 17</div>
+        </div>
+        <div class="week-tally">0/5</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w7&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 7<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Class mastery and the full guest journey — approx. 174 min.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;sg-obs-1&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete SG Observation #1<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Your first Sound Guide observation — approx. 120 min. A Mentor will be with you. Shifts start 30 mins before class start time.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;sg-obs-signup-2&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Sign up for SG Observation #2<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Book your second Sound Guide observation. Only one guide can be observed at a time.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;sg-obs-signup-2&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;learn-landing&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Learn a Landing for In-Person Training<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Prepare your landing for next week's crew sweat. Review the landing resources below.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-Landings-List-fdda5a268213468890db25dd5b429e44" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;learn-landing&#39;);renderWeeks();},1500)">Open landing resources →</a></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;privacy&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Read: Privacy &amp; Confidentiality at Othership</div>
+        <div class="task-desc">Required reading before going floor-ready.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-privacy&#39;)">Read page</button></div>
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">8</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 8</div>
+          <div class="week-dates">Jan 18 – Jan 24</div>
+        </div>
+        <div class="week-tally">0/6</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;training-w8&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Training Week 8<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Operations, floor mechanics and final prep — approx. 180 min.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;sg-obs-2&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Complete SG Observation #2<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Your second Sound Guide observation — approx. 120 min. Shifts start 30 mins before class start time.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;inperson-av&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">In-Person AV &amp; Landing Training<span class="badge badge-inship">In-Ship</span></div>
+        <div class="task-desc">Tech training + crew sweat. Come ready with a landing prepared. Look out for your Google Calendar invite with details.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;cpr-upload&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Upload CPR/AED + First Aid Certificate</div>
+        <div class="task-desc">PDF format only. Uploads directly to your crew card. Must be uploaded before going floor-ready.</div>
+        <div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal(&#39;modal-cpr-upload&#39;)">Upload certificate</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;crew-pass-policy&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Read: Crew Pass Booking Policy</div>
+        <div class="task-desc">Know the rules before your pass is activated.</div>
+        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-crewpass&#39;)">Read policy</button></div>
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;perks&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Othership Team Perks<span class="badge badge-notion">Notion</span></div>
+        <div class="task-desc">Crew pass, F&amp;F passes, and everything that comes with being on the ship.</div>
+        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/Partner-Perks-e366f32cd98e420ba50975fae48ca462" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;perks&#39;);renderWeeks();},1500)">View perks →</a></div>
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">9</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Week 9</div>
+          <div class="week-dates">Jan 25 – Jan 31</div>
+        </div>
+        <div class="week-tally">0/4</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;towel-training-3&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Towel Waving Training #3<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">Final in-person towel waving technique session — approx. 120 min. Look out for your Google Calendar invite with details.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;uniform-pickup&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Pick up your uniform<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">Collect your Othership uniform from your Lead Guide or Ship Captain.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;approved-ff&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Approved to work FF + Social Shifts<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">Your Lead Guide marks you approved after passing your observations.</div>
+        
+      </div>
+    </div>
+  
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;approved-sg&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Approved to work SG Shifts<span class="badge badge-inperson">In-Person</span></div>
+        <div class="task-desc">Your Lead Guide marks you approved for Sound Guide shifts.</div>
+        
+      </div>
+    </div>
+  </div>
+    </div><div class="week  ">
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">10</div>
+        <div class="week-title-wrap">
+          <div class="week-label">Weeks 9–11</div>
+          <div class="week-dates">Jan 25 – Feb 14</div>
+        </div>
+        <div class="week-tally">0/1</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">
+    <div class="task">
+      <div class="task-check " onclick="toggleTask(&#39;tw-kajabi&#39;)"></div>
+      <div class="task-body">
+        <div class="task-name">Towel Waving Training Module<span class="badge badge-online">Online</span></div>
+        <div class="task-desc">Online training module to complement your in-person sessions — approx. 134 min.</div>
+        <div class="task-action"><button class="btn-sm btn-outline" onclick="showToast(&#39;Opening training — hosted on Vimeo&#39;)">Watch training →</button></div>
+      </div>
+    </div>
+  </div>
+    </div></div>
+</div>
+
+<!-- ══════════ MANAGER VIEW ══════════ -->
+<div id="view-manager" class="view">
+  <div class="mgr-header">
+    <div>
+      <div class="mgr-eyebrow" id="mgr-city-label">Wave · NYC + Toronto</div>
+      <h1>Cohort<br><span>Dashboard</span></h1>
+    </div>
+    <div class="mgr-actions">
+      <button class="btn-mgr btn-mgr-outline" onclick="openReminderAll()">⚡ Send all reminders</button>
+      <button class="btn-mgr btn-mgr-outline" onclick="createWaveChannels()"># Create wave channels</button>
+      <button class="btn-mgr btn-mgr-primary" onclick="showToast(&#39;Notion sync triggered — cards updating&#39;)">↗ Sync to Notion</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num c-lemon" id="s-total">6</div><div class="stat-label">Guides in wave</div></div>
+    <div class="stat-card"><div class="stat-num c-rust" id="s-needs">3</div><div class="stat-label">Need follow-up</div></div>
+    <div class="stat-card"><div class="stat-num c-teal" id="s-track">2</div><div class="stat-label">On track</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-done">1</div><div class="stat-label">Floor ready</div></div>
+    <div class="stat-card"><div class="stat-num c-rust">4</div><div class="stat-label">CPR pending</div></div>
+  </div>
+  <div class="table-section">
+    <div class="table-top">
+      <div class="table-title" id="mgr-table-title">All guides — Wave</div>
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="filterG(&#39;all&#39;,this)">Active</button>
+        <button class="ftab" onclick="filterG(&#39;needs&#39;,this)">Needs action</button>
+        <button class="ftab" onclick="filterG(&#39;track&#39;,this)">On track</button>
+        <button class="ftab" onclick="filterG(&#39;done&#39;,this)">Floor ready</button>
+        <button class="ftab" onclick="filterG(&#39;alumni&#39;,this)">Alumni</button>
+      </div>
+    </div>
+    <div class="guide-cards" id="gcards"><div class="gcard needs" data-status="needs">
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">Amanda Test</div>
+          <div class="gcard-meta">@amandalaine &nbsp;·&nbsp; NYC</div>
+          <div class="missing-tags"><span class="mtag">CPR certificate</span><span class="mtag">Availability form</span></div>
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">22%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:22%;background:#e07a50"></div></div>
+        </div>
+      </div>
+      
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
+      </div>
+      
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(0,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(0,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(0,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(0,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        <button class="day-btn " onclick="toggleAttendance(0,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(0,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(0,2,this)">D3</button><button class="day-btn " onclick="toggleAttendance(0,3,this)">D4</button>
+      </div>
+      
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 1</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 2</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:45%"></div></div>
+            <div class="training-week-pct">45%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 3</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 4</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+      </div>
+      
+      <div class="gcard-actions" style="margin-top:10px;">
+        <button class="btn-remind" onclick="openReminderFor(&#39;Amanda Test&#39;,[&quot;CPR certificate&quot;,&quot;Availability form&quot;])">⚡ Remind</button>
+        
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>
+    </div><div class="gcard needs" data-status="needs">
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">Kai Osei</div>
+          <div class="gcard-meta">@kai_osei &nbsp;·&nbsp; NYC</div>
+          <div class="missing-tags"><span class="mtag">CPR certificate</span><span class="mtag">Availability form</span><span class="mtag">Uniform sizes</span></div>
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">22%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:22%;background:#e07a50"></div></div>
+        </div>
+      </div>
+      
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
+      </div>
+      
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(1,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(1,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(1,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(1,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        <button class="day-btn " onclick="toggleAttendance(1,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(1,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(1,2,this)">D3</button><button class="day-btn " onclick="toggleAttendance(1,3,this)">D4</button>
+      </div>
+      
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 1</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 2</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:45%"></div></div>
+            <div class="training-week-pct">45%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 3</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 4</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+      </div>
+      
+      <div class="gcard-actions" style="margin-top:10px;">
+        <button class="btn-remind" onclick="openReminderFor(&#39;Kai Osei&#39;,[&quot;CPR certificate&quot;,&quot;Availability form&quot;,&quot;Uniform sizes&quot;])">⚡ Remind</button>
+        
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>
+    </div><div class="gcard needs" data-status="needs">
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">Marcus Webb</div>
+          <div class="gcard-meta">@marcuswebb &nbsp;·&nbsp; Toronto</div>
+          <div class="missing-tags"><span class="mtag">Profile form</span><span class="mtag">CPR certificate</span><span class="mtag">Discord</span><span class="mtag">Availability form</span></div>
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">15%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:15%;background:#e07a50"></div></div>
+        </div>
+      </div>
+      
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
+      </div>
+      
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(2,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(2,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(2,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(2,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        <button class="day-btn " onclick="toggleAttendance(2,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(2,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(2,2,this)">D3</button><button class="day-btn " onclick="toggleAttendance(2,3,this)">D4</button>
+      </div>
+      
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 1</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:60%"></div></div>
+            <div class="training-week-pct">60%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 2</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 3</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 4</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+      </div>
+      
+      <div class="gcard-actions" style="margin-top:10px;">
+        <button class="btn-remind" onclick="openReminderFor(&#39;Marcus Webb&#39;,[&quot;Profile form&quot;,&quot;CPR certificate&quot;,&quot;Discord&quot;,&quot;Availability form&quot;])">⚡ Remind</button>
+        
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>
+    </div><div class="gcard track" data-status="track">
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">Priya Mehta</div>
+          <div class="gcard-meta">@priya.m &nbsp;·&nbsp; NYC</div>
+          <div class="missing-tags"><span class="mtag">CPR certificate</span></div>
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">65%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:65%;background:var(--teal)"></div></div>
+        </div>
+      </div>
+      
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
+      </div>
+      
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn pass-active" onclick="setObs(3,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(3,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(3,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(3,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        <button class="day-btn present" onclick="toggleAttendance(3,0,this)">D1</button><button class="day-btn present" onclick="toggleAttendance(3,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(3,2,this)">D3</button><button class="day-btn " onclick="toggleAttendance(3,3,this)">D4</button>
+      </div>
+      
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 1</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 2</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 3</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:78%"></div></div>
+            <div class="training-week-pct">78%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 4</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:20%"></div></div>
+            <div class="training-week-pct">20%</div>
+          </div>
+        
+      </div>
+      
+      <div class="gcard-actions" style="margin-top:10px;">
+        <button class="btn-remind" onclick="openReminderFor(&#39;Priya Mehta&#39;,[&quot;CPR certificate&quot;])">⚡ Remind</button>
+        
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>
+    </div><div class="gcard needs" data-status="needs">
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">Jordan Blake</div>
+          <div class="gcard-meta">@jblake_ &nbsp;·&nbsp; Toronto</div>
+          <div class="missing-tags"><span class="mtag">CPR certificate</span><span class="mtag">Contract signed</span></div>
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">45%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:45%;background:#e07a50"></div></div>
+        </div>
+      </div>
+      
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
+      </div>
+      
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(4,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(4,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn " onclick="setObs(4,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(4,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        <button class="day-btn present" onclick="toggleAttendance(4,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(4,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(4,2,this)">D3</button><button class="day-btn " onclick="toggleAttendance(4,3,this)">D4</button>
+      </div>
+      
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 1</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 2</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 3</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:30%"></div></div>
+            <div class="training-week-pct">30%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 4</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
+            <div class="training-week-pct">0%</div>
+          </div>
+        
+      </div>
+      
+      <div class="gcard-actions" style="margin-top:10px;">
+        <button class="btn-remind" onclick="openReminderFor(&#39;Jordan Blake&#39;,[&quot;CPR certificate&quot;,&quot;Contract signed&quot;])">⚡ Remind</button>
+        
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>
+    </div><div class="gcard track" data-status="track">
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">Sofia Reyes</div>
+          <div class="gcard-meta">@sofiareyes &nbsp;·&nbsp; NYC</div>
+          <div class="missing-tags"><span class="mtag">CPR certificate</span></div>
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">80%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:80%;background:var(--teal)"></div></div>
+        </div>
+      </div>
+      
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>SG observation passed</span></div>
+      </div>
+      
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn pass-active" onclick="setObs(5,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(5,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn pass-active" onclick="setObs(5,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
+            <button class="obs-btn " onclick="setObs(5,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        <button class="day-btn present" onclick="toggleAttendance(5,0,this)">D1</button><button class="day-btn present" onclick="toggleAttendance(5,1,this)">D2</button><button class="day-btn present" onclick="toggleAttendance(5,2,this)">D3</button><button class="day-btn " onclick="toggleAttendance(5,3,this)">D4</button>
+      </div>
+      
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 1</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 2</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 3</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
+            <div class="training-week-pct">100%</div>
+          </div>
+        
+          <div class="training-week-row">
+            <div class="training-week-name">Week 4</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:65%"></div></div>
+            <div class="training-week-pct">65%</div>
+          </div>
+        
+      </div>
+      
+      <div class="gcard-actions" style="margin-top:10px;">
+        <button class="btn-remind" onclick="openReminderFor(&#39;Sofia Reyes&#39;,[&quot;CPR certificate&quot;])">⚡ Remind</button>
+        
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE COMPLETE MODAL ══ -->
+<div class="modal-overlay" id="modal-profile-complete">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-profile-complete&#39;)">×</button>
+    <h2>Crew Card Set Up</h2>
+    <p class="modal-sub">Your profile is complete and your crew card is live in Notion.</p>
+    <div class="content-panel">
+      <h3>Your details are saved</h3>
+      <p>Your crew card has been created in the Othership Info Directory. Your Lead Guide and team can see your profile.</p>
+      <p>Need to update something? Reopen your profile form below — any changes will update your Notion card.</p>
+    </div>
+    <button class="btn-submit" onclick="closeModal(&#39;modal-profile-complete&#39;)">Got it →</button>
+    <button class="btn-sm btn-outline" style="width:100%;justify-content:center;margin-top:10px;" onclick="openIntakeForEdit()">Update my details →</button>
+  </div>
+</div>
+
+<!-- ══ INTAKE FORM ══ -->
+<div class="modal-overlay" id="modal-intake">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal(&#39;modal-intake&#39;)">×</button>
+    <h2>Set Up Your Crew Card</h2>
+    <p class="modal-sub">Takes about 3 minutes. Your info goes straight to your crew card.</p>
+    <div class="form-section">Your headshot</div>
+    <div class="headshot-wrap">
+      <div class="headshot-preview" id="headshot-preview" onclick="document.getElementById(&#39;headshot-file&#39;).click()">📷</div>
+      <div class="headshot-hint"><strong>Upload a headshot</strong>A clear, friendly photo. Click the circle to upload.</div>
+    </div>
+    <input type="file" id="headshot-file" style="display:none" accept="image/*" onchange="handleHeadshot(this)">
+    <div class="form-section">Your details</div>
+    <div class="form-row"><label>Legal name</label><input class="form-input" id="f-name" placeholder="Your full legal name"></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Email</label><input class="form-input" id="f-email" type="email" placeholder="you@email.com"></div>
+      <div class="form-row"><label>Phone</label><input class="form-input" id="f-phone" placeholder="+1 555 000 0000"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Gender</label>
+        <select class="form-input" id="f-gender"><option value="">Select</option><option>M</option><option>F</option><option>Non-binary</option><option>Prefer not to say</option></select>
+      </div>
+      <div class="form-row"><label>City</label>
+        <select class="form-input" id="f-city"><option value="">Select your city</option><option value="nyc">New York City</option><option value="toronto">Toronto</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Social media handle</label><input class="form-input" id="f-social" placeholder="@handle"></div>
+    <div class="form-section">Uniform sizing</div>
+    <div class="form-grid">
+      <div class="form-row"><label>Top size</label>
+        <select class="form-input" id="f-top"><option value="">Select</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+      </div>
+      <div class="form-row"><label>Bottom size</label>
+        <select class="form-input" id="f-bottom"><option value="">Select</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Swim — 1 PC or Trunk</label>
+        <select class="form-input" id="f-swimtype"><option value="">Select</option><option>1 PC</option><option>Trunk</option></select>
+      </div>
+      <div class="form-row"><label>Swim size</label>
+        <select class="form-input" id="f-swim"><option value="">Select</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>S - Tall</option><option>M - Tall</option><option>L - Tall</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Shoe size</label><input class="form-input" id="f-shoe" placeholder="e.g. 9 or 8.5W"></div>
+    <div class="form-section">Your classes</div>
+    <div class="form-row">
+      <label>Favourite class category</label>
+      <select class="form-input" id="f-fav">
+        <option value="">Select</option>
+        <option>All Around</option>
+        <option>Up</option>
+        <option>Down</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Classes interested in leading — select all that apply</label>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(236,232,227,0.1);border-radius:8px;padding:14px;max-height:260px;overflow-y:auto;">
+        <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(219,245,114,0.5);margin-bottom:8px;">All Around</div>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Loving Kindness - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Loving Kindness - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Inner Power - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Inner Power - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Space for Men/women - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Space for Men/women - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Release - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Release - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Acceptance - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Acceptance - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="JTTE - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> JTTE - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Gratitude - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Gratitude - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="A-Z Emotion - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> A-Z Emotion - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="RTB - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> RTB - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Heart Opener - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Heart Opener - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Hardwiring Happiness - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Hardwiring Happiness - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Anger Management - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Anger Management - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Reset - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Reset - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="JTTS - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> JTTS - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Connect - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Connect - All Around</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Reflect - All Around" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Reflect - All Around</label>
+        <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(167,207,201,0.5);margin:12px 0 8px;">Down</div>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Sound Immersion - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Sound Immersion - Down</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Deep Stretch - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Deep Stretch - Down</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Self Care Sweat - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Self Care Sweat - Down</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Pure Presence - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Pure Presence - Down</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Senses - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Senses - Down</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Embodied - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Embodied - Down</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Unwind - Down" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Unwind - Down</label>
+        <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(112,121,103,0.8);margin:12px 0 8px;">Up</div>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="SNF - Up" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> SNF - Up</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Awakening - Up" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Awakening - Up</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Feel Good Now - UP" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Feel Good Now - UP</label>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Arctic Tundra - Up" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Arctic Tundra - Up</label>
+        <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(203,114,196,0.5);margin:12px 0 8px;">Other</div>
+        <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Friendship" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Friendship</label>
+      </div>
+    </div>
+    <button class="btn-submit" onclick="submitIntake()">Begin My Journey →</button>
+  </div>
+</div>
+
+<!-- ══ DISCORD MODAL ══ -->
+<div class="modal-overlay" id="modal-discord">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-discord&#39;)">×</button>
+    <h2>Join Discord</h2>
+    <p class="modal-sub">Your main comms hub — all wave updates, questions, and crew chat live here.</p>
+    <div class="content-panel">
+      <h3>Step 1 — Join the server</h3>
+      <p>Click the link below to join the Othership Discord server.</p>
+      <p><a href="https://discord.gg/WPjY2NZQK2" target="_blank">Join the Othership Discord →</a></p>
+      <h3>Step 2 — Introduce yourself</h3>
+      <p>Once you're in, introduce yourself in your wave channel so your crew knows you've arrived.</p>
+      <h3>Step 3 — Add your team as friends</h3>
+      <p>Add the following people as Discord friends and say hello in a direct message. Once you do, you'll be tagged as a Guide in the server — this unlocks your Guide channels.</p>
+      <div class="discord-usernames" id="discord-usernames"></div>
+      <p style="font-size:11px;color:rgba(236,232,227,0.3);margin-top:8px;">You'll be added to your wave channels and tagged with your city's Guide role once you've connected.</p>
+    </div>
+    <div class="content-panel" style="margin-top:12px;">
+      <h3>Step 4 — Enter your Discord username</h3>
+      <p>This is how we'll reach you directly. Enter your exact Discord username below (e.g. <strong>amandalaine</strong>).</p>
+      <input type="text" id="discord-username-input" placeholder="Your Discord username" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(236,232,227,0.15);background:rgba(236,232,227,0.06);color:var(--cloud);font-size:14px;font-family:var(--font-body);margin-top:6px;box-sizing:border-box;">
+      <p style="font-size:11px;color:rgba(236,232,227,0.3);margin-top:6px;">Don't include the # symbol — just your username.</p>
+    </div>
+    <button class="btn-submit" onclick="submitDiscordUsername()">I've joined &amp; added the team →</button>
+  </div>
+</div>
+
+<!-- ══ MT PROFILE MODAL ══ -->
+<div class="modal-overlay" id="modal-mt">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-mt&#39;)">×</button>
+    <h2>Mariana Tek Account</h2>
+    <p class="modal-sub">You'll need an Othership booking account to receive your 10 training credits.</p>
+    <div class="content-panel">
+      <h3>New to Othership?</h3>
+      <p>Create your account using the link below, then come back here and confirm. Your 10 training credits will be added to your account once set up.</p>
+      <p><a href="https://www.othership.us/account?_mt=%2Faccount%2Fcreate%3FredirectURL%3D%252Faccount" target="_blank">Create your Othership account →</a></p>
+      <h3>Already have an account?</h3>
+      <p>Enter your Mariana Tek email below to confirm it's connected to your crew card.</p>
+      <p style="color:rgba(236,232,227,0.4);font-size:12px;margin-top:8px;">Credits are for training purposes only and are not to be shared.</p>
+    </div>
+    <div class="form-row">
+      <label>Mariana Tek email</label>
+      <input class="form-input" id="mt-email-input" type="email" placeholder="Email on your Othership booking account">
+    </div>
+    <button class="btn-submit" onclick="confirmMT()">My account is set up →</button>
+  </div>
+</div>
+
+<!-- ══ BREATHWORK MODAL ══ -->
+<div class="modal-overlay" id="modal-breathwork">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal(&#39;modal-breathwork&#39;)">×</button>
+    <h2>Your Breathwork Journey</h2>
+    <p class="modal-sub">Unlimited access to the Othership Breathwork app — yours from day one.</p>
+    <div class="content-panel">
+      <div class="highlight">To partake in Othership on a personal level we have created a digital space where you can take Othership home with you. We want to welcome you onboard with unlimited access to our breathwork app. Here you can discover the ins and outs of your breath, and create and cultivate your meditation and breathwork practice.</div>
+      <p>Throughout your Guide onboarding there will be moments for guided breathwork, so buckle up and get ready to blast off.</p>
+      <h3>Steps to Accessing Your Membership</h3>
+      <ol>
+        <li>Download the Othership Breathwork app</li>
+        <li>Create an account by clicking <strong>Other Options</strong> then the <strong>mail button</strong></li>
+        <li>Fill out your first name, last name, email and password</li>
+        <li>Once finished, email <a href="mailto:marina@othership.us">marina@othership.us</a> with the email you used — she will grant your breathwork membership</li>
+        <li><a href="https://apps.apple.com/ca/app/othership-guided-breathwork/id1590348936" target="_blank">Download the Othership Breathwork app →</a></li>
+      </ol>
+    </div>
+    <button class="btn-submit" onclick="closeModal(&#39;modal-breathwork&#39;);markTask(&#39;breathwork-journey&#39;);showToast(&#39;Breathwork journey — welcome aboard&#39;)">I\'ve read this →</button>
+  </div>
+</div>
+
+<!-- ══ CPR INFO MODAL ══ -->
+<div class="modal-overlay" id="modal-cpr">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal(&#39;modal-cpr&#39;)">×</button>
+    <h2>CPR Certification</h2>
+    <p class="modal-sub">Required before you can work on the floor. Read the instructions for your city.</p>
+    <div class="content-panel" id="cpr-content"><div class="city-block"><strong>New York City</strong><p>CPR certification is <strong>required before you can work on the floor</strong> — due by end of Week 8.</p><p>In the USA it <strong>MUST</strong> be through the Red Cross. The only approved courses are:</p><ul><li><strong>Basic Life Support</strong></li><li><strong>CPR/AED for Professional Rescuers</strong></li></ul><p>Must be <strong>in-person</strong> (a portion may be online). Renewed annually.</p><p>You will be reimbursed for approved courses only. Reimbursement is issued at the <strong>3-month mark</strong> after hire, once onboarding is fully complete.</p><p><a href="https://www.redcross.org/take-a-class/bls?latitude=40.7127753&amp;longitude=-74.0059728&amp;searchtype=class&amp;zip=new%20york%2C%20ny" target="_blank">Book your Red Cross BLS course here →</a></p></div></div>
+    <button class="btn-submit" style="background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);" onclick="closeModal(&#39;modal-cpr&#39;);markTask(&#39;cpr-signup&#39;);showToast(&#39;CPR noted — upload your certificate in Week 8&#39;)">Got it — I\'ll book my course →</button>
+  </div>
+</div>
+
+<!-- ══ CPR UPLOAD MODAL ══ -->
+<div class="modal-overlay" id="modal-cpr-upload">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-cpr-upload&#39;)">×</button>
+    <h2>Upload CPR Certificate</h2>
+    <p class="modal-sub">Upload your certificate to the Othership CPR folder on Google Drive.</p>
+    <div class="content-panel">
+      <h3>How to upload</h3>
+      <ol>
+        <li>Name your file: <strong>FirstName_LastName_CPR</strong> (e.g. Amanda_Laine_CPR.pdf)</li>
+        <li>Click the button below to open the Othership CPR folder</li>
+        <li>Upload your PDF into the folder</li>
+        <li>Enter your certificate expiry date below</li>
+        <li>Come back here and confirm</li>
+      </ol>
+    </div>
+    <button class="btn-sm btn-outline" style="width:100%;justify-content:center;margin-bottom:16px;" onclick="openCPRFolder()">Open CPR Certificates Folder →</button>
+    <div class="form-row">
+      <label>Certificate expiry date</label>
+      <input class="form-input" id="cpr-expiry" type="date">
+    </div>
+    <button class="btn-submit" onclick="confirmCPR()">I've uploaded my certificate ✓</button>
+  </div>
+</div>
+
+<!-- ══ HONORARY AGREEMENTS ══ -->
+<div class="modal-overlay" id="modal-ha">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal(&#39;modal-ha&#39;)">×</button>
+    <h2>Honorary Agreements</h2>
+    <p class="modal-sub">Please read the full agreement before signing.</p>
+    <div class="ha-doc">
+      <div class="ha-highlight">Honouring Othership's Hard Work. And Honouring You.</div>
+      <p>This agreement is intended to do two things:</p>
+      <ul>
+        <li>Bring awareness to the time, energy and financial resources Othership has invested to create a world-class experience; and define what is unique about Othership</li>
+        <li>Create clarity around the Guide &lt;&gt; Othership relationship, our mutual responsibilities, and how the company plans to invest in — and honour — you</li>
+      </ul>
+      <h3>Some rules of the road</h3>
+      <ul>
+        <li>Once onboarding is complete you will gain access to a significant amount of proprietary — privately owned — material. This information will not be shared anywhere beyond your work at Othership, both during and after employment or engagement with the company.</li>
+        <li>You will not "represent" Othership outside the physical house without getting approval from your Lead Guide.</li>
+        <li>You understand what makes Othership unique and will not take these principles outside of the house unless getting approval.</li>
+        <li>We will honour you and give you the tools to grow within Othership.</li>
+      </ul>
+      <h3>The Othership Vision</h3>
+      <p>Othership is changing the landscape of mental health by helping people learn to regulate their emotions in a community driven way that is fun and habit forming. We see a world where your journey to living a more meaningful life happens at Othership, driven through community support.</p>
+      <h3>What Makes Othership Unique</h3>
+      <ul>
+        <li><strong>Emotional Regulation Classes</strong> — first of its kind in the sauna and ice bath, tied to emotional themes such as Loving Kindness, Rose Thorn Bud, Forgiveness, Gratitude.</li>
+        <li><strong>Combination of Elements</strong> — song choice, lighting changes, essential oils, script and movement — all working together to support the theme.</li>
+        <li><strong>Social Experiences</strong> — building trusted community through decreased ego defences brought on naturally through the hot and cold.</li>
+        <li><strong>Othership Breathwork Style</strong> — rollercoaster breath style where the cadence changes with the musical beat, following a DJ set.</li>
+      </ul>
+      <h3>What it Took to Create</h3>
+      <p>Othership represents the cumulative efforts of dozens of people and thousands of hours of work — certified Sauna Masters and Breathwork Facilitators, hundreds of hours of retreats and therapy, thousands of guided ice baths and sauna experiences, and first-of-their-kind emotional regulation classes reviewed with 20+ therapists, hypnotists, and coaches.</p>
+      <p>By signing below, you acknowledge that you have read and understood this agreement and commit to honouring both Othership and yourself throughout your Guideship journey.</p>
+    </div>
+    <p class="sig-note">Type your full legal name and today's date to sign. Logged to your crew card.</p>
+    <div class="sig-row">
+      <div class="form-row" style="margin-bottom:0"><label>Full legal name</label><input class="form-input" id="ha-name" placeholder="Your legal name"></div>
+      <div class="form-row" style="margin-bottom:0"><label>Date</label><input class="form-input" id="ha-date" type="date"></div>
+    </div>
+    <button class="btn-submit" style="margin-top:16px" onclick="signHA()">I Agree &amp; Sign →</button>
+  </div>
+</div>
+
+<!-- ══ CREW PASS MODAL ══ -->
+<div class="modal-overlay" id="modal-crewpass">
+  <div class="modal modal-lg">
+    <button class="modal-close" onclick="closeModal(&#39;modal-crewpass&#39;)">×</button>
+    <h2>Crew Pass Booking Policy</h2>
+    <p class="modal-sub">Read carefully — these policies apply to your Crew Unlimited Pass and Friends &amp; Family pass.</p>
+    <div class="content-panel">
+      <div class="highlight">Welcome aboard our all access pass journey. We're excited to have you wielding the power of the Crew Unlimited Pass and the Friends + Fam pass as members of our crew. To ensure smooth sailing for all, here's your guide to booking and using these passes with #cellularcommitment top of mind.</div>
+      <h3>Crew Unlimited Pass Policies</h3>
+      <h4>Grace Periods</h4><p>When it comes to our crew, there's no wiggle room for grace cancellations or no-shows. Late cancels and no-shows will be noted and marked as penalties in our system.</p>
+      <h4>Cancellations</h4><p>If you need to cancel, make sure you do it within the 12-hour window. This gives everyone a chance to access our programming and services.</p>
+      <h4>Booking Window — Standby Policy</h4><p>All Crew members adhere to the Standby Policy: paying guests take priority. If there is one spot left, staff can be let in if that spot is still available when class begins. If there are 5 or more spots left, staff may be added upon arrival. Staff cannot be placed on the MT Standby List, nor can holds be placed on behalf of crew.</p>
+      <h4>Special Events</h4><p>For special events, please confirm with Shannon Bent the type of credit required. Your comp Crew Pass should not be used to book into events unless confirmed otherwise.</p>
+      <h4>Late Cancel Fee</h4><p>A $35 fee applies if you cancel after the grace period.</p>
+      <h4>No Show Fee</h4><p>A $35 fee will be charged for no-shows. Let's keep the ship tight by respecting our shared commitments.</p>
+      <h3>Friends + Fam Pass</h3><p>The same policies apply. A loss of credit is applied in the case of a no-show or late cancellation.</p>
+      <p>Your understanding and commitment to these guidelines help us keep the ship sailing smoothly. #cellularcommitment</p>
+    </div>
+    <button class="btn-submit" onclick="closeModal(&#39;modal-crewpass&#39;);markTask(&#39;crew-pass-policy&#39;);showToast(&#39;Crew Pass Policy confirmed&#39;)">I\'ve read this →</button>
+  </div>
+</div>
+
+<!-- ══ PRIVACY MODAL ══ -->
+<div class="modal-overlay" id="modal-privacy">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal(&#39;modal-privacy&#39;)">×</button>
+    <h2>Privacy &amp; Confidentiality</h2>
+    <p class="modal-sub">Required reading before going floor-ready.</p>
+    <div class="content-panel">
+      <div class="highlight">At Othership, we hold space for deeply personal experiences. As a Guide, you are trusted with sensitive information and intimate moments. This trust is sacred.</div>
+      <h3>Your Responsibilities</h3>
+      <ul>
+        <li>Everything shared in the space — by Journeyers or fellow crew — stays in the space.</li>
+        <li>You may not share, post, or discuss guest experiences, names, or personal details outside of Othership without explicit consent.</li>
+        <li>Proprietary training materials, class scripts, and operational processes are confidential and may not be shared outside your work at Othership.</li>
+        <li>Photography and video of guests requires explicit consent.</li>
+        <li>Social media posts referencing Othership, its sessions, or guests must be approved by your Lead Guide before posting.</li>
+      </ul>
+      <h3>Breaches of Confidentiality</h3>
+      <p>Any breach of these guidelines is taken seriously and may result in immediate offboarding. If you are unsure whether something is appropriate to share, check with your Lead Guide first.</p>
+    </div>
+    <button class="btn-submit" onclick="closeModal(&#39;modal-privacy&#39;);markTask(&#39;privacy&#39;);showToast(&#39;Privacy &amp; Confidentiality confirmed&#39;)">I\'ve read &amp; understood this →</button>
+  </div>
+</div>
+
+<!-- ══ CODE OF CONDUCT MODAL ══ -->
+<div class="modal-overlay" id="modal-conduct">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal(&#39;modal-conduct&#39;)">×</button>
+    <h2>Code of Conduct</h2>
+    <p class="modal-sub">Othership's standards for every guide, every shift.</p>
+    <div class="content-panel">
+      <div class="highlight">Being a Guide at Othership is a privilege. These standards exist to protect the experience — for Journeyers, for your crew, and for yourself.</div>
+      <h3>Professionalism</h3>
+      <ul>
+        <li>Arrive on time, changed, and ready to punch in at your scheduled start.</li>
+        <li>Communicate proactively — if you need to drop a shift, give as much notice as possible and find your own coverage.</li>
+        <li>Your phone stays out of the session space during shifts.</li>
+      </ul>
+      <h3>Guest Experience</h3>
+      <ul>
+        <li>Every Journeyer deserves a world-class experience, every single time.</li>
+        <li>Issues with guests are escalated to the Ship Captain — do not handle them alone.</li>
+      </ul>
+      <h3>Crew Culture</h3>
+      <ul>
+        <li>Treat every crew member with respect, care and professionalism.</li>
+        <li>Celebrate each other. This crew is your community.</li>
+      </ul>
+      <h3>Safety</h3>
+      <ul>
+        <li>Your CPR/AED certification must be valid at all times while working on the floor.</li>
+        <li>Know the emergency protocols for your location before your first shift.</li>
+        <li>Report any safety concerns to the Ship Captain or Lead Guide immediately.</li>
+      </ul>
+    </div>
+    <button class="btn-submit" onclick="closeModal(&#39;modal-conduct&#39;);markTask(&#39;code-conduct&#39;);showToast(&#39;Code of Conduct confirmed&#39;)">I\'ve read &amp; understood this →</button>
+  </div>
+</div>
+
+<!-- ══ PAYROLL MODAL ══ -->
+<div class="modal-overlay" id="modal-payroll">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-payroll&#39;)">×</button>
+    <h2>Payroll Setup</h2>
+    <p class="modal-sub" id="payroll-sub">Instructions for your city.</p>
+    <div class="content-panel" id="payroll-content"></div>
+    <button class="btn-submit" onclick="closeModal(&#39;modal-payroll&#39;);showToast(&#39;Payroll info noted — questions in Discord&#39;)">Got it →</button>
+  </div>
+</div>
+
+<!-- ══ FLOOR READY NOTIFICATION MODAL ══ -->
+<div class="modal-overlay" id="modal-floor-notif">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-floor-notif&#39;)">×</button>
+    <h2>Floor Ready Notification</h2>
+    <p class="modal-sub" id="floor-notif-sub">Message for Margaret + Lead Guides.</p>
+    <div class="discord-tag">⚡ Group chat message preview</div>
+    <div class="reminder-preview" id="floor-notif-text"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-floor-notif&#39;)">Close</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal(&#39;modal-floor-notif&#39;);showToast(&#39;Message sent to Margaret + Lead Guides&#39;)">Send to group →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ATTENDANCE SUMMARY MODAL ══ -->
+<div class="modal-overlay" id="modal-attendance">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-attendance&#39;)">×</button>
+    <h2>Attendance Summary</h2>
+    <p class="modal-sub">End-of-onboarding summary for Margaret.</p>
+    <div class="discord-tag">⚡ Message for Margaret</div>
+    <div class="reminder-preview" id="attendance-text"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-attendance&#39;)">Close</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal(&#39;modal-attendance&#39;);showToast(&#39;Attendance summary sent to Margaret&#39;)">Send to Margaret →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REMINDER MODAL ══ -->
+<div class="modal-overlay" id="modal-reminder">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal(&#39;modal-reminder&#39;)">×</button>
+    <h2>Discord Reminder</h2>
+    <p class="modal-sub" id="reminder-sub">AI-generated, Othership-voiced nudge.</p>
+    <div class="discord-tag">⚡ Discord wave channel preview</div>
+    <div class="reminder-preview" id="reminder-text"><span class="loading-dot">Generating message</span></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="regenReminder()">↺ Regenerate</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="sendReminder()">Send DM →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ BACKEND ═══
+const BACKEND = 'https://othership-onboarding-backend.onrender.com';
+
+async function callBackend(endpoint, data, method) {
+  try {
+    const m = method || 'POST';
+    const opts = { method: m, headers: { 'Content-Type': 'application/json' } };
+    if(m !== 'GET' && data) opts.body = JSON.stringify(data);
+    const res = await fetch(`${BACKEND}${endpoint}`, opts);
+    return await res.json();
+  } catch(e) {
+    console.error('Backend error:', e);
+    return { success: false, error: e.message };
+  }
+}
+
+// ═══ CITY CONFIG ═══
+const CITY_DISCORD = {
+  nyc: ['tanyacurley','margaret.p','lindsey_69123'],
+  toronto: ['tanyacurley','margaret.p','Lawrencekiki']
+};
+const CITY_RATE_URLS = {
+  nyc: 'https://www.notion.so/othership/NYC-Guide-Pay-Rates-4e0be78a144c4f7eb6e7c31800a3e81e',
+  toronto: 'https://www.notion.so/othership/Toronto-Guide-Pay-Rates-0915c64e353c480d9fa35903abc90563'
+};
+const CPR_CONTENT_HTML = {
+  nyc:`<div class="city-block"><strong>New York City</strong><p>CPR certification is <strong>required before you can work on the floor</strong> — due by end of Week 8.</p><p>In the USA it <strong>MUST</strong> be through the Red Cross. The only approved courses are:</p><ul><li><strong>Basic Life Support</strong></li><li><strong>CPR/AED for Professional Rescuers</strong></li></ul><p>Must be <strong>in-person</strong> (a portion may be online). Renewed annually.</p><p>You will be reimbursed for approved courses only. Reimbursement is issued at the <strong>3-month mark</strong> after hire, once onboarding is fully complete.</p><p><a href="https://www.redcross.org/take-a-class/bls?latitude=40.7127753&longitude=-74.0059728&searchtype=class&zip=new%20york%2C%20ny" target="_blank">Book your Red Cross BLS course here →</a></p></div>`,
+  toronto:`<div class="city-block"><strong>Toronto</strong><p>CPR certification is <strong>required before you can work on the floor</strong> — due by end of Week 8.</p><p>Required: <strong>CPR/AED + First Aid</strong>. Must be in-person (a portion may be online).</p><p>You will be reimbursed for your course. Reimbursement is issued at the <strong>3-month mark</strong> after hire, once onboarding is fully complete.</p><p><a href="https://www.c2cfirstaidaquatics.com/toronto/" target="_blank">Book your C2C First Aid course here →</a></p></div>`,
+  default:`<p>Please complete your crew profile and select your city to see specific CPR instructions.</p>`
+};
+const PAYROLL_DATA = {
+  nyc:{sub:'New York City — Employee Payroll (ADP)',content:`<h3>ADP Payroll</h3><p>As a NYC Guide you are an <strong>employee</strong>. Payroll is processed via ADP.</p><ul><li>Ensure all your information is filled out correctly in ADP</li><li>Your punch in/out code can be found in ADP</li><li>Be changed and ready to punch in at your scheduled start time</li><li>For all training, your Lead Guide adds your time directly to ADP — this is how you are paid for training</li></ul><p>Your Guide Contract must be signed ASAP so you can be paid for training.</p>`},
+  toronto:{sub:'Toronto — Contractor Invoicing (7shifts)',content:`<h3>7shifts Invoicing</h3><p>As a Toronto Guide you are a <strong>contractor</strong> — you invoice per ship.</p><ul><li>Bill training, Zoom, and newsletter time to <strong>ADEL or YKVL</strong></li><li>Your punch in numbers are in the 7shifts app (under the app menu)</li><li>Invoice details will be shared in your Discord wave chat</li><li>Your training honorarium will be extended at the end of onboarding</li></ul>`}
+};
+
+// ═══ WEEK DATA ═══
+const WEEKS = [
+  {id:'w1',label:'Week 1',dates:'Nov 30 – Dec 6',tasks:[
+    {id:'profile',name:'Complete your crew profile',desc:'Name, contact details, headshot, uniform sizing, and class preferences.',type:'form',cta:'Open profile form'},
+    {id:'mt-profile',name:'Set up your Mariana Tek account',desc:'Create your Othership booking account or confirm your existing one. You\'ll receive 10 training credits once set up.',type:'modal',modal:'modal-mt',cta:'Set up account'},
+    {id:'discord-join',name:'Join the Othership Discord',desc:'Your main comms hub — all wave announcements, questions, and crew chat live here.',type:'modal',modal:'modal-discord',cta:'Join Discord',badge:'online'},
+    {id:'ff-journeyer',name:'Attend one Free Flow as a Journeyer',desc:'Experience the space from the other side before you guide it. Your 10 Mariana Tek credits cover this booking.',type:'check',badge:'in-ship'},
+    {id:'towel-pickup',name:'Pick up your Guide Towel Waving Towel',desc:'Please pick up your Guide Towel Waving Towel in order to start your Week 1 online training. Pop into the front desk and ask for your Guide Waving Towel — they will hand you your speciality Towel Waving Towel that you are to practice with at home.',type:'check',badge:'in-person'},
+    {id:'training-w1',name:'Training Week 1',desc:'Othership foundations — approx. 50 min. Watch before your Welcome Zoom.',type:'video',cta:'Watch training',badge:'online'},
+  ]},
+  {id:'w2',label:'Week 2',dates:'Dec 7 – Dec 13',tasks:[
+    {id:'welcome-zoom',name:'Welcome Zoom',desc:'Live session with your Lead Guide and cohort. Look out for your Google Calendar invite with details.',type:'check',badge:'online'},
+    {id:'training-w2',name:'Training Week 2',desc:'Free Flow deep dive — approx. 225 min across the week.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'breathwork-journey',name:'Your Breathwork Journey',desc:'Get set up with unlimited access to the Othership Breathwork app. Read the steps and get started.',type:'modal',modal:'modal-breathwork',cta:'Open & read'},
+    {id:'crew-directory',name:'Complete Crew Directory Form',desc:'Fill out the Tally form to be added to the company-wide crew directory.',type:'link',url:'https://tally.so/r/wzjNeZ',cta:'Open Tally form'},
+    {id:'honorary-agreements',name:'Sign Honorary Agreements',desc:'Read and sign the Honorary Agreements to acknowledge the Othership relationship.',type:'modal',modal:'modal-ha',cta:'Read & Sign'},
+    {id:'guide-rate',name:'Review your Guide Rate',desc:'Familiarise yourself with your guide rate and pay structure.',type:'city-link',cta:'Review rates',badge:'notion'},
+    {id:'payroll-setup',name:'Review Payroll Setup',desc:'Understand how you\'ll be paid for shadow shifts and training. Instructions are specific to your city.',type:'payroll',cta:'Review payroll info'},
+    {id:'cpr-signup',name:'Sign up for CPR/AED + First Aid Certification',desc:'Required before you can work on the floor — due by end of Week 8. Read the city-specific instructions.',type:'modal',modal:'modal-cpr',cta:'Read instructions & book'},
+    {id:'ff-signup-1',name:'Sign up for FF Shadow Shift #1',desc:'Sign up via the schedule below. Max 4 guides per slot.',type:'link',url:'https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf',cta:'Open sign-up sheet',badge:'notion'},
+    {id:'crew-sweat',name:'Attend Crew Sweat',desc:'Mandatory in-person session. Look out for your Google Calendar invite with details.',type:'check',badge:'in-ship'},
+  ]},
+  {id:'w3',label:'Week 3',dates:'Dec 14 – Dec 20',tasks:[
+    {id:'training-w3',name:'Training Week 3',desc:'Sound Guide intro and class formats — approx. 395 min across the week.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'dei',name:'Read: Diversity, Equity & Inclusion',desc:'Othership\'s commitment and yours — required reading.',type:'link',url:'https://www.notion.so/othership/Diversity-Equity-and-Inclusion-287271660d72814fbe47c71423951c9d',cta:'Read page',badge:'notion'},
+    {id:'code-conduct',name:'Read: Code of Conduct',desc:'Othership\'s standards on deck before you hit the floor.',type:'modal',modal:'modal-conduct',cta:'Read page'},
+    {id:'contract',name:'Sign your Guide Contract',desc:'Sent via email — sign as soon as possible to ensure you are paid for training.',type:'check'},
+    {id:'ff-shadow-1',name:'Complete FF Shadow Shift #1',desc:'Your first Free Flow observation — approx. 150 min. You are watching the Mentor Guide and asking questions.',type:'check',badge:'in-ship'},
+    {id:'ff-signup-2',name:'Sign up for FF Shadow Shift #2',desc:'Sign up for your next observation via the schedule.',type:'link',url:'https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf',cta:'Open sign-up sheet',badge:'notion'},
+    {id:'towel-training-1',name:'Towel Waving Training #1',desc:'In-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.',type:'check',badge:'in-person'},
+  ]},
+  {id:'w4',label:'Week 4',dates:'Dec 21 – Dec 27',tasks:[
+    {id:'training-w4',name:'Training Week 4',desc:'Advanced Free Flow concepts — approx. 300 min across the week.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'ff-signup-3',name:'Sign up for FF Shadow Shift #3 (Final Observation)',desc:'Book your final Free Flow observation shift.',type:'link',url:'https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf',cta:'Open sign-up sheet',badge:'notion'},
+  ]},
+  {id:'w5',label:'Week 5',dates:'Dec 28 – Jan 3',tasks:[
+    {id:'training-w5',name:'Training Week 5',desc:'Sound Guide advanced — approx. 388 min across the week.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'ff-shadow-2',name:'Complete FF Shadow Shift #2',desc:'Second Free Flow observation — approx. 150 min. You are watching the Mentor and trying certain elements.',type:'check',badge:'in-ship'},
+    {id:'sg-signup-1',name:'Sign up for SG Shadow Shift #1',desc:'Reach out to the Support Guide you\'re shadowing 24 hours before to give them a heads up. Shifts start 30 mins before class start time.',type:'link',url:'https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22',cta:'Open sign-up sheet',badge:'notion'},
+  ]},
+  {id:'w6',label:'Week 6',dates:'Jan 4 – Jan 10',tasks:[
+    {id:'training-w6',name:'Training Week 6',desc:'Class facilitation and guest experience — approx. 111 min.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'ff-shadow-3',name:'Complete FF Shadow Shift #3 (Final Observation)',desc:'Your final Free Flow observation — approx. 150 min. You are acting as a FF Guide; Mentors are observing and giving feedback.',type:'check',badge:'in-ship'},
+    {id:'sg-shadow-1',name:'Complete SG Shadow #1',desc:'First Sound Guide shadow shift — approx. 120 min. Reach out 24 hours before. Shifts start 30 mins before class start time.',type:'check',badge:'in-ship'},
+    {id:'sg-obs-signup-1',name:'Sign up for SG Observation #1',desc:'Book your first Sound Guide observation slot. Only one guide can be observed as SG at a time.',type:'link',url:'https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22',cta:'Open sign-up sheet',badge:'notion'},
+    {id:'towel-training-2',name:'Towel Waving Training #2',desc:'Second in-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.',type:'check',badge:'in-person'},
+  ]},
+  {id:'w7',label:'Week 7',dates:'Jan 11 – Jan 17',tasks:[
+    {id:'training-w7',name:'Training Week 7',desc:'Class mastery and the full guest journey — approx. 174 min.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'sg-obs-1',name:'Complete SG Observation #1',desc:'Your first Sound Guide observation — approx. 120 min. A Mentor will be with you. Shifts start 30 mins before class start time.',type:'check',badge:'in-ship'},
+    {id:'sg-obs-signup-2',name:'Sign up for SG Observation #2',desc:'Book your second Sound Guide observation. Only one guide can be observed at a time.',type:'link',url:'https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22',cta:'Open sign-up sheet',badge:'notion'},
+    {id:'learn-landing',name:'Learn a Landing for In-Person Training',desc:'Prepare your landing for next week\'s crew sweat. Review the landing resources below.',type:'link',url:'https://www.notion.so/othership/FF-Landings-List-fdda5a268213468890db25dd5b429e44',cta:'Open landing resources',badge:'notion'},
+    {id:'privacy',name:'Read: Privacy & Confidentiality at Othership',desc:'Required reading before going floor-ready.',type:'modal',modal:'modal-privacy',cta:'Read page'},
+  ]},
+  {id:'w8',label:'Week 8',dates:'Jan 18 – Jan 24',tasks:[
+    {id:'training-w8',name:'Training Week 8',desc:'Operations, floor mechanics and final prep — approx. 180 min.',type:'video',cta:'Watch training',badge:'online'},
+    {id:'sg-obs-2',name:'Complete SG Observation #2',desc:'Your second Sound Guide observation — approx. 120 min. Shifts start 30 mins before class start time.',type:'check',badge:'in-ship'},
+    {id:'inperson-av',name:'In-Person AV & Landing Training',desc:'Tech training + crew sweat. Come ready with a landing prepared. Look out for your Google Calendar invite with details.',type:'check',badge:'in-ship'},
+    {id:'cpr-upload',name:'Upload CPR/AED + First Aid Certificate',desc:'PDF format only. Uploads directly to your crew card. Must be uploaded before going floor-ready.',type:'cpr-upload',cta:'Upload certificate'},
+    {id:'crew-pass-policy',name:'Read: Crew Pass Booking Policy',desc:'Know the rules before your pass is activated.',type:'modal',modal:'modal-crewpass',cta:'Read policy'},
+    {id:'perks',name:'Othership Team Perks',desc:'Crew pass, F&F passes, and everything that comes with being on the ship.',type:'link',url:'https://www.notion.so/othership/Partner-Perks-e366f32cd98e420ba50975fae48ca462',cta:'View perks',badge:'notion'},
+  ]},
+  {id:'w9',label:'Week 9',dates:'Jan 25 – Jan 31',tasks:[
+    {id:'towel-training-3',name:'Towel Waving Training #3',desc:'Final in-person towel waving technique session — approx. 120 min. Look out for your Google Calendar invite with details.',type:'check',badge:'in-person'},
+    {id:'uniform-pickup',name:'Pick up your uniform',desc:'Collect your Othership uniform from your Lead Guide or Ship Captain.',type:'check',badge:'in-person'},
+    {id:'approved-ff',name:'Approved to work FF + Social Shifts',desc:'Your Lead Guide marks you approved after passing your observations.',type:'check',badge:'in-person'},
+    {id:'approved-sg',name:'Approved to work SG Shifts',desc:'Your Lead Guide marks you approved for Sound Guide shifts.',type:'check',badge:'in-person'},
+  ]},
+  {id:'w9-11',label:'Weeks 9–11',dates:'Jan 25 – Feb 14',tasks:[
+    {id:'tw-kajabi',name:'Towel Waving Training Module',desc:'Online training module to complement your in-person sessions — approx. 134 min.',type:'video',cta:'Watch training',badge:'online'},
+  ]},
+];
+
+// ═══ STATE ═══
+const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{}};
+WEEKS.forEach(w=>w.tasks.forEach(t=>{state.tasks[t.id]=false;}));
+
+// Restore state from localStorage if available
+function restoreState(){
+  try {
+    const saved = localStorage.getItem('othership_guide_state');
+    if(saved){
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+      if(state.guideName){
+        document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
+      }
+      if(state.city){
+        document.getElementById('meta-city').textContent = state.city==='nyc'?'New York City':'Toronto';
+        document.getElementById('cpr-content').innerHTML = CPR_CONTENT_HTML[state.city]||CPR_CONTENT_HTML.default;
+      }
+    }
+  } catch(e){ console.log('No saved state'); }
+}
+
+function saveState(){
+  try {
+    localStorage.setItem('othership_guide_state', JSON.stringify({
+      intakeComplete: state.intakeComplete,
+      guideName: state.guideName,
+      city: state.city,
+      guideEmail: state.guideEmail,
+      notionPageId: state.notionPageId,
+      tasks: state.tasks
+    }));
+  } catch(e){ console.log('Could not save state'); }
+}
+
+// ═══ MANAGER DATA ═══
+const GUIDES_DATA=[
+  {name:'Amanda Test',pct:22,missing:['CPR certificate','Availability form'],status:'needs',discord:'amandalaine',city:'NYC',hireDate:20260421,
+   obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
+  {name:'Kai Osei',pct:22,missing:['CPR certificate','Availability form','Uniform sizes'],status:'needs',discord:'kai_osei',city:'NYC',hireDate:20260420,
+   obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
+  {name:'Priya Mehta',pct:65,missing:['CPR certificate'],status:'track',discord:'priya.m',city:'NYC',
+   obs:{ff:'pass',sg:'pending'},attendance:[true,true,false,false],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:78},{w:'Week 4',p:20}]},
+  {name:'Jordan Blake',pct:45,missing:['CPR certificate','Contract signed'],status:'needs',discord:'jblake_',city:'Toronto',
+   obs:{ff:'pending',sg:'pending'},attendance:[true,false,false,false],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:30},{w:'Week 4',p:0}]},
+  {name:'Sofia Reyes',pct:80,missing:['CPR certificate'],status:'track',discord:'sofiareyes',city:'NYC',
+   obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:65}]},
+  {name:'Marcus Webb',pct:15,missing:['Profile form','CPR certificate','Discord','Availability form'],status:'needs',discord:'marcuswebb',city:'Toronto',hireDate:20260418,
+   obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false],
+   training:[{w:'Week 1',p:60},{w:'Week 2',p:0},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
+  {name:'Anika Patel',pct:100,missing:[],status:'alumni',discord:'anika.p',city:'NYC',hireDate:20260101,
+   obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,true],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
+  {name:'Jordan Lee',pct:100,missing:[],status:'alumni',discord:'jordan.lee',city:'Toronto',hireDate:20260101,
+   obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,true],
+   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
+];
+
+// ═══ INIT ═══
+function init(){
+  restoreState();
+  loadWaveSettings(); // runs in background, non-blocking
+  const today=new Date();
+  document.getElementById('start-date-display').textContent=fmtDate(today);
+  const ci=new Date(today);ci.setMonth(ci.getMonth()+6);
+  document.getElementById('checkin-date-display').textContent=fmtDate(ci);
+  document.getElementById('ha-date').value=today.toISOString().split('T')[0];
+  renderWeeks();
+  renderManagerCards(getFilteredGuides("all"));
+  setTimeout(()=>openModal('modal-intake'),500);
+}
+function fmtDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+
+// ═══ RENDER WEEKS ═══
+function renderWeeks(){
+  const c=document.getElementById('weeks-container');
+  // Save which weeks are currently open
+  const openWeeks = new Set();
+  c.querySelectorAll('.week.open').forEach(w => {
+    const label = w.querySelector('.week-label');
+    if(label) openWeeks.add(label.textContent);
+  });
+
+  const total=WEEKS.reduce((a,w)=>a+w.tasks.length,0);
+  const done=Object.values(state.tasks).filter(Boolean).length;
+  const pct=Math.round((done/total)*100);
+  document.getElementById('main-fill').style.width=pct+'%';
+  document.getElementById('pct-label').textContent=pct+'% complete';
+  c.innerHTML='';
+  WEEKS.forEach((week,idx)=>{
+    const wDone=week.tasks.filter(t=>state.tasks[t.id]).length;
+    const wTotal=week.tasks.length;
+    const isComplete=wDone===wTotal;
+    const prevDone=idx===0||WEEKS.slice(0,idx).every(pw=>pw.tasks.every(t=>state.tasks[t.id]));
+    const isActive=!isComplete&&prevDone;
+    // Keep week open if it was open before, or if it's the active week and nothing was open
+    const wasOpen = openWeeks.has(week.label);
+    const shouldOpen = wasOpen || (isActive && openWeeks.size === 0);
+    const el=document.createElement('div');
+    el.className=`week ${isComplete?'done-week':isActive?'active-week':''} ${shouldOpen?'open':''}`;
+    el.innerHTML=`
+      <div class="week-header" onclick="toggleWeek(this.parentElement)">
+        <div class="week-icon">${isComplete?'✓':idx+1}</div>
+        <div class="week-title-wrap">
+          <div class="week-label">${week.label}</div>
+          <div class="week-dates">${week.dates}</div>
+        </div>
+        <div class="week-tally">${wDone}/${wTotal}</div>
+        <div class="week-chevron">▾</div>
+      </div>
+      <div class="week-tasks">${week.tasks.map(t=>renderTask(t)).join('')}</div>
+    `;
+    c.appendChild(el);
+  });
+}
+
+function renderTask(t){
+  const checked=state.tasks[t.id];
+  const badgeHTML=t.badge?`<span class="badge ${t.badge==='in-ship'?'badge-inship':t.badge==='in-person'?'badge-inperson':t.badge==='online'?'badge-online':'badge-notion'}">${t.badge==='in-ship'?'In-Ship':t.badge==='in-person'?'In-Person':t.badge==='online'?'Online':'Notion'}</span>`:'';
+  let actionHTML='';
+  if(t.type==='form') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">${t.cta}</button></div>`;
+  else if(t.type==='cpr-upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${t.cta}</button></div>`;
+  else if(t.type==='modal') actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${t.cta}</button></div>`;
+  else if(t.type==='payroll') actionHTML=`<div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">${t.cta}</button></div>`;
+  else if(t.type==='link') actionHTML=`<div class="task-action"><a class="btn-sm btn-outline" href="${t.url}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},1500)">${t.cta} →</a></div>`;
+  else if(t.type==='city-link') actionHTML=`<div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">${t.cta} →</button></div>`;
+  else if(t.type==='video') actionHTML=`<div class="task-action"><button class="btn-sm btn-outline" onclick="showToast('Opening training — hosted on Vimeo')">${t.cta} →</button></div>`;
+  return `
+    <div class="task">
+      <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${t.id}')"></div>
+      <div class="task-body">
+        <div class="task-name">${t.name}${badgeHTML}</div>
+        <div class="task-desc">${t.desc}</div>
+        ${actionHTML}
+      </div>
+    </div>
+  `;
+}
+
+function toggleWeek(el){el.classList.toggle('open');}
+const NOTION_SYNC_TASKS = {
+  'contract': 'contract',
+  'towel-pickup': 'towel-pickup',
+  'discord-join': 'discord-join',
+  'honorary-agreements': 'honorary-agreements',
+  'availability': 'availability',
+  'mt-profile': 'mt-profile',
+};
+
+function toggleTask(id){
+  state.tasks[id]=!state.tasks[id];
+  saveState();
+  renderWeeks();
+  if(state.tasks[id]){
+    showToast('Logged — keep the momentum going');
+    if(NOTION_SYNC_TASKS[id] && state.guideEmail && state.city){
+      callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: NOTION_SYNC_TASKS[id] });
+    }
+  }
+}
+function markTask(id){
+  state.tasks[id]=true;
+  saveState();
+  renderWeeks();
+  if(NOTION_SYNC_TASKS[id] && state.guideEmail && state.city){
+    callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: NOTION_SYNC_TASKS[id] });
+  }
+}
+
+// ═══ CITY HELPERS ═══
+function openCityLink(){
+  if(!state.city){showToast('Complete your profile first to see city-specific content');return;}
+  window.open(CITY_RATE_URLS[state.city],'_blank');
+  setTimeout(()=>{markTask('guide-rate');renderWeeks();},1000);
+}
+function openPayroll(){
+  if(!state.city){showToast('Complete your profile first to see payroll info');return;}
+  const d=PAYROLL_DATA[state.city];
+  document.getElementById('payroll-sub').textContent=d.sub;
+  document.getElementById('payroll-content').innerHTML=d.content;
+  openModal('modal-payroll');
+}
+function updateDiscordPanel(){
+  const city=state.city||document.getElementById('f-city')?.value;
+  const users=CITY_DISCORD[city]||[];
+  const el=document.getElementById('discord-usernames');
+  if(el) el.innerHTML=users.map(u=>`<span class="discord-username">@${u}</span>`).join('');
+}
+
+// ═══ HEADSHOT ═══
+function handleHeadshot(input){
+  if(input.files&&input.files[0]){
+    const r=new FileReader();
+    r.onload=e=>{document.getElementById('headshot-preview').innerHTML=`<img src="${e.target.result}" alt="Headshot">`;};
+    r.readAsDataURL(input.files[0]);
+  }
+}
+
+function openIntakeOrProfile(){
+  if(state.intakeComplete){
+    openModal('modal-profile-complete');
+  } else {
+    openModal('modal-intake');
+  }
+}
+function openIntakeForEdit(){
+  closeModal('modal-profile-complete');
+  openModal('modal-intake');
+}
+async function submitIntake(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){showToast('Add your name to continue');return;}
+  const city=document.getElementById('f-city').value;
+  if(!city){showToast('Select your city to continue');return;}
+  const email=document.getElementById('f-email').value.trim();
+  if(!email){showToast('Add your email to continue');return;}
+
+  state.guideName=name;state.city=city;state.guideEmail=email;state.intakeComplete=true;
+  const first=name.split(' ')[0];
+  document.getElementById('guide-first-name').textContent=first;
+  document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
+  state.tasks['profile']=true;
+  document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML[city]||CPR_CONTENT_HTML.default;
+  closeModal('modal-intake');renderWeeks();
+  showToast(`Welcome aboard, ${first} — creating your crew card...`);
+
+  // Fire API call to create or update Notion card
+  const payload = {
+    name,
+    legalName: name,
+    email,
+    phone: document.getElementById('f-phone').value.trim(),
+    gender: document.getElementById('f-gender').value,
+    city,
+    social: document.getElementById('f-social').value.trim(),
+    topSize: document.getElementById('f-top').value,
+    bottomSize: document.getElementById('f-bottom').value,
+    swimType: document.getElementById('f-swimtype').value,
+    swimSize: document.getElementById('f-swim').value,
+    shoeSize: document.getElementById('f-shoe').value.trim(),
+    classes: Array.from(document.querySelectorAll('.class-checkbox:checked')).map(cb=>cb.value),
+    favCategory: document.getElementById('f-fav').value,
+  };
+
+  // If card already exists, update it instead of creating a new one
+  if(state.notionPageId){
+    payload.pageId = state.notionPageId;
+  }
+
+  const result = await callBackend('/api/intake', payload);
+
+  if(result.success){
+    state.notionPageId = result.pageId;
+    saveState();
+    const isUpdate = !!payload.pageId;
+    showToast(isUpdate ? `Crew card updated — changes saved` : `Crew card created in Notion — welcome aboard, ${first}`);
+  } else {
+    console.error('Notion card creation failed:', result.error);
+    saveState();
+    showToast(`Welcome aboard, ${first} — profile saved`);
+  }
+}
+
+// ═══ CPR ═══
+const CPR_FOLDERS = {
+  nyc: 'https://drive.google.com/drive/folders/13DkBCY9iwjPMW0SUX-8SZ9rQwfFt03Fs?usp=sharing',
+  toronto: 'https://drive.google.com/drive/folders/1gU4BexeN3y3zoXXwZxy8wH5AHKGS21lX?usp=sharing'
+};
+
+function openCPRFolder(){
+  const url = CPR_FOLDERS[state.city] || CPR_FOLDERS.nyc;
+  window.open(url, '_blank');
+}
+
+async function confirmCPR(){
+  const expiry = document.getElementById('cpr-expiry').value;
+  if(!expiry){showToast('Please enter your certificate expiry date');return;}
+  state.tasks['cpr-upload']=true;
+  closeModal('modal-cpr-upload');
+  renderWeeks();
+  showToast('CPR certificate confirmed — logged to your Notion card');
+  if(state.guideEmail && state.city){
+    await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
+  }
+}
+
+// ═══ HA ═══
+async function signHA(){
+  const name=document.getElementById('ha-name').value.trim();
+  const date=document.getElementById('ha-date').value;
+  if(!name){showToast('Enter your legal name to sign');return;}
+  if(!date){showToast('Add the date to sign');return;}
+  state.hasSigned=true;state.tasks['honorary-agreements']=true;
+  closeModal('modal-ha');renderWeeks();saveState();
+  showToast(`Signed by ${name} — logged to your crew card`);
+  if(state.guideEmail && state.city){
+    callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: 'honorary-agreements' });
+  }
+}
+
+// ═══ MARIANA TEK ═══
+async function confirmMT(){
+  const mtEmail = document.getElementById('mt-email-input').value.trim();
+  if(!mtEmail){showToast('Please enter your Mariana Tek email');return;}
+  state.mtEmail = mtEmail;
+  saveState();
+  closeModal('modal-mt');
+  markTask('mt-profile');
+  showToast('Mariana Tek confirmed — credits will be added shortly');
+}
+function renderManagerCards(guides){
+  const c=document.getElementById('gcards');c.innerHTML='';
+  guides.forEach((g,gi)=>{
+    const el=document.createElement('div');
+    el.className=`gcard ${g.status}`;el.dataset.status=g.status;
+    const barColor=g.pct===100?'var(--moss)':g.pct>50?'var(--teal)':'#e07a50';
+    const missingHTML=g.missing.length
+      ?`<div class="missing-tags">${g.missing.map(m=>`<span class="mtag">${m}</span>`).join('')}</div>`
+      :`<div style="font-size:12px;color:var(--teal);margin-top:4px;">All tasks complete ✓</div>`;
+
+    const ffStatus=g.obs.ff;const sgStatus=g.obs.sg;
+    const cprOk=!g.missing.includes('CPR certificate');
+    const trainingOk=g.training[2]&&g.training[2].p>=100;
+    const isFloorReady=ffStatus==='pass'&&sgStatus==='pass'&&cprOk&&trainingOk;
+
+    const checklistHTML=`
+      <div class="floor-checklist">
+        <div class="floor-check-item"><div class="floor-check-dot ${trainingOk?'pass':'pending'}"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot ${cprOk?'pass':'fail'}"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot ${ffStatus==='pass'?'pass':ffStatus==='fail'?'fail':'pending'}"></div><span>FF observation passed</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot ${sgStatus==='pass'?'pass':sgStatus==='fail'?'fail':'pending'}"></div><span>SG observation passed</span></div>
+      </div>`;
+
+    const obsHTML=`
+      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
+        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
+        <div class="obs-row">
+          <span class="obs-label">Free Flow Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn ${ffStatus==='pass'?'pass-active':''}" onclick="setObs(${gi},'ff','pass',this)">Pass</button>
+            <button class="obs-btn ${ffStatus==='fail'?'fail-active':''}" onclick="setObs(${gi},'ff','fail',this)">Fail</button>
+          </div>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">SG Final Observation</span>
+          <div class="obs-btns">
+            <button class="obs-btn ${sgStatus==='pass'?'pass-active':''}" onclick="setObs(${gi},'sg','pass',this)">Pass</button>
+            <button class="obs-btn ${sgStatus==='fail'?'fail-active':''}" onclick="setObs(${gi},'sg','fail',this)">Fail</button>
+          </div>
+        </div>
+      </div>`;
+
+    const attendanceHTML=`
+      <div class="attendance-row">
+        <span class="attendance-label">Training days</span>
+        ${[1,2,3,4].map(d=>`<button class="day-btn ${g.attendance[d-1]?'present':''}" onclick="toggleAttendance(${gi},${d-1},this)">D${d}</button>`).join('')}
+      </div>`;
+
+    const trainingHTML=`
+      <div class="training-progress">
+        <div class="training-progress-label">Vimeo training progress</div>
+        ${g.training.map(t=>`
+          <div class="training-week-row">
+            <div class="training-week-name">${t.w}</div>
+            <div class="training-week-bar"><div class="training-week-fill" style="width:${t.p}%"></div></div>
+            <div class="training-week-pct">${t.p}%</div>
+          </div>
+        `).join('')}
+      </div>`;
+
+    const actionsHTML=`
+      <div class="gcard-actions" style="margin-top:10px;">
+        ${g.status!=='done'?`<button class="btn-remind" onclick="openReminderFor('${g.name}',${JSON.stringify(g.missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
+        ${isFloorReady&&g.status!=='done'?`<button class="btn-floor-ready" onclick="markFloorReady(${gi})">✓ Mark floor ready</button>`:''}
+        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
+      </div>`;
+
+    el.innerHTML=`
+      <div class="gcard-top">
+        <div>
+          <div class="gcard-name">${g.name}</div>
+          <div class="gcard-meta">@${g.discord} &nbsp;·&nbsp; ${g.city}</div>
+          ${missingHTML}
+        </div>
+        <div class="gcard-right">
+          <div class="gcard-pct">${g.pct}%</div>
+          <div class="gcard-bar"><div class="gcard-fill" style="width:${g.pct}%;background:${barColor}"></div></div>
+        </div>
+      </div>
+      ${checklistHTML}
+      ${obsHTML}
+      ${attendanceHTML}
+      ${trainingHTML}
+      ${actionsHTML}
+    `;
+    c.appendChild(el);
+  });
+}
+
+function setObs(gi,type,result,btn){
+  GUIDES_DATA[gi].obs[type]=result;
+  btn.parentElement.querySelectorAll('.obs-btn').forEach(b=>{b.classList.remove('pass-active','fail-active');});
+  btn.classList.add(result==='pass'?'pass-active':'fail-active');
+  renderManagerCards(getFilteredGuides(currentFilter));
+  showToast(`${GUIDES_DATA[gi].name} — ${type.toUpperCase()} observation marked ${result}`);
+}
+
+function toggleAttendance(gi,day,btn){
+  GUIDES_DATA[gi].attendance[day]=!GUIDES_DATA[gi].attendance[day];
+  btn.classList.toggle('present');
+}
+
+function markFloorReady(gi){
+  const g=GUIDES_DATA[gi];
+  GUIDES_DATA[gi].status='alumni';GUIDES_DATA[gi].missing=[];GUIDES_DATA[gi].pct=100;
+  const floorReadyGuides=GUIDES_DATA.filter(g=>g.status==='alumni').map(g=>g.name);
+  document.getElementById('floor-notif-sub').textContent=`${g.name} is now floor ready`;
+  document.getElementById('floor-notif-text').textContent=`Hi team! 👋\n\nHere's the list of guides now floor ready (training up to Week 7, CPR valid, Free Flow + SG passed):\n${floorReadyGuides.map(n=>`  · ${n}`).join('\n')}\n\nThey're cleared to start picking up shifts on 7shifts. Mariana Tek crew membership and employee role have been assigned automatically.\n\nThanks!`;
+  openModal('modal-floor-notif');
+  renderManagerCards(getFilteredGuides(currentFilter));
+}
+
+function genAttendanceSummary(){
+  const all4=GUIDES_DATA.filter(g=>g.attendance.every(Boolean)).map(g=>g.name);
+  const day3=GUIDES_DATA.filter(g=>g.attendance.filter(Boolean).length===3).map(g=>g.name);
+  const day2=GUIDES_DATA.filter(g=>g.attendance.filter(Boolean).length===2).map(g=>g.name);
+  const day1=GUIDES_DATA.filter(g=>g.attendance.filter(Boolean).length===1).map(g=>g.name);
+  document.getElementById('attendance-text').textContent=`Hi Margaret,\n\nHere's the attendance summary for the onboarding training days:\n\nPresent for all 4 days: ${all4.length?all4.join(', '):'none'}\nPresent for 3 days: ${day3.length?day3.join(', '):'none'}\nPresent for 2 days: ${day2.length?day2.join(', '):'none'}\nPresent for 1 day: ${day1.length?day1.join(', '):'none'}\n\nThese are ready for payment processing.\nThanks!`;
+  openModal('modal-attendance');
+}
+
+// ── Wave settings (loaded from Notion) ──
+let WAVE_SETTINGS = { NYC: { waveNumber: '', season: '', year: '' }, Toronto: { waveNumber: '', season: '', year: '' } };
+
+function loadWaveSettings(){
+  fetch('https://othership-onboarding-backend.onrender.com/api/wave-settings')
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.success && data.waves){
+        data.waves.forEach(w=>{
+          if(w.city==='NYC') WAVE_SETTINGS.NYC=w;
+          if(w.city==='Toronto') WAVE_SETTINGS.Toronto=w;
+        });
+        const state=JSON.parse(localStorage.getItem('os_guide_state')||'{}');
+        const city=state.city==='toronto'?'Toronto':'NYC';
+        const ws=WAVE_SETTINGS[city];
+        const badge=document.getElementById('wave-badge');
+        if(badge&&ws.waveNumber) badge.innerHTML=`Wave ${ws.waveNumber} &nbsp;&middot;&nbsp; Path 1`;
+        const label=document.getElementById('mgr-city-label');
+        if(label) label.textContent=`Wave ${WAVE_SETTINGS.NYC.waveNumber}/${WAVE_SETTINGS.Toronto.waveNumber} — NYC + Toronto`;
+        const title=document.getElementById('mgr-table-title');
+        if(title) title.textContent=`All guides — Wave ${WAVE_SETTINGS.NYC.waveNumber}/${WAVE_SETTINGS.Toronto.waveNumber}`;
+      }
+    }).catch(e=>console.log('Wave settings not loaded:',e));
+}
+
+async function createWaveChannels(){
+  const city = sessionStorage.getItem('mgr_city');
+  const ws = city === 'toronto' ? WAVE_SETTINGS.Toronto : city === 'nyc' ? WAVE_SETTINGS.NYC : null;
+
+  if(!ws || !ws.waveNumber){
+    showToast('Wave settings not loaded — try again');
+    return;
+  }
+
+  const confirm = window.confirm(`Create Discord channels for Wave ${ws.waveNumber} ${ws.season}?\n\n#wave-${ws.waveNumber}-${ws.year}\n#wave-${ws.waveNumber}-${ws.year}-friendship\n#wave-${ws.waveNumber}-${ws.year}-feedback`);
+  if(!confirm) return;
+
+  showToast('Creating wave channels...');
+  try {
+    const data = await callBackend('/api/discord-create-wave', {
+      waveNumber: ws.waveNumber,
+      year: ws.year,
+      city: city || 'nyc'
+    });
+    if(data.success){
+      showToast(`✓ Channels created + role "${data.roleName}" ready`);
+    } else {
+      showToast('Error: ' + data.error);
+    }
+  } catch(e){
+    showToast('Failed to create channels');
+  }
+}
+
+let currentFilter='all';
+let currentCityFilter='all';
+
+function getFilteredGuides(status){
+  let guides = GUIDES_DATA.slice().sort((a,b)=>(b.hireDate||0)-(a.hireDate||0));
+  if(currentCityFilter==='NYC') guides=guides.filter(g=>g.city==='NYC');
+  if(currentCityFilter==='TO') guides=guides.filter(g=>g.city==='TO'||g.city==='Toronto');
+  if(status==='alumni') return guides.filter(g=>g.status==='alumni');
+  if(status==='all') return guides.filter(g=>g.status!=='alumni');
+  return guides.filter(g=>g.status===status&&g.status!=='alumni');
+}
+
+function filterG(type,btn){
+  currentFilter=type;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
+  renderManagerCards(getFilteredGuides(type));
+}
+
+// ═══ REMINDERS ═══
+let _rg='',_rm=[];
+function openReminderFor(name,missing){_rg=name;_rm=missing;document.getElementById('reminder-sub').textContent=`Personalised nudge for ${name}`;openModal('modal-reminder');genReminder(name,missing);}
+function openReminderAll(){_rg='all';_rm=[];const n=GUIDES_DATA.filter(g=>g.missing.length).length;document.getElementById('reminder-sub').textContent=`Posting to wave channel — ${n} guides have outstanding items`;openModal('modal-reminder');genReminder('all',[]);}
+function genReminder(name,missing){
+  document.getElementById('reminder-text').innerHTML='<span class="loading-dot">Generating message</span>';
+  setTimeout(()=>{
+    let msg;
+    if(name==='all'){
+      const behind=GUIDES_DATA.filter(g=>g.missing.length).map(g=>`@${g.discord}`).join(' ');
+      msg=`Hey team — as we close out this week, a few of you need to catch up before moving forward:\n\n${behind}\n\nHead into your onboarding portal and knock off your remaining tasks as soon as you can so we stay on track together. Any questions drop them here. 💪`;
+    } else {
+      const first=name.split(' ')[0];
+      const list=missing.map(m=>`  · ${m}`).join('\n');
+      msg=`Hey ${first} — quick check-in from your Lead Guide.\n\nYou're making great progress and we're excited to get you on the floor soon. We're still waiting on a couple of things:\n\n${list}\n\nHead into your onboarding portal and knock these off. Any questions — drop them right here. We've got you.`;
+    }
+    document.getElementById('reminder-text').textContent=msg;
+  },1300);
+}
+function submitDiscordUsername(){
+  const username = document.getElementById('discord-username-input').value.trim();
+  if(!username){ showToast('Please enter your Discord username'); return; }
+  // Save to localStorage
+  const state = JSON.parse(localStorage.getItem('os_guide_state')||'{}');
+  state.discordUsername = username;
+  localStorage.setItem('os_guide_state', JSON.stringify(state));
+  // Sync to Notion
+  const email = state.email || '';
+  const city = state.city || 'nyc';
+  if(email) callBackend('/api/task-complete', { email, city, taskId: 'discord-join', discordUsername: username });
+  closeModal('modal-discord');
+  markTask('discord-join');
+  showToast('Discord confirmed — welcome to the crew');
+}
+
+
+async function sendReminder(){
+  const msg = document.getElementById('reminder-text').textContent;
+  if(!msg || msg.includes('Generating')) return showToast('Message still generating — wait a moment');
+
+  if(_rg === 'all'){
+    // DM each guide with outstanding items
+    const behind = GUIDES_DATA.filter(g => g.missing.length);
+    let sent = 0;
+    for(const g of behind){
+      const first = g.name.split(' ')[0];
+      const list = g.missing.map(m => `  · ${m}`).join('\n');
+      const dm = `Hey ${first} — quick check-in from your Lead Guide.\n\nYou're making great progress and we're excited to get you on the floor soon. We're still waiting on a couple of things:\n\n${list}\n\nHead into your onboarding portal and knock these off. Any questions — drop them right here. We've got you.`;
+      try {
+        await callBackend('/api/discord-dm', { discordUsername: g.discord, message: dm });
+        sent++;
+      } catch(e) { console.error(`Failed to DM ${g.discord}:`, e); }
+    }
+    closeModal('modal-reminder');
+    showToast(`DMs sent to ${sent} guide${sent !== 1 ? 's' : ''}`);
+  } else {
+    // DM the specific guide
+    const guide = GUIDES_DATA.find(g => g.name === _rg);
+    if(!guide) return showToast('Guide not found');
+    try {
+      await callBackend('/api/discord-dm', { discordUsername: guide.discord, message: msg });
+      closeModal('modal-reminder');
+      showToast(`DM sent to @${guide.discord}`);
+    } catch(e) {
+      showToast('Failed to send DM — check Discord username');
+    }
+  }
+}
+
+// ═══ UTILS ═══
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='modal-discord') updateDiscordPanel();
+  if(id==='modal-cpr'&&state.city) document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML[state.city]||CPR_CONTENT_HTML.default;
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function switchView(view,e){
+  if(view === 'manager'){
+    if(sessionStorage.getItem('mgr_auth') !== 'yes'){
+      const pw = prompt('Enter manager password:');
+      if(pw === 'OthershipNYC2026'){
+        sessionStorage.setItem('mgr_auth','yes');
+        sessionStorage.setItem('mgr_city','nyc');
+      } else if(pw === 'OthershipTO2026'){
+        sessionStorage.setItem('mgr_auth','yes');
+        sessionStorage.setItem('mgr_city','toronto');
+      } else {
+        showToast('Incorrect password');
+        return;
+      }
+    }
+    // Apply city filter to manager view
+    const city = sessionStorage.getItem('mgr_city');
+    const label = document.getElementById('mgr-city-label');
+    const title = document.getElementById('mgr-table-title');
+    if(city === 'nyc'){
+      if(label) label.textContent = `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} — New York City`;
+      if(title) title.textContent = `NYC Guides — Wave ${WAVE_SETTINGS.NYC.waveNumber}`;
+      currentCityFilter = 'NYC';
+    } else if(city === 'toronto'){
+      if(label) label.textContent = `Wave ${WAVE_SETTINGS.Toronto.waveNumber} ${WAVE_SETTINGS.Toronto.season} — Toronto`;
+      if(title) title.textContent = `Toronto Guides — Wave ${WAVE_SETTINGS.Toronto.waveNumber}`;
+      currentCityFilter = 'TO';
+    } else {
+      currentCityFilter = 'all';
+    }
+    renderManagerCards(getFilteredGuides('all'));
+  }
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  e.target.classList.add('active');
+}
+let _tt;
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+
+init();
+</script>
+
+
+</body></html>
