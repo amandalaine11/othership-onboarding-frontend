@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///Users/amandalaine/Downloads/index_2.html -->
+<!-- saved from url=(0048)file:///Users/amandalaine/Downloads/index_3.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -300,8 +300,8 @@ select.form-input option{background:#271829;}
       <div class="meta-chip"><strong>Guide Level</strong>Navigator A</div>
       <div class="meta-chip"><strong>Guide Path</strong>Path 1 — FF / SG / Social</div>
       <div class="meta-chip"><strong>City</strong><span id="meta-city">New York City</span></div>
-      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">Apr 23, 2026</span></div>
-      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">Oct 23, 2026</span></div>
+      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">Apr 24, 2026</span></div>
+      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">Oct 24, 2026</span></div>
     </div>
   </div>
   <div class="progress-bar-wrap">
@@ -1722,7 +1722,8 @@ select.form-input option{background:#271829;}
     <div class="reminder-preview" id="payroll-report-text" style="min-height:220px;font-size:12px;line-height:1.9;font-family:monospace;"></div>
     <div style="display:flex;gap:10px;margin-top:4px;">
       <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-payroll-report&#39;)">Close</button>
-      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="copyPayrollReport()">📋 Copy report →</button>
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="copyPayrollReport()">📋 Copy text</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="exportPayrollCSV()">⬇ Export CSV</button>
     </div>
   </div>
 </div>
@@ -1863,6 +1864,41 @@ function openPayrollReport() {
 function copyPayrollReport() {
   const text = document.getElementById('payroll-report-text').textContent;
   navigator.clipboard.writeText(text).then(() => showToast('Payroll report copied to clipboard'));
+}
+
+function exportPayrollCSV() {
+  const nycGuides = GUIDES_DATA.filter(g => g.city === 'NYC' && g.status !== 'alumni');
+  const trainingDays = WAVE_SETTINGS.NYC.trainingDays || 2;
+  const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const wave = `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} ${WAVE_SETTINGS.NYC.year}`;
+
+  let csv = `Othership NYC Training Payroll Report\n`;
+  csv += `${wave} | Rate: $${HOURLY_RATE}/hr | Generated: ${today}\n\n`;
+  csv += `Name,Discord,Task Minutes,Training Days Attended,Training Day Minutes,Total Minutes,Total Hours,Total Pay,Notes\n`;
+
+  let grandTotal = 0;
+  nycGuides.forEach(g => {
+    const daysAttended = g.attendance.filter(Boolean).length;
+    const dayMins = daysAttended * TRAINING_DAY_MINUTES;
+    const taskMins = Object.values(TASK_MINUTES).reduce((a,b) => a+b, 0);
+    const totalMins = taskMins + dayMins;
+    const hrs = (totalMins / 60).toFixed(2);
+    const pay = (parseFloat(hrs) * HOURLY_RATE).toFixed(2);
+    grandTotal += parseFloat(pay);
+    csv += `"${g.name}","@${g.discord}",${taskMins},${daysAttended}/${trainingDays},${dayMins},${totalMins},${hrs},$${pay},CPR reimbursement separate\n`;
+  });
+
+  csv += `\nTOTAL,,,,,,,$${grandTotal.toFixed(2)},\n`;
+  csv += `\nNote: CPR reimbursement handled separately at 3-month mark.`;
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Othership_NYC_Payroll_Wave${WAVE_SETTINGS.NYC.waveNumber}_${WAVE_SETTINGS.NYC.year}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded — open in Excel');
 }
 
 // ═══ WEEK DATA ═══
