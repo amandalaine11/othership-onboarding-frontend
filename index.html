@@ -2566,20 +2566,25 @@ let _rg='',_rm=[];
 function openReminderFor(name,missing){_rg=name;_rm=missing;document.getElementById('reminder-sub').textContent=`Personalised nudge for ${name}`;openModal('modal-reminder');genReminder(name,missing);}
 function openReminderAll(){_rg='all';_rm=[];const n=GUIDES_DATA.filter(g=>g.missing.length).length;document.getElementById('reminder-sub').textContent=`Posting to wave channel — ${n} guides have outstanding items`;openModal('modal-reminder');genReminder('all',[]);}
 function regenReminder(){genReminder(_rg,_rm);}
-function genReminder(name,missing){
+function genReminder(name, missing){
   document.getElementById('reminder-text').innerHTML='<span class="loading-dot">Generating message</span>';
-  setTimeout(()=>{
-    let msg;
-    if(name==='all'){
-      const behind=GUIDES_DATA.filter(g=>g.missing.length).map(g=>`@${g.discord}`).join(' ');
-      msg=`Hey team — as we close out this week, a few of you need to catch up before moving forward:\n\n${behind}\n\nHead into your onboarding portal and knock off your remaining tasks as soon as you can so we stay on track together. Any questions drop them here. 💪`;
-    } else {
-      const first=name.split(' ')[0];
-      const list=missing.map(m=>`  · ${m}`).join('\n');
-      msg=`Hey ${first} — quick check-in from your Lead Guide.\n\nYou're making great progress and we're excited to get you on the floor soon. We're still waiting on a couple of things:\n\n${list}\n\nHead into your onboarding portal and knock these off. Any questions — drop them right here. We've got you.`;
-    }
-    document.getElementById('reminder-text').textContent=msg;
-  },1300);
+  const city = sessionStorage.getItem('mgr_city') || 'nyc';
+  const cityLabel = city === 'toronto' ? 'Toronto' : 'NYC';
+  fetch(`${BACKEND}/api/message-templates?type=dm-reminder&city=${cityLabel}`)
+    .then(r=>r.json())
+    .then(data=>{
+      const template = data.templates?.[0]?.message || 'Hey {first_name} — head into your onboarding portal and knock off your outstanding items. We\'ve got you.';
+      const first = name === 'all' ? 'team' : name.split(' ')[0];
+      const list = (missing||[]).map(m=>`  · ${m}`).join('\n');
+      const msg = template
+        .replace('{first_name}', first)
+        .replace('{missing_items}', list)
+        .replace(/\\n/g, '\n');
+      document.getElementById('reminder-text').textContent = msg;
+    })
+    .catch(()=>{
+      document.getElementById('reminder-text').textContent = `Hey ${name.split(' ')[0]} — head into your onboarding portal and knock off your outstanding items. We've got you.`;
+    });
 }
 
 function submitDiscordUsername(){
