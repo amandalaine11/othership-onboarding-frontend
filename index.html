@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_10.html -->
+<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_12.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -286,8 +286,8 @@ select.form-input option{background:#271829;}
 .login-screen{position:fixed;inset:0;background:var(--eggplant);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
 .login-screen.hidden{display:none;}
 .login-box{width:100%;max-width:420px;text-align:center;}
-.login-logo{margin-bottom:48px;}
-.login-logo img{height:60px;width:auto;}
+.login-logo{font-family:var(--font-display);font-size:64px;letter-spacing:0.04em;color:var(--cloud);margin-bottom:48px;}
+.login-logo span{color:var(--lemon);}
 .login-box h2{font-family:var(--font-display);font-size:42px;letter-spacing:0.02em;color:var(--cloud);margin-bottom:8px;line-height:1;}
 .login-box p{font-size:14px;color:rgba(236,232,227,0.45);margin-bottom:32px;font-weight:300;}
 .login-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(236,232,227,0.15);border-radius:10px;padding:14px 18px;color:var(--cloud);font-family:var(--font-body);font-size:15px;outline:none;transition:border-color 0.18s;margin-bottom:12px;}
@@ -314,7 +314,7 @@ select.form-input option{background:#271829;}
 <!-- ══════════ LOGIN SCREEN ══════════ -->
 <div class="login-screen" id="login-screen">
   <div class="login-box">
-    <div class="login-logo"><img src="file:///Users/amandalaine/Downloads/Othership_Wordmark_RGB_Yellow.png" alt="Othership"></div>
+    <div class="login-logo">OTHER<span>SHIP</span></div>
     <h2>Welcome<br>Aboard</h2>
     <p>Enter your email to access your onboarding portal.<br>We'll send you a secure link instantly.</p>
     <input type="email" class="login-input" id="login-email" placeholder="your@email.com" onkeydown="if(event.key===&#39;Enter&#39;)requestMagicLink()">
