@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_12.html -->
+<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_13.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -278,7 +278,22 @@ select.form-input option{background:#271829;}
 .loading-dot::after{content:'…';animation:blink 1.4s steps(3,end) infinite;}
 @keyframes blink{0%{content:'.'}33%{content:'..'}66%,100%{content:'…'}}
 
-/* TOAST */
+/* NEWSLETTER SECTION */
+.newsletter-hero{padding:40px 24px 24px;max-width:680px;margin:0 auto;}
+.newsletter-hero h1{font-family:var(--font-display);font-size:48px;color:var(--cloud);margin-bottom:8px;line-height:1;}
+.newsletter-hero p{font-size:14px;color:rgba(236,232,227,0.5);line-height:1.6;}
+.newsletter-list{max-width:680px;margin:0 auto;padding:0 24px 40px;}
+.newsletter-card{background:rgba(255,255,255,0.04);border:1px solid rgba(236,232,227,0.08);border-radius:14px;padding:20px 24px;margin-bottom:12px;display:flex;align-items:center;gap:16px;}
+.newsletter-card.watched{opacity:0.5;}
+.newsletter-date{font-size:11px;color:var(--lemon);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;min-width:80px;}
+.newsletter-info{flex:1;}
+.newsletter-title{font-size:15px;color:var(--cloud);font-weight:500;margin-bottom:2px;}
+.newsletter-city{font-size:12px;color:rgba(236,232,227,0.4);}
+.newsletter-actions{display:flex;align-items:center;gap:10px;}
+.newsletter-check{width:22px;height:22px;border-radius:50%;border:2px solid rgba(236,232,227,0.2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;}
+.newsletter-check.checked{background:var(--lemon);border-color:var(--lemon);}
+.newsletter-check.checked::after{content:'✓';font-size:11px;color:var(--eggplant);font-weight:700;}
+.newsletter-empty{text-align:center;padding:60px 24px;color:rgba(236,232,227,0.3);font-size:14px;}
 .toast{position:fixed;bottom:28px;right:28px;background:var(--lemon);color:var(--eggplant);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(70px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);max-width:320px;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
 
@@ -329,6 +344,7 @@ select.form-input option{background:#271829;}
   <div class="nav-logo">OTHER<span>SHIP</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchView(&#39;guide&#39;,event)">My Journey</button>
+    <button class="nav-tab" id="newsletter-tab" onclick="switchView(&#39;newsletter&#39;,event)" style="display:none">Newsletters</button>
     <button class="nav-tab" onclick="switchView(&#39;manager&#39;,event)">Manager View</button>
   </div>
 </nav>
@@ -352,6 +368,17 @@ select.form-input option{background:#271829;}
     <div class="progress-track"><div class="progress-fill" id="main-fill" style="width:0%"></div></div>
   </div>
   <div class="weeks" id="weeks-container"></div>
+</div>
+
+<!-- ══════════ NEWSLETTER VIEW ══════════ -->
+<div id="view-newsletter" class="view">
+  <div class="newsletter-hero">
+    <h1>Newsletters<br>&amp; Training</h1>
+    <p>Stay current with bi-monthly newsletters from your lead guide. Watch each video and check it off when done.</p>
+  </div>
+  <div class="newsletter-list" id="newsletter-list">
+    <div class="newsletter-empty">Loading newsletters...</div>
+  </div>
 </div>
 
 <!-- ══════════ MANAGER VIEW ══════════ -->
@@ -1270,6 +1297,62 @@ async function loadProgressFromNotion(email, city){
   }
 }
 
+// ═══ NEWSLETTERS ═══
+let NEWSLETTERS = [];
+
+async function loadNewsletters(){
+  try {
+    const city = state.city === 'toronto' ? 'Toronto' : 'NYC';
+    const res = await fetch(`${BACKEND}/api/newsletters?city=${city}`);
+    const data = await res.json();
+    if(data.success){
+      NEWSLETTERS = data.newsletters;
+      renderNewsletters();
+    }
+  } catch(e){ console.log('Newsletter load error:', e); }
+}
+
+function renderNewsletters(){
+  const container = document.getElementById('newsletter-list');
+  if(!NEWSLETTERS.length){
+    container.innerHTML = '<div class="newsletter-empty">No newsletters yet — check back soon.</div>';
+    return;
+  }
+  const watched = state.newslettersWatched || [];
+  container.innerHTML = NEWSLETTERS.map(n => {
+    const isWatched = watched.includes(n.id);
+    const date = n.releaseDate ? new Date(n.releaseDate).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
+    return `<div class="newsletter-card ${isWatched?'watched':''}">
+      <div class="newsletter-date">${date}</div>
+      <div class="newsletter-info">
+        <div class="newsletter-title">${n.title}</div>
+        <div class="newsletter-city">${n.city}</div>
+      </div>
+      <div class="newsletter-actions">
+        ${n.vimeoUrl ? `<button class="btn-lemon" style="font-size:11px;padding:6px 12px;" onclick="window.open('${n.vimeoUrl}','_blank')">Watch →</button>` : ''}
+        <div class="newsletter-check ${isWatched?'checked':''}" onclick="toggleNewsletter('${n.id}')" title="${isWatched?'Mark unwatched':'Mark watched'}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleNewsletter(id){
+  if(!state.newslettersWatched) state.newslettersWatched = [];
+  const idx = state.newslettersWatched.indexOf(id);
+  if(idx > -1) state.newslettersWatched.splice(idx,1);
+  else state.newslettersWatched.push(id);
+  saveState();
+  renderNewsletters();
+}
+
+function checkFloorReadyStatus(){
+  // Show newsletter tab only if guide is floor ready
+  // For now show it if intakeComplete — will refine with actual floor ready status
+  if(state.intakeComplete){
+    document.getElementById('newsletter-tab').style.display = '';
+  }
+}
+
 // ═══ MANAGER DATA ═══
 const GUIDES_DATA=[
   {name:'Amanda Test',pct:22,missing:['CPR certificate','Availability form'],status:'needs',discord:'amandalaine',city:'NYC',hireDate:20260421,
@@ -1323,6 +1406,8 @@ async function init(){
   }
   loadWaveSettings();
   loadTasksFromNotion();
+  loadNewsletters();
+  checkFloorReadyStatus();
   const today=new Date();
   document.getElementById('start-date-display').textContent=fmtDate(today);
   const ci=new Date(today);ci.setMonth(ci.getMonth()+6);
