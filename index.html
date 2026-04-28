@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_13.html -->
+<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_14.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -278,6 +278,18 @@ select.form-input option{background:#271829;}
 .loading-dot::after{content:'…';animation:blink 1.4s steps(3,end) infinite;}
 @keyframes blink{0%{content:'.'}33%{content:'..'}66%,100%{content:'…'}}
 
+/* NEWSLETTER MANAGER TABLE */
+.nl-mgr-table{width:100%;border-collapse:collapse;margin-top:8px;}
+.nl-mgr-table th{font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.4);padding:8px 12px;text-align:left;border-bottom:1px solid rgba(236,232,227,0.06);}
+.nl-mgr-table td{padding:12px;border-bottom:1px solid rgba(236,232,227,0.04);font-size:13px;color:var(--cloud);}
+.nl-mgr-table tr:hover td{background:rgba(255,255,255,0.02);}
+.nl-status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;}
+.nl-status-dot.watched{background:var(--lemon);}
+.nl-status-dot.unwatched{background:rgba(236,232,227,0.2);}
+.nl-payroll-bar{background:rgba(255,255,255,0.04);border:1px solid rgba(236,232,227,0.08);border-radius:12px;padding:16px 20px;margin-bottom:16px;}
+.nl-payroll-bar h3{font-size:13px;color:var(--cloud);margin-bottom:4px;}
+.nl-payroll-bar p{font-size:12px;color:rgba(236,232,227,0.4);}
+
 /* NEWSLETTER SECTION */
 .newsletter-hero{padding:40px 24px 24px;max-width:680px;margin:0 auto;}
 .newsletter-hero h1{font-family:var(--font-display);font-size:48px;color:var(--cloud);margin-bottom:8px;line-height:1;}
@@ -389,9 +401,9 @@ select.form-input option{background:#271829;}
       <h1>Cohort<br><span>Dashboard</span></h1>
     </div>
     <div class="mgr-actions">
-      <button class="btn-mgr btn-mgr-outline" onclick="openReminderAll()">⚡ Send all reminders</button>
-      <button class="btn-mgr btn-mgr-outline" onclick="openPayrollReport()">💰 NYC Payroll Report</button>
-      <button class="btn-mgr btn-mgr-outline" onclick="createWaveChannels()"># Create wave channels</button>
+      <button class="btn-mgr btn-mgr-outline" id="btn-remind-all" onclick="handleRemindAll()">⚡ Send all reminders</button>
+      <button class="btn-mgr btn-mgr-outline" id="btn-payroll" onclick="handlePayroll()">💰 Payroll Report</button>
+      <button class="btn-mgr btn-mgr-outline" id="btn-wave-channels" onclick="createWaveChannels()"># Create wave channels</button>
       <button class="btn-mgr btn-mgr-primary" onclick="showToast(&#39;Notion sync triggered — cards updating&#39;)">↗ Sync to Notion</button>
     </div>
   </div>
@@ -411,9 +423,11 @@ select.form-input option{background:#271829;}
         <button class="ftab" onclick="filterG(&#39;track&#39;,this)">On track</button>
         <button class="ftab" onclick="filterG(&#39;done&#39;,this)">Floor ready</button>
         <button class="ftab" onclick="filterG(&#39;alumni&#39;,this)">Alumni</button>
+        <button class="ftab" onclick="filterG(&#39;newsletters&#39;,this)">Newsletters</button>
       </div>
     </div>
     <div class="guide-cards" id="gcards"></div>
+    <div id="newsletter-mgr-view" style="display:none"></div>
   </div>
 </div>
 
@@ -1297,6 +1311,106 @@ async function loadProgressFromNotion(email, city){
   }
 }
 
+// ═══ CONTEXT-AWARE MANAGER BUTTONS ═══
+let currentMgrFilter = 'all';
+
+function handleRemindAll(){
+  if(currentMgrFilter === 'newsletters') remindNewsletterBehind();
+  else openReminderAll();
+}
+
+function handlePayroll(){
+  if(currentMgrFilter === 'newsletters') exportNewsletterPayroll();
+  else openPayrollReport();
+}
+
+function remindNewsletterBehind(){
+  // Get latest newsletter
+  if(!NEWSLETTERS.length){ showToast('No newsletters found'); return; }
+  const latest = NEWSLETTERS[0];
+  const behind = GUIDES_DATA.filter(g => g.status === 'alumni' && !(g.newslettersWatched||[]).includes(latest.id));
+  if(!behind.length){ showToast('All guides are up to date ✓'); return; }
+  behind.forEach(g => {
+    if(g.discord){
+      const msg = `Hey ${g.name.split(' ')[0]} — just a reminder to watch the latest Othership newsletter "${latest.title}". Head into your guide portal and check it off when done!`;
+      fetch(`${BACKEND}/api/discord-dm`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ discordUsername: g.discord, message: msg })
+      }).catch(e => console.log('DM error:', e));
+    }
+  });
+  showToast(`Reminders sent to ${behind.length} guide${behind.length>1?'s':''}`);
+}
+
+function exportNewsletterPayroll(){
+  if(!NEWSLETTERS.length){ showToast('No newsletters found'); return; }
+  const latest = NEWSLETTERS[0];
+  const watched = GUIDES_DATA.filter(g => g.status === 'alumni' && (g.newslettersWatched||[]).includes(latest.id));
+  const notWatched = GUIDES_DATA.filter(g => g.status === 'alumni' && !(g.newslettersWatched||[]).includes(latest.id));
+  let report = `NEWSLETTER PAYROLL REPORT\n`;
+  report += `Newsletter: ${latest.title}\n`;
+  report += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+  report += `✓ WATCHED (${watched.length} guides):\n`;
+  watched.forEach(g => report += `  · ${g.name}\n`);
+  report += `\n✗ NOT WATCHED (${notWatched.length} guides):\n`;
+  notWatched.forEach(g => report += `  · ${g.name}\n`);
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(report).then(() => showToast('Payroll report copied to clipboard'));
+
+  // Also CSV export
+  let csv = 'Name,Status,Newsletter\n';
+  watched.forEach(g => csv += `${g.name},Watched,${latest.title}\n`);
+  notWatched.forEach(g => csv += `${g.name},Not Watched,${latest.title}\n`);
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Newsletter_Payroll_${latest.title.replace(/\s+/g,'_')}.csv`;
+  a.click();
+}
+
+function renderNewsletterMgrView(){
+  const container = document.getElementById('newsletter-mgr-view');
+  const activeGuides = GUIDES_DATA.filter(g => g.status === 'alumni');
+
+  if(!NEWSLETTERS.length){
+    container.innerHTML = '<div class="newsletter-empty" style="padding:40px">No newsletters published yet.</div>';
+    return;
+  }
+
+  // Latest newsletter summary
+  const latest = NEWSLETTERS[0];
+  const watchedCount = activeGuides.filter(g => (g.newslettersWatched||[]).includes(latest.id)).length;
+
+  let html = `<div class="nl-payroll-bar">
+    <h3>Latest: ${latest.title}</h3>
+    <p>${watchedCount} of ${activeGuides.length} active guides have watched</p>
+  </div>
+  <table class="nl-mgr-table">
+    <thead><tr>
+      <th>Guide</th>
+      <th>City</th>`;
+
+  NEWSLETTERS.forEach(n => {
+    const date = n.releaseDate ? new Date(n.releaseDate).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : n.title;
+    html += `<th>${date}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  activeGuides.forEach(g => {
+    html += `<tr><td>${g.name}</td><td>${g.city}</td>`;
+    NEWSLETTERS.forEach(n => {
+      const watched = (g.newslettersWatched||[]).includes(n.id);
+      html += `<td><span class="nl-status-dot ${watched?'watched':'unwatched'}"></span>${watched?'Watched':'—'}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
 // ═══ NEWSLETTERS ═══
 let NEWSLETTERS = [];
 
@@ -1816,8 +1930,28 @@ function getFilteredGuides(status){
 
 function filterG(type,btn){
   currentFilter=type;
+  currentMgrFilter=type;
   document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
-  renderManagerCards(getFilteredGuides(type));
+
+  const gcards = document.getElementById('gcards');
+  const nlView = document.getElementById('newsletter-mgr-view');
+  const btnWave = document.getElementById('btn-wave-channels');
+
+  if(type === 'newsletters'){
+    gcards.style.display = 'none';
+    nlView.style.display = 'block';
+    btnWave.style.display = 'none';
+    document.getElementById('btn-remind-all').textContent = '⚡ Remind behind';
+    document.getElementById('btn-payroll').textContent = '💰 Newsletter Payroll';
+    renderNewsletterMgrView();
+  } else {
+    gcards.style.display = '';
+    nlView.style.display = 'none';
+    btnWave.style.display = '';
+    document.getElementById('btn-remind-all').textContent = '⚡ Send all reminders';
+    document.getElementById('btn-payroll').textContent = '💰 Payroll Report';
+    renderManagerCards(getFilteredGuides(type));
+  }
 }
 
 // ═══ REMINDERS ═══
