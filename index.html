@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///Users/amandalaine/Downloads/index_8.html -->
+<!-- saved from url=(0048)file:///Users/amandalaine/Downloads/index_9.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1224,15 +1224,50 @@ function restoreState(){
 
 function saveState(){
   try {
-    localStorage.setItem('othership_guide_state', JSON.stringify({
+    const stateToSave = {
       intakeComplete: state.intakeComplete,
       guideName: state.guideName,
       city: state.city,
       guideEmail: state.guideEmail,
       notionPageId: state.notionPageId,
       tasks: state.tasks
-    }));
+    };
+    localStorage.setItem('othership_guide_state', JSON.stringify(stateToSave));
+    // Sync to Notion in background if guide is logged in and has a profile
+    if(state.guideEmail && state.city && state.intakeComplete){
+      fetch(`${BACKEND}/api/progress/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: state.guideEmail,
+          city: state.city,
+          progress: {
+            tasks: state.tasks,
+            intakeComplete: state.intakeComplete,
+            guideName: state.guideName,
+            notionPageId: state.notionPageId
+          }
+        })
+      }).catch(e => console.log('Notion sync error:', e));
+    }
   } catch(e){ console.log('Could not save state'); }
+}
+
+async function loadProgressFromNotion(email, city){
+  try {
+    const res = await fetch(`${BACKEND}/api/progress/load?email=${encodeURIComponent(email)}&city=${city}`);
+    const data = await res.json();
+    if(data.success && data.progress){
+      // Notion progress takes priority over localStorage
+      if(data.progress.tasks) state.tasks = data.progress.tasks;
+      if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
+      if(data.progress.guideName) state.guideName = data.progress.guideName;
+      if(data.progress.notionPageId) state.notionPageId = data.progress.notionPageId;
+      console.log('Progress loaded from Notion');
+    }
+  } catch(e){
+    console.log('Could not load from Notion, using local:', e);
+  }
 }
 
 // ═══ MANAGER DATA ═══
@@ -1282,6 +1317,10 @@ async function init(){
 
   hideLoginScreen();
   restoreState();
+  // If logged in with email and city, try loading progress from Notion
+  if(state.guideEmail && state.city){
+    await loadProgressFromNotion(state.guideEmail, state.city);
+  }
   loadWaveSettings();
   loadTasksFromNotion();
   const today=new Date();
