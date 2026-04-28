@@ -1,19 +1,30 @@
 <!DOCTYPE html>
-<!-- saved from url=(0048)file:///Users/amandalaine/Downloads/index_4.html -->
+<!-- saved from url=(0048)file:///Users/amandalaine/Downloads/index_5.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Othership — Guide Onboarding</title>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="./index_files/css2" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Lido STF Condensed';
+  src: url('LidoSTFCondensed__1_.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Founders Grotesk';
+  src: url('founders-grotesk-text-web-regular__1_.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+</style>
 <style>
 :root {
   --eggplant:#372338; --cloud:#ECE8E3; --rust:#A24E2B;
   --lemon:#DBF572; --orchid:#CB72C4; --teal:#A7CFC9;
   --moss:#707967; --deep:#261829;
-  --font-display:'Barlow Condensed',sans-serif;
-  --font-body:'DM Sans',sans-serif;
+  --font-display:'Lido STF Condensed',sans-serif;
+  --font-body:'Founders Grotesk',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--eggplant);color:var(--cloud);font-family:var(--font-body);font-size:15px;line-height:1.6;min-height:100vh;}
@@ -271,6 +282,24 @@ select.form-input option{background:#271829;}
 .toast{position:fixed;bottom:28px;right:28px;background:var(--lemon);color:var(--eggplant);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(70px);opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);max-width:320px;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
 
+/* LOGIN SCREEN */
+.login-screen{position:fixed;inset:0;background:var(--eggplant);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-screen.hidden{display:none;}
+.login-box{width:100%;max-width:420px;text-align:center;}
+.login-logo{font-family:var(--font-display);font-size:36px;letter-spacing:0.04em;color:var(--cloud);margin-bottom:48px;}
+.login-logo span{color:var(--lemon);}
+.login-box h2{font-family:var(--font-display);font-size:42px;letter-spacing:0.02em;color:var(--cloud);margin-bottom:8px;line-height:1;}
+.login-box p{font-size:14px;color:rgba(236,232,227,0.45);margin-bottom:32px;font-weight:300;}
+.login-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(236,232,227,0.15);border-radius:10px;padding:14px 18px;color:var(--cloud);font-family:var(--font-body);font-size:15px;outline:none;transition:border-color 0.18s;margin-bottom:12px;}
+.login-input:focus{border-color:var(--lemon);}
+.login-input::placeholder{color:rgba(236,232,227,0.25);}
+.login-btn{width:100%;padding:14px;background:var(--lemon);color:var(--eggplant);border:none;border-radius:10px;font-family:var(--font-display);font-size:22px;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
+.login-btn:hover{background:#cde84e;transform:translateY(-1px);}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.login-sent{display:none;background:rgba(167,207,201,0.1);border:1px solid rgba(167,207,201,0.3);border-radius:12px;padding:24px;margin-top:16px;}
+.login-sent.show{display:block;}
+.login-sent p{color:var(--teal);font-size:14px;line-height:1.6;}
+
 @media(max-width:600px){
   .guide-hero,.weeks,.mgr-header,.stats-row,.table-section{padding-left:18px;padding-right:18px;}
   .guide-hero::after{display:none;}
@@ -281,6 +310,20 @@ select.form-input option{background:#271829;}
 </style>
 </head>
 <body>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">OTHER<span>SHIP</span></div>
+    <h2>Welcome<br>Aboard</h2>
+    <p>Enter your email to access your onboarding portal.<br>We'll send you a secure link instantly.</p>
+    <input type="email" class="login-input" id="login-email" placeholder="your@email.com" onkeydown="if(event.key===&#39;Enter&#39;)requestMagicLink()">
+    <button class="login-btn" id="login-btn" onclick="requestMagicLink()">Begin My Journey →</button>
+    <div class="login-sent" id="login-sent">
+      <p>✓ Magic link sent to <strong id="login-sent-email"></strong><br><br>Check your inbox and click the link to continue. It expires in 15 minutes.</p>
+    </div>
+  </div>
+</div>
 
 <nav class="nav">
   <div class="nav-logo">OTHER<span>SHIP</span></div>
@@ -300,566 +343,15 @@ select.form-input option{background:#271829;}
       <div class="meta-chip"><strong>Guide Level</strong>Navigator A</div>
       <div class="meta-chip"><strong>Guide Path</strong>Path 1 — FF / SG / Social</div>
       <div class="meta-chip"><strong>City</strong><span id="meta-city">New York City</span></div>
-      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">Apr 24, 2026</span></div>
-      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">Oct 24, 2026</span></div>
+      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">Apr 23, 2026</span></div>
+      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">Oct 23, 2026</span></div>
     </div>
   </div>
   <div class="progress-bar-wrap">
-    <div class="progress-label"><span>Onboarding Progress</span><span id="pct-label">2% complete</span></div>
-    <div class="progress-track"><div class="progress-fill" id="main-fill" style="width: 2%;"></div></div>
+    <div class="progress-label"><span>Onboarding Progress</span><span id="pct-label">0% complete</span></div>
+    <div class="progress-track"><div class="progress-fill" id="main-fill" style="width:0%"></div></div>
   </div>
-  <div class="weeks" id="weeks-container"><div class="week active-week open">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">1</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 1</div>
-          <div class="week-dates">Nov 30 – Dec 6</div>
-        </div>
-        <div class="week-tally">1/6</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check checked" onclick="toggleTask(&#39;profile&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete your crew profile</div>
-        <div class="task-desc">Name, contact details, headshot, uniform sizing, and class preferences.</div>
-        <div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">Open profile form</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;mt-profile&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Set up your Mariana Tek account</div>
-        <div class="task-desc">Create your Othership booking account or confirm your existing one. You'll receive 10 training credits once set up.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-mt&#39;)">Set up account</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;discord-join&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Join the Othership Discord<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Your main comms hub — all wave announcements, questions, and crew chat live here.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-discord&#39;)">Join Discord</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-journeyer&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Attend one Free Flow as a Journeyer<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Experience the space from the other side before you guide it. Your 10 Mariana Tek credits cover this booking.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;towel-pickup&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Pick up your Guide Towel Waving Towel<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">Pop into the front desk and ask for your Guide Waving Towel — they will hand you your speciality Towel Waving Towel that you are to practice with at home.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 1<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Othership foundations — approx. 50 min. Watch before your Welcome Zoom.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w1&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">2</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 2</div>
-          <div class="week-dates">Dec 7 – Dec 13</div>
-        </div>
-        <div class="week-tally">0/10</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;welcome-zoom&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Welcome Zoom<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Live session with your Lead Guide and cohort. Look out for your Google Calendar invite with details.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 2<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Free Flow deep dive — approx. 225 min across the week.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w2&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;breathwork-journey&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Your Breathwork Journey</div>
-        <div class="task-desc">Get set up with unlimited access to the Othership Breathwork app. Read the steps and get started.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-breathwork&#39;)">Open &amp; read</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;crew-directory&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete Crew Directory Form</div>
-        <div class="task-desc">Fill out the Tally form to be added to the company-wide crew directory.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://tally.so/r/wzjNeZ" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;crew-directory&#39;);renderWeeks();},1500)">Open Tally form →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;honorary-agreements&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign Honorary Agreements</div>
-        <div class="task-desc">Read and sign the Honorary Agreements to acknowledge the Othership relationship.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-ha&#39;)">Read &amp; Sign</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;guide-rate&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Review your Guide Rate<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Familiarise yourself with your guide rate and pay structure.</div>
-        <div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">Review rates →</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;payroll-setup&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Review Payroll Setup</div>
-        <div class="task-desc">Understand how you'll be paid for shadow shifts and training. Instructions are specific to your city.</div>
-        <div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">Review payroll info</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;cpr-signup&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for CPR/AED + First Aid Certification</div>
-        <div class="task-desc">Required before you can work on the floor — due by end of Week 8. Read the city-specific instructions.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-cpr&#39;)">Read instructions &amp; book</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-signup-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for FF Shadow Shift #1<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Sign up via the schedule below. Max 4 guides per slot.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;ff-signup-1&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;crew-sweat&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Attend Crew Sweat<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Mandatory in-person session. Look out for your Google Calendar invite with details.</div>
-        
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">3</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 3</div>
-          <div class="week-dates">Dec 14 – Dec 20</div>
-        </div>
-        <div class="week-tally">0/7</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w3&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 3<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Sound Guide intro and class formats — approx. 395 min across the week.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w3&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;dei&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Read: Diversity, Equity &amp; Inclusion<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Othership's commitment and yours — required reading.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/Diversity-Equity-and-Inclusion-287271660d72814fbe47c71423951c9d" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;dei&#39;);renderWeeks();},1500)">Read page →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;code-conduct&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Read: Code of Conduct</div>
-        <div class="task-desc">Othership's standards on deck before you hit the floor.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-conduct&#39;)">Read page</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;contract&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign your Guide Contract</div>
-        <div class="task-desc">Sent via email — sign as soon as possible to ensure you are paid for training.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-shadow-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete FF Shadow Shift #1<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Your first Free Flow observation — approx. 150 min. You are watching the Mentor Guide and asking questions.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-signup-2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for FF Shadow Shift #2<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Sign up for your next observation via the schedule.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;ff-signup-2&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;towel-training-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Towel Waving Training #1<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">In-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.</div>
-        
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">4</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 4</div>
-          <div class="week-dates">Dec 21 – Dec 27</div>
-        </div>
-        <div class="week-tally">0/2</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w4&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 4<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Advanced Free Flow concepts — approx. 300 min across the week.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w4&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-signup-3&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for FF Shadow Shift #3 (Final Observation)<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Book your final Free Flow observation shift.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;ff-signup-3&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">5</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 5</div>
-          <div class="week-dates">Dec 28 – Jan 3</div>
-        </div>
-        <div class="week-tally">0/3</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w5&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 5<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Sound Guide advanced — approx. 388 min across the week.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w5&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-shadow-2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete FF Shadow Shift #2<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Second Free Flow observation — approx. 150 min. You are watching the Mentor and trying certain elements.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;sg-signup-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for SG Shadow Shift #1<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Reach out to the Support Guide you're shadowing 24 hours before to give them a heads up.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;sg-signup-1&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">6</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 6</div>
-          <div class="week-dates">Jan 4 – Jan 10</div>
-        </div>
-        <div class="week-tally">0/5</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w6&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 6<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Class facilitation and guest experience — approx. 111 min.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w6&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;ff-shadow-3&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete FF Shadow Shift #3 (Final Observation)<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Your final Free Flow observation — approx. 150 min. You are acting as a FF Guide; Mentors are observing and giving feedback.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;sg-shadow-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete SG Shadow #1<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">First Sound Guide shadow shift — approx. 120 min. Reach out 24 hours before.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;sg-obs-signup-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for SG Observation #1<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Book your first Sound Guide observation slot. Only one guide can be observed as SG at a time.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;sg-obs-signup-1&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;towel-training-2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Towel Waving Training #2<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">Second in-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.</div>
-        
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">7</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 7</div>
-          <div class="week-dates">Jan 11 – Jan 17</div>
-        </div>
-        <div class="week-tally">0/5</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w7&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 7<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Class mastery and the full guest journey — approx. 174 min.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w7&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;sg-obs-1&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete SG Observation #1<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Your first Sound Guide observation — approx. 120 min. A Mentor will be with you.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;sg-obs-signup-2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Sign up for SG Observation #2<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Book your second Sound Guide observation. Only one guide can be observed at a time.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;sg-obs-signup-2&#39;);renderWeeks();},1500)">Open sign-up sheet →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;learn-landing&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Learn a Landing for In-Person Training<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Prepare your landing for next week's crew sweat. Review the landing resources below.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/FF-Landings-List-fdda5a268213468890db25dd5b429e44" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;learn-landing&#39;);renderWeeks();},1500)">Open landing resources →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;privacy&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Read: Privacy &amp; Confidentiality at Othership</div>
-        <div class="task-desc">Required reading before going floor-ready.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-privacy&#39;)">Read page</button></div>
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">8</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 8</div>
-          <div class="week-dates">Jan 18 – Jan 24</div>
-        </div>
-        <div class="week-tally">0/6</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;training-w8&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Training Week 8<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Operations, floor mechanics and final prep — approx. 180 min.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;training-w8&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;sg-obs-2&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Complete SG Observation #2<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Your second Sound Guide observation — approx. 120 min.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;inperson-av&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">In-Person AV &amp; Landing Training<span class="badge badge-inship">In-Ship</span></div>
-        <div class="task-desc">Tech training + crew sweat. Come ready with a landing prepared. Look out for your Google Calendar invite with details.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;cpr-upload&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Upload CPR/AED + First Aid Certificate</div>
-        <div class="task-desc">PDF format only. Uploads directly to your crew card. Must be uploaded before going floor-ready.</div>
-        <div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal(&#39;modal-cpr-upload&#39;)">Upload certificate</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;crew-pass-policy&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Read: Crew Pass Booking Policy</div>
-        <div class="task-desc">Know the rules before your pass is activated.</div>
-        <div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal(&#39;modal-crewpass&#39;)">Read policy</button></div>
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;perks&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Othership Team Perks<span class="badge badge-notion">Notion</span></div>
-        <div class="task-desc">Crew pass, F&amp;F passes, and everything that comes with being on the ship.</div>
-        <div class="task-action"><a class="btn-sm btn-outline" href="https://www.notion.so/othership/Partner-Perks-e366f32cd98e420ba50975fae48ca462" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;perks&#39;);renderWeeks();},1500)">View perks →</a></div>
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">9</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Week 9</div>
-          <div class="week-dates">Jan 25 – Jan 31</div>
-        </div>
-        <div class="week-tally">0/4</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;towel-training-3&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Towel Waving Training #3<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">Final in-person towel waving technique session — approx. 120 min. Look out for your Google Calendar invite with details.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;uniform-pickup&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Pick up your uniform<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">Collect your Othership uniform from your Lead Guide or Ship Captain.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;approved-ff&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Approved to work FF + Social Shifts<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">Your Lead Guide marks you approved after passing your observations.</div>
-        
-      </div>
-    </div>
-  
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;approved-sg&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Approved to work SG Shifts<span class="badge badge-inperson">In-Person</span></div>
-        <div class="task-desc">Your Lead Guide marks you approved for Sound Guide shifts.</div>
-        
-      </div>
-    </div>
-  </div>
-    </div><div class="week  ">
-      <div class="week-header" onclick="toggleWeek(this.parentElement)">
-        <div class="week-icon">10</div>
-        <div class="week-title-wrap">
-          <div class="week-label">Weeks 9–11</div>
-          <div class="week-dates">Jan 25 – Feb 14</div>
-        </div>
-        <div class="week-tally">0/1</div>
-        <div class="week-chevron">▾</div>
-      </div>
-      <div class="week-tasks">
-    <div class="task">
-      <div class="task-check " onclick="toggleTask(&#39;tw-kajabi&#39;)"></div>
-      <div class="task-body">
-        <div class="task-name">Towel Waving Training Module<span class="badge badge-online">Online</span></div>
-        <div class="task-desc">Online training module to complement your in-person sessions — approx. 134 min.</div>
-        <div class="task-action"><a class="btn-sm btn-lemon" href="https://vimeo.com/" target="_blank" onclick="setTimeout(()=&gt;{markTask(&#39;tw-kajabi&#39;);renderWeeks();},2000)">Watch training →</a></div>
-      </div>
-    </div>
-  </div>
-    </div></div>
+  <div class="weeks" id="weeks-container"></div>
 </div>
 
 <!-- ══════════ MANAGER VIEW ══════════ -->
@@ -894,445 +386,7 @@ select.form-input option{background:#271829;}
         <button class="ftab" onclick="filterG(&#39;alumni&#39;,this)">Alumni</button>
       </div>
     </div>
-    <div class="guide-cards" id="gcards"><div class="gcard needs" data-status="needs">
-      <div class="gcard-top">
-        <div>
-          <div class="gcard-name">Amanda Test</div>
-          <div class="gcard-meta">@amandalaine &nbsp;·&nbsp; NYC</div>
-          <div class="missing-tags"><span class="mtag">CPR certificate</span><span class="mtag">Availability form</span></div>
-        </div>
-        <div class="gcard-right">
-          <div class="gcard-pct">22%</div>
-          <div class="gcard-bar"><div class="gcard-fill" style="width:22%;background:#e07a50"></div></div>
-        </div>
-      </div>
-      
-      <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
-        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
-        <div class="obs-row">
-          <span class="obs-label">Free Flow Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(0,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(0,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-        <div class="obs-row">
-          <span class="obs-label">SG Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(0,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(0,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-      </div>
-      <div class="attendance-row">
-        <span class="attendance-label">Training days</span>
-        <button class="day-btn " onclick="toggleAttendance(0,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(0,1,this)">D2</button>
-      </div>
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 1</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 2</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:45%"></div></div>
-            <div class="training-week-pct">45%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 3</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 4</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-      </div>
-      <div class="gcard-actions" style="margin-top:10px;">
-        <button class="btn-remind" onclick="openReminderFor(&#39;Amanda Test&#39;,[&quot;CPR certificate&quot;,&quot;Availability form&quot;])">⚡ Remind</button>
-        
-        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
-      </div>
-    </div><div class="gcard needs" data-status="needs">
-      <div class="gcard-top">
-        <div>
-          <div class="gcard-name">Kai Osei</div>
-          <div class="gcard-meta">@kai_osei &nbsp;·&nbsp; NYC</div>
-          <div class="missing-tags"><span class="mtag">CPR certificate</span><span class="mtag">Availability form</span><span class="mtag">Uniform sizes</span></div>
-        </div>
-        <div class="gcard-right">
-          <div class="gcard-pct">22%</div>
-          <div class="gcard-bar"><div class="gcard-fill" style="width:22%;background:#e07a50"></div></div>
-        </div>
-      </div>
-      
-      <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
-        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
-        <div class="obs-row">
-          <span class="obs-label">Free Flow Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(1,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(1,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-        <div class="obs-row">
-          <span class="obs-label">SG Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(1,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(1,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-      </div>
-      <div class="attendance-row">
-        <span class="attendance-label">Training days</span>
-        <button class="day-btn " onclick="toggleAttendance(1,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(1,1,this)">D2</button>
-      </div>
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 1</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 2</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:45%"></div></div>
-            <div class="training-week-pct">45%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 3</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 4</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-      </div>
-      <div class="gcard-actions" style="margin-top:10px;">
-        <button class="btn-remind" onclick="openReminderFor(&#39;Kai Osei&#39;,[&quot;CPR certificate&quot;,&quot;Availability form&quot;,&quot;Uniform sizes&quot;])">⚡ Remind</button>
-        
-        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
-      </div>
-    </div><div class="gcard needs" data-status="needs">
-      <div class="gcard-top">
-        <div>
-          <div class="gcard-name">Jordan Blake</div>
-          <div class="gcard-meta">@jblake_ &nbsp;·&nbsp; Toronto</div>
-          <div class="missing-tags"><span class="mtag">CPR certificate</span><span class="mtag">Contract signed</span></div>
-        </div>
-        <div class="gcard-right">
-          <div class="gcard-pct">45%</div>
-          <div class="gcard-bar"><div class="gcard-fill" style="width:45%;background:#e07a50"></div></div>
-        </div>
-      </div>
-      
-      <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
-        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
-        <div class="obs-row">
-          <span class="obs-label">Free Flow Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(2,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(2,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-        <div class="obs-row">
-          <span class="obs-label">SG Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(2,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(2,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-      </div>
-      <div class="attendance-row">
-        <span class="attendance-label">Training days</span>
-        <button class="day-btn present" onclick="toggleAttendance(2,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(2,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(2,2,this)">D3</button>
-      </div>
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 1</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 2</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 3</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:30%"></div></div>
-            <div class="training-week-pct">30%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 4</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-      </div>
-      <div class="gcard-actions" style="margin-top:10px;">
-        <button class="btn-remind" onclick="openReminderFor(&#39;Jordan Blake&#39;,[&quot;CPR certificate&quot;,&quot;Contract signed&quot;])">⚡ Remind</button>
-        
-        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
-      </div>
-    </div><div class="gcard needs" data-status="needs">
-      <div class="gcard-top">
-        <div>
-          <div class="gcard-name">Marcus Webb</div>
-          <div class="gcard-meta">@marcuswebb &nbsp;·&nbsp; Toronto</div>
-          <div class="missing-tags"><span class="mtag">Profile form</span><span class="mtag">CPR certificate</span><span class="mtag">Discord</span><span class="mtag">Availability form</span></div>
-        </div>
-        <div class="gcard-right">
-          <div class="gcard-pct">15%</div>
-          <div class="gcard-bar"><div class="gcard-fill" style="width:15%;background:#e07a50"></div></div>
-        </div>
-      </div>
-      
-      <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>FF observation passed</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
-        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
-        <div class="obs-row">
-          <span class="obs-label">Free Flow Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(3,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(3,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-        <div class="obs-row">
-          <span class="obs-label">SG Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(3,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(3,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-      </div>
-      <div class="attendance-row">
-        <span class="attendance-label">Training days</span>
-        <button class="day-btn " onclick="toggleAttendance(3,0,this)">D1</button><button class="day-btn " onclick="toggleAttendance(3,1,this)">D2</button><button class="day-btn " onclick="toggleAttendance(3,2,this)">D3</button>
-      </div>
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 1</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:60%"></div></div>
-            <div class="training-week-pct">60%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 2</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 3</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 4</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:0%"></div></div>
-            <div class="training-week-pct">0%</div>
-          </div>
-        
-      </div>
-      <div class="gcard-actions" style="margin-top:10px;">
-        <button class="btn-remind" onclick="openReminderFor(&#39;Marcus Webb&#39;,[&quot;Profile form&quot;,&quot;CPR certificate&quot;,&quot;Discord&quot;,&quot;Availability form&quot;])">⚡ Remind</button>
-        
-        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
-      </div>
-    </div><div class="gcard track" data-status="track">
-      <div class="gcard-top">
-        <div>
-          <div class="gcard-name">Priya Mehta</div>
-          <div class="gcard-meta">@priya.m &nbsp;·&nbsp; NYC</div>
-          <div class="missing-tags"><span class="mtag">CPR certificate</span></div>
-        </div>
-        <div class="gcard-right">
-          <div class="gcard-pct">65%</div>
-          <div class="gcard-bar"><div class="gcard-fill" style="width:65%;background:var(--teal)"></div></div>
-        </div>
-      </div>
-      
-      <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>Training Week 7 complete</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>FF observation passed</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pending"></div><span>SG observation passed</span></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
-        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
-        <div class="obs-row">
-          <span class="obs-label">Free Flow Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn pass-active" onclick="setObs(4,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(4,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-        <div class="obs-row">
-          <span class="obs-label">SG Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn " onclick="setObs(4,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(4,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-      </div>
-      <div class="attendance-row">
-        <span class="attendance-label">Training days</span>
-        <button class="day-btn present" onclick="toggleAttendance(4,0,this)">D1</button><button class="day-btn present" onclick="toggleAttendance(4,1,this)">D2</button>
-      </div>
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 1</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 2</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 3</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:78%"></div></div>
-            <div class="training-week-pct">78%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 4</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:20%"></div></div>
-            <div class="training-week-pct">20%</div>
-          </div>
-        
-      </div>
-      <div class="gcard-actions" style="margin-top:10px;">
-        <button class="btn-remind" onclick="openReminderFor(&#39;Priya Mehta&#39;,[&quot;CPR certificate&quot;])">⚡ Remind</button>
-        
-        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
-      </div>
-    </div><div class="gcard track" data-status="track">
-      <div class="gcard-top">
-        <div>
-          <div class="gcard-name">Sofia Reyes</div>
-          <div class="gcard-meta">@sofiareyes &nbsp;·&nbsp; NYC</div>
-          <div class="missing-tags"><span class="mtag">CPR certificate</span></div>
-        </div>
-        <div class="gcard-right">
-          <div class="gcard-pct">80%</div>
-          <div class="gcard-bar"><div class="gcard-fill" style="width:80%;background:var(--teal)"></div></div>
-        </div>
-      </div>
-      
-      <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>Training Week 7 complete</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot fail"></div><span>CPR valid</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>FF observation passed</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot pass"></div><span>SG observation passed</span></div>
-      </div>
-      <div style="margin-top:8px;border-top:1px solid rgba(236,232,227,0.06);padding-top:8px;">
-        <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(236,232,227,0.3);margin-bottom:6px;">Observation results</div>
-        <div class="obs-row">
-          <span class="obs-label">Free Flow Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn pass-active" onclick="setObs(5,&#39;ff&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(5,&#39;ff&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-        <div class="obs-row">
-          <span class="obs-label">SG Final Observation</span>
-          <div class="obs-btns">
-            <button class="obs-btn pass-active" onclick="setObs(5,&#39;sg&#39;,&#39;pass&#39;,this)">Pass</button>
-            <button class="obs-btn " onclick="setObs(5,&#39;sg&#39;,&#39;fail&#39;,this)">Fail</button>
-          </div>
-        </div>
-      </div>
-      <div class="attendance-row">
-        <span class="attendance-label">Training days</span>
-        <button class="day-btn present" onclick="toggleAttendance(5,0,this)">D1</button><button class="day-btn present" onclick="toggleAttendance(5,1,this)">D2</button>
-      </div>
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 1</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 2</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 3</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:100%"></div></div>
-            <div class="training-week-pct">100%</div>
-          </div>
-        
-          <div class="training-week-row">
-            <div class="training-week-name">Week 4</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:65%"></div></div>
-            <div class="training-week-pct">65%</div>
-          </div>
-        
-      </div>
-      <div class="gcard-actions" style="margin-top:10px;">
-        <button class="btn-remind" onclick="openReminderFor(&#39;Sofia Reyes&#39;,[&quot;CPR certificate&quot;])">⚡ Remind</button>
-        
-        <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
-      </div>
-    </div></div>
+    <div class="guide-cards" id="gcards"></div>
   </div>
 </div>
 
@@ -1517,7 +571,7 @@ select.form-input option{background:#271829;}
     <button class="modal-close" onclick="closeModal(&#39;modal-cpr&#39;)">×</button>
     <h2>CPR Certification</h2>
     <p class="modal-sub">Required before you can work on the floor. Read the instructions for your city.</p>
-    <div class="content-panel" id="cpr-content"><p>Please complete your crew profile and select your city to see specific CPR instructions.</p></div>
+    <div class="content-panel" id="cpr-content"></div>
     <button class="btn-submit" style="background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);" onclick="closeModal(&#39;modal-cpr&#39;);markTask(&#39;cpr-signup&#39;);showToast(&#39;CPR noted — upload your certificate in Week 8&#39;)">Got it — I'll book my course →</button>
   </div>
 </div>
@@ -1731,6 +785,67 @@ select.form-input option{background:#271829;}
 <div class="toast" id="toast"></div>
 
 <script>
+// ═══ LOGIN / MAGIC LINK ═══
+async function requestMagicLink(){
+  const email = document.getElementById('login-email').value.trim();
+  if(!email || !email.includes('@')){ showToast('Please enter a valid email'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  try {
+    const res = await fetch(`${BACKEND}/api/auth/magic-link`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(data.success){
+      document.getElementById('login-sent-email').textContent = email;
+      document.getElementById('login-sent').classList.add('show');
+      btn.textContent = 'Link sent ✓';
+    } else {
+      showToast('Something went wrong — try again');
+      btn.disabled = false;
+      btn.textContent = 'Begin My Journey →';
+    }
+  } catch(e){
+    showToast('Could not send email — try again');
+    btn.disabled = false;
+    btn.textContent = 'Begin My Journey →';
+  }
+}
+
+async function checkMagicToken(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if(!token) return false;
+  try {
+    const res = await fetch(`${BACKEND}/api/auth/verify?token=${token}`);
+    const data = await res.json();
+    if(data.success){
+      // Save email to state and localStorage
+      state.guideEmail = data.email;
+      localStorage.setItem('othership_guide_email', data.email);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+      return true;
+    }
+  } catch(e){ console.log('Token verify error:', e); }
+  return false;
+}
+
+function isLoggedIn(){
+  return !!(state.guideEmail || localStorage.getItem('othership_guide_email'));
+}
+
+function showLoginScreen(){
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+
+function hideLoginScreen(){
+  document.getElementById('login-screen').classList.add('hidden');
+}
+
 // ═══ BACKEND ═══
 const BACKEND = 'https://othership-onboarding-backend.onrender.com';
 
@@ -2149,7 +1264,23 @@ const GUIDES_DATA=[
 ];
 
 // ═══ INIT ═══
-function init(){
+async function init(){
+  // Check for magic link token in URL first
+  const tokenValid = await checkMagicToken();
+
+  // Restore any saved email
+  if(!state.guideEmail){
+    const savedEmail = localStorage.getItem('othership_guide_email');
+    if(savedEmail) state.guideEmail = savedEmail;
+  }
+
+  // Show login screen if not logged in
+  if(!isLoggedIn()){
+    showLoginScreen();
+    return;
+  }
+
+  hideLoginScreen();
   restoreState();
   loadWaveSettings();
   loadTasksFromNotion();
@@ -2161,7 +1292,11 @@ function init(){
   document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML.default;
   renderWeeks();
   renderManagerCards(getFilteredGuides("all"));
-  setTimeout(()=>openModal('modal-intake'),500);
+
+  // Only show intake modal if profile not yet complete
+  if(!state.intakeComplete){
+    setTimeout(()=>openModal('modal-intake'),500);
+  }
 }
 function fmtDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
