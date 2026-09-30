@@ -1683,8 +1683,7 @@ async function submitIntake(){
   document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
   state.tasks['profile']=true;
   document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML[city]||CPR_CONTENT_HTML.default;
-  closeModal('modal-intake');renderWeeks();
-  showToast(`Welcome aboard, ${first} — creating your crew card...`);
+closeModal('modal-intake');renderWeeks();loadTasksFromNotion();  showToast(`Welcome aboard, ${first} — creating your crew card...`);
   const payload = {
     name, legalName: name, email,
     phone: document.getElementById('f-phone').value.trim(),
