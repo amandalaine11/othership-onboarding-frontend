@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///Users/amandalaine/Downloads/index_15.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -338,13 +337,13 @@ select.form-input option{background:#271829;}
 </head>
 <body>
 
-<!-- ══════════ LOGIN SCREEN ══════════ -->
+<!-- LOGIN SCREEN -->
 <div class="login-screen" id="login-screen">
   <div class="login-box">
     <div class="login-logo">OTHER<span>SHIP</span></div>
     <h2>Welcome<br>Aboard</h2>
     <p>Enter your email to access your onboarding portal.<br>We'll send you a secure link instantly.</p>
-    <input type="email" class="login-input" id="login-email" placeholder="your@email.com" onkeydown="if(event.key===&#39;Enter&#39;)requestMagicLink()">
+    <input type="email" class="login-input" id="login-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')requestMagicLink()">
     <button class="login-btn" id="login-btn" onclick="requestMagicLink()">Begin My Journey →</button>
     <div class="login-sent" id="login-sent">
       <p>✓ Magic link sent to <strong id="login-sent-email"></strong><br><br>Check your inbox and click the link to continue. It expires in 15 minutes.</p>
@@ -355,13 +354,13 @@ select.form-input option{background:#271829;}
 <nav class="nav">
   <div class="nav-logo">OTHER<span>SHIP</span></div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchView(&#39;guide&#39;,event)">My Journey</button>
-    <button class="nav-tab" id="newsletter-tab" onclick="switchView(&#39;newsletter&#39;,event)" style="display:none">Newsletters</button>
-    <button class="nav-tab" onclick="switchView(&#39;manager&#39;,event)">Manager View</button>
+    <button class="nav-tab active" onclick="switchView('guide',event)">My Journey</button>
+    <button class="nav-tab" id="newsletter-tab" onclick="switchView('newsletter',event)" style="display:none">Newsletters</button>
+    <button class="nav-tab" onclick="switchView('manager',event)">Manager View</button>
   </div>
 </nav>
 
-<!-- ══════════ GUIDE VIEW ══════════ -->
+<!-- GUIDE VIEW -->
 <div id="view-guide" class="view active">
   <div class="guide-hero">
     <div class="wave-badge" id="wave-badge">Wave · Path 1</div>
@@ -382,7 +381,7 @@ select.form-input option{background:#271829;}
   <div class="weeks" id="weeks-container"></div>
 </div>
 
-<!-- ══════════ NEWSLETTER VIEW ══════════ -->
+<!-- NEWSLETTER VIEW -->
 <div id="view-newsletter" class="view">
   <div class="newsletter-hero">
     <h1>Newsletters<br>&amp; Training</h1>
@@ -393,7 +392,7 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══════════ MANAGER VIEW ══════════ -->
+<!-- MANAGER VIEW -->
 <div id="view-manager" class="view">
   <div class="mgr-header">
     <div>
@@ -417,12 +416,12 @@ select.form-input option{background:#271829;}
     <div class="table-top">
       <div class="table-title" id="mgr-table-title">All guides — Wave</div>
       <div class="filter-tabs">
-        <button class="ftab active" onclick="filterG(&#39;all&#39;,this)">Active</button>
-        <button class="ftab" onclick="filterG(&#39;needs&#39;,this)">Needs action</button>
-        <button class="ftab" onclick="filterG(&#39;track&#39;,this)">On track</button>
-        <button class="ftab" onclick="filterG(&#39;done&#39;,this)">Floor ready</button>
-        <button class="ftab" onclick="filterG(&#39;alumni&#39;,this)">Alumni</button>
-        <button class="ftab" onclick="filterG(&#39;newsletters&#39;,this)">Newsletters</button>
+        <button class="ftab active" onclick="filterG('all',this)">Active</button>
+        <button class="ftab" onclick="filterG('needs',this)">Needs action</button>
+        <button class="ftab" onclick="filterG('track',this)">On track</button>
+        <button class="ftab" onclick="filterG('done',this)">Floor ready</button>
+        <button class="ftab" onclick="filterG('alumni',this)">Alumni</button>
+        <button class="ftab" onclick="filterG('newsletters',this)">Newsletters</button>
       </div>
     </div>
     <div class="guide-cards" id="gcards"></div>
@@ -430,10 +429,10 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══ PROFILE COMPLETE MODAL ══ -->
+<!-- PROFILE COMPLETE MODAL -->
 <div class="modal-overlay" id="modal-profile-complete">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-profile-complete&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-profile-complete')">×</button>
     <h2>Crew Card Set Up</h2>
     <p class="modal-sub">Your profile is complete and your crew card is live in Notion.</p>
     <div class="content-panel">
@@ -441,20 +440,20 @@ select.form-input option{background:#271829;}
       <p>Your crew card has been created in the Othership Info Directory. Your Lead Guide and team can see your profile.</p>
       <p>Need to update something? Reopen your profile form below — any changes will update your Notion card.</p>
     </div>
-    <button class="btn-submit" onclick="closeModal(&#39;modal-profile-complete&#39;)">Got it →</button>
+    <button class="btn-submit" onclick="closeModal('modal-profile-complete')">Got it →</button>
     <button class="btn-sm btn-outline" style="width:100%;justify-content:center;margin-top:10px;" onclick="openIntakeForEdit()">Update my details →</button>
   </div>
 </div>
 
-<!-- ══ INTAKE FORM ══ -->
+<!-- INTAKE FORM -->
 <div class="modal-overlay" id="modal-intake">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal(&#39;modal-intake&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-intake')">×</button>
     <h2>Set Up Your Crew Card</h2>
     <p class="modal-sub">Takes about 3 minutes. Your info goes straight to your crew card.</p>
     <div class="form-section">Your headshot</div>
     <div class="headshot-wrap">
-      <div class="headshot-preview" id="headshot-preview" onclick="document.getElementById(&#39;headshot-file&#39;).click()">📷</div>
+      <div class="headshot-preview" id="headshot-preview" onclick="document.getElementById('headshot-file').click()">📷</div>
       <div class="headshot-hint"><strong>Upload a headshot</strong>A clear, friendly photo. Click the circle to upload.</div>
     </div>
     <input type="file" id="headshot-file" style="display:none" accept="image/*" onchange="handleHeadshot(this)">
@@ -539,10 +538,10 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══ DISCORD MODAL ══ -->
+<!-- DISCORD MODAL -->
 <div class="modal-overlay" id="modal-discord">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-discord&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-discord')">×</button>
     <h2>Join Discord</h2>
     <p class="modal-sub">Your main comms hub — all wave updates, questions, and crew chat live here.</p>
     <div class="content-panel">
@@ -564,10 +563,10 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══ MT PROFILE MODAL ══ -->
+<!-- MT PROFILE MODAL -->
 <div class="modal-overlay" id="modal-mt">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-mt&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-mt')">×</button>
     <h2>Mariana Tek Account</h2>
     <p class="modal-sub">You'll need an Othership booking account to receive your 10 training credits.</p>
     <div class="content-panel">
@@ -584,10 +583,10 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══ BREATHWORK MODAL ══ -->
+<!-- BREATHWORK MODAL -->
 <div class="modal-overlay" id="modal-breathwork">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal(&#39;modal-breathwork&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-breathwork')">×</button>
     <h2>Your Breathwork Journey</h2>
     <p class="modal-sub">Unlimited access to the Othership Breathwork app — yours from day one.</p>
     <div class="content-panel">
@@ -601,25 +600,25 @@ select.form-input option{background:#271829;}
         <li><a href="https://apps.apple.com/ca/app/othership-guided-breathwork/id1590348936" target="_blank">Download the app →</a></li>
       </ol>
     </div>
-    <button class="btn-submit" onclick="closeModal(&#39;modal-breathwork&#39;);markTask(&#39;breathwork-journey&#39;);showToast(&#39;Breathwork journey — welcome aboard&#39;)">I've read this →</button>
+    <button class="btn-submit" onclick="closeModal('modal-breathwork');markTask('breathwork-journey');showToast('Breathwork journey — welcome aboard')">I've read this →</button>
   </div>
 </div>
 
-<!-- ══ CPR INFO MODAL ══ -->
+<!-- CPR INFO MODAL -->
 <div class="modal-overlay" id="modal-cpr">
   <div class="modal modal-lg">
-    <button class="modal-close" onclick="closeModal(&#39;modal-cpr&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-cpr')">×</button>
     <h2>CPR Certification</h2>
     <p class="modal-sub">Required before you can work on the floor. Read the instructions for your city.</p>
     <div class="content-panel" id="cpr-content"></div>
-    <button class="btn-submit" style="background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);" onclick="closeModal(&#39;modal-cpr&#39;);markTask(&#39;cpr-signup&#39;);showToast(&#39;CPR noted — upload your certificate in Week 8&#39;)">Got it — I'll book my course →</button>
+    <button class="btn-submit" style="background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);" onclick="closeModal('modal-cpr');markTask('cpr-signup');showToast('CPR noted — upload your certificate in Week 8')">Got it — I'll book my course →</button>
   </div>
 </div>
 
-<!-- ══ CPR UPLOAD MODAL ══ -->
+<!-- CPR UPLOAD MODAL -->
 <div class="modal-overlay" id="modal-cpr-upload">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-cpr-upload&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-cpr-upload')">×</button>
     <h2>Upload CPR Certificate</h2>
     <p class="modal-sub">Upload your certificate to the Othership CPR folder on Google Drive.</p>
     <div class="content-panel">
@@ -641,10 +640,10 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══ HONORARY AGREEMENTS ══ -->
+<!-- HONORARY AGREEMENTS -->
 <div class="modal-overlay" id="modal-ha">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal(&#39;modal-ha&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-ha')">×</button>
     <h2>Honorary Agreements</h2>
     <p class="modal-sub">Please read the full agreement before signing.</p>
     <div class="ha-doc">
@@ -680,10 +679,10 @@ select.form-input option{background:#271829;}
   </div>
 </div>
 
-<!-- ══ CREW PASS MODAL ══ -->
+<!-- CREW PASS MODAL -->
 <div class="modal-overlay" id="modal-crewpass">
   <div class="modal modal-lg">
-    <button class="modal-close" onclick="closeModal(&#39;modal-crewpass&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-crewpass')">×</button>
     <h2>Crew Pass Booking Policy</h2>
     <p class="modal-sub">Read carefully — these policies apply to your Crew Unlimited Pass and Friends &amp; Family pass.</p>
     <div class="content-panel">
@@ -695,14 +694,14 @@ select.form-input option{background:#271829;}
       <h4>Late Cancel / No Show Fee</h4><p>A $35 fee applies for late cancels or no-shows.</p>
       <h3>Friends + Fam Pass</h3><p>The same policies apply.</p>
     </div>
-    <button class="btn-submit" onclick="closeModal(&#39;modal-crewpass&#39;);markTask(&#39;crew-pass-policy&#39;);showToast(&#39;Crew Pass Policy confirmed&#39;)">I've read this →</button>
+    <button class="btn-submit" onclick="closeModal('modal-crewpass');markTask('crew-pass-policy');showToast('Crew Pass Policy confirmed')">I've read this →</button>
   </div>
 </div>
 
-<!-- ══ PRIVACY MODAL ══ -->
+<!-- PRIVACY MODAL -->
 <div class="modal-overlay" id="modal-privacy">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal(&#39;modal-privacy&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-privacy')">×</button>
     <h2>Privacy &amp; Confidentiality</h2>
     <p class="modal-sub">Required reading before going floor-ready.</p>
     <div class="content-panel">
@@ -718,14 +717,14 @@ select.form-input option{background:#271829;}
       <h3>Breaches of Confidentiality</h3>
       <p>Any breach may result in immediate offboarding. When in doubt, check with your Lead Guide first.</p>
     </div>
-    <button class="btn-submit" onclick="closeModal(&#39;modal-privacy&#39;);markTask(&#39;privacy&#39;);showToast(&#39;Privacy &amp; Confidentiality confirmed&#39;)">I've read &amp; understood this →</button>
+    <button class="btn-submit" onclick="closeModal('modal-privacy');markTask('privacy');showToast('Privacy &amp; Confidentiality confirmed')">I've read &amp; understood this →</button>
   </div>
 </div>
 
-<!-- ══ CODE OF CONDUCT MODAL ══ -->
+<!-- CODE OF CONDUCT MODAL -->
 <div class="modal-overlay" id="modal-conduct">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal(&#39;modal-conduct&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-conduct')">×</button>
     <h2>Code of Conduct</h2>
     <p class="modal-sub">Othership's standards for every guide, every shift.</p>
     <div class="content-panel">
@@ -747,75 +746,75 @@ select.form-input option{background:#271829;}
         <li>Know the emergency protocols for your location before your first shift.</li>
       </ul>
     </div>
-    <button class="btn-submit" onclick="closeModal(&#39;modal-conduct&#39;);markTask(&#39;code-conduct&#39;);showToast(&#39;Code of Conduct confirmed&#39;)">I've read &amp; understood this →</button>
+    <button class="btn-submit" onclick="closeModal('modal-conduct');markTask('code-conduct');showToast('Code of Conduct confirmed')">I've read &amp; understood this →</button>
   </div>
 </div>
 
-<!-- ══ PAYROLL MODAL ══ -->
+<!-- PAYROLL MODAL -->
 <div class="modal-overlay" id="modal-payroll">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-payroll&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-payroll')">×</button>
     <h2>Payroll Setup</h2>
     <p class="modal-sub" id="payroll-sub">Instructions for your city.</p>
     <div class="content-panel" id="payroll-content"></div>
-    <button class="btn-submit" onclick="closeModal(&#39;modal-payroll&#39;);showToast(&#39;Payroll info noted — questions in Discord&#39;)">Got it →</button>
+    <button class="btn-submit" onclick="closeModal('modal-payroll');showToast('Payroll info noted — questions in Discord')">Got it →</button>
   </div>
 </div>
 
-<!-- ══ FLOOR READY NOTIFICATION MODAL ══ -->
+<!-- FLOOR READY NOTIFICATION MODAL -->
 <div class="modal-overlay" id="modal-floor-notif">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-floor-notif&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-floor-notif')">×</button>
     <h2>Floor Ready Notification</h2>
     <p class="modal-sub" id="floor-notif-sub">Message for Margaret + Lead Guides.</p>
     <div class="discord-tag">⚡ Group chat message preview</div>
     <div class="reminder-preview" id="floor-notif-text"></div>
     <div style="display:flex;gap:10px">
-      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-floor-notif&#39;)">Close</button>
-      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal(&#39;modal-floor-notif&#39;);showToast(&#39;Message sent to Margaret + Lead Guides&#39;)">Send to group →</button>
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-floor-notif')">Close</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal('modal-floor-notif');showToast('Message sent to Margaret + Lead Guides')">Send to group →</button>
     </div>
   </div>
 </div>
 
-<!-- ══ ATTENDANCE SUMMARY MODAL ══ -->
+<!-- ATTENDANCE SUMMARY MODAL -->
 <div class="modal-overlay" id="modal-attendance">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-attendance&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-attendance')">×</button>
     <h2>Attendance Summary</h2>
     <p class="modal-sub">End-of-onboarding summary for Margaret.</p>
     <div class="discord-tag">⚡ Message for Margaret</div>
     <div class="reminder-preview" id="attendance-text"></div>
     <div style="display:flex;gap:10px">
-      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-attendance&#39;)">Close</button>
-      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal(&#39;modal-attendance&#39;);showToast(&#39;Attendance summary sent to Margaret&#39;)">Send to Margaret →</button>
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-attendance')">Close</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal('modal-attendance');showToast('Attendance summary sent to Margaret')">Send to Margaret →</button>
     </div>
   </div>
 </div>
 
-<!-- ══ REMINDER MODAL ══ -->
+<!-- REMINDER MODAL -->
 <div class="modal-overlay" id="modal-reminder">
   <div class="modal modal-sm">
-    <button class="modal-close" onclick="closeModal(&#39;modal-reminder&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-reminder')">×</button>
     <h2>Discord Reminder</h2>
     <p class="modal-sub" id="reminder-sub">AI-generated, Othership-voiced nudge.</p>
     <div class="discord-tag">💬 Discord DM preview</div>
     <div class="reminder-preview" id="reminder-text"><span class="loading-dot">Generating message</span></div>
     <div style="display:flex;gap:10px">
-      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-reminder&#39;)">Close</button>
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-reminder')">Close</button>
       <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="sendReminder()">Send DM →</button>
     </div>
   </div>
 </div>
 
-<!-- ══ NYC PAYROLL REPORT MODAL ══ -->
+<!-- NYC PAYROLL REPORT MODAL -->
 <div class="modal-overlay" id="modal-payroll-report">
   <div class="modal modal-lg">
-    <button class="modal-close" onclick="closeModal(&#39;modal-payroll-report&#39;)">×</button>
+    <button class="modal-close" onclick="closeModal('modal-payroll-report')">×</button>
     <h2>NYC Payroll Report</h2>
     <p class="modal-sub" id="payroll-report-sub">Training pay at $16/hr</p>
     <div class="reminder-preview" id="payroll-report-text" style="min-height:220px;font-size:12px;line-height:1.9;font-family:monospace;"></div>
     <div style="display:flex;gap:10px;margin-top:4px;">
-      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal(&#39;modal-payroll-report&#39;)">Close</button>
+      <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-payroll-report')">Close</button>
       <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="copyPayrollReport()">📋 Copy text</button>
       <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="exportPayrollCSV()">⬇ Export CSV</button>
     </div>
@@ -825,7 +824,7 @@ select.form-input option{background:#271829;}
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══ LOGIN / MAGIC LINK ═══
+// LOGIN / MAGIC LINK
 async function requestMagicLink(){
   const email = document.getElementById('login-email').value.trim();
   if(!email || !email.includes('@')){ showToast('Please enter a valid email'); return; }
@@ -863,10 +862,8 @@ async function checkMagicToken(){
     const res = await fetch(`${BACKEND}/api/auth/verify?token=${token}`);
     const data = await res.json();
     if(data.success){
-      // Save email to state and localStorage
       state.guideEmail = data.email;
       localStorage.setItem('othership_guide_email', data.email);
-      // Clean URL
       window.history.replaceState({}, '', window.location.pathname);
       return true;
     }
@@ -886,7 +883,7 @@ function hideLoginScreen(){
   document.getElementById('login-screen').classList.add('hidden');
 }
 
-// ═══ BACKEND ═══
+// BACKEND
 const BACKEND = 'https://othership-onboarding-backend.onrender.com';
 
 async function callBackend(endpoint, data, method) {
@@ -902,7 +899,7 @@ async function callBackend(endpoint, data, method) {
   }
 }
 
-// ═══ CITY CONFIG ═══
+// CITY CONFIG
 const CITY_DISCORD = {
   nyc: ['tanyacurley','margaret.p','lindsey_69123'],
   toronto: ['tanyacurley','margaret.p','Lawrencekiki']
@@ -921,45 +918,19 @@ const PAYROLL_DATA = {
   toronto:{sub:'Toronto — Contractor Invoicing (7shifts)',content:`<h3>7shifts Invoicing</h3><p>As a Toronto Guide you are a <strong>contractor</strong> — you invoice per ship.</p><ul><li>Bill training, Zoom, and newsletter time to <strong>ADEL or YKVL</strong></li><li>Your punch in numbers are in the 7shifts app</li><li>Your training honorarium will be extended at the end of onboarding</li></ul>`}
 };
 
-// ═══ PAYROLL CONSTANTS ═══
 const HOURLY_RATE = 16;
 const TRAINING_DAY_MINUTES = 480;
 
-// Minutes per task — matches Notion "Min to Complete" field
 const TASK_MINUTES = {
-  'profile': 5,
-  'mt-profile': 3,
-  'discord-join': 3,
-  'vimeo-account': 3,
-  'training-w1': 50,
-  'sign-contract': 5,
-  'honorary-agreements': 3,
-  'availability': 5,
-  'training-w2': 225,
-  'welcome-zoom': 120,
-  'breathwork-journey': 5,
-  'training-w3': 395,
-  'training-w4': 300,
-  'training-w5': 388,
-  'ff-shadow-1': 150,
-  'ff-shadow-2': 150,
-  'ff-shadow-3': 150,
-  'training-w6': 111,
-  'sg-shadow-1': 120,
-  'sg-obs-1': 120,
-  'sg-obs-2': 120,
-  'training-w7': 174,
-  'training-w8': 180,
-  'tw-kajabi': 134,
-  'crew-sweat': 90,
-  'code-conduct': 5,
-  'dei': 5,
-  'learn-landing': 30,
-  'crew-pass-policy': 5,
-  'privacy': 5,
+  'profile': 5,'mt-profile': 3,'discord-join': 3,'vimeo-account': 3,'training-w1': 50,
+  'sign-contract': 5,'honorary-agreements': 3,'availability': 5,'training-w2': 225,
+  'welcome-zoom': 120,'breathwork-journey': 5,'training-w3': 395,'training-w4': 300,
+  'training-w5': 388,'ff-shadow-1': 150,'ff-shadow-2': 150,'ff-shadow-3': 150,
+  'training-w6': 111,'sg-shadow-1': 120,'sg-obs-1': 120,'sg-obs-2': 120,
+  'training-w7': 174,'training-w8': 180,'tw-kajabi': 134,'crew-sweat': 90,
+  'code-conduct': 5,'dei': 5,'learn-landing': 30,'crew-pass-policy': 5,'privacy': 5,
 };
 
-// Pay period groupings (biweekly for NYC)
 const PAY_PERIODS = [
   { label: 'Pay Period 1 — Weeks 1–2', taskIds: ['profile','mt-profile','discord-join','vimeo-account','training-w1','welcome-zoom','training-w2','breathwork-journey','honorary-agreements','availability','crew-sweat'] },
   { label: 'Pay Period 2 — Weeks 3–4', taskIds: ['training-w3','dei','code-conduct','sign-contract','ff-shadow-1','training-w4'] },
@@ -978,40 +949,30 @@ function openPayrollReport() {
   const nycGuides = GUIDES_DATA.filter(g => g.city === 'NYC' && g.status !== 'alumni');
   const trainingDays = WAVE_SETTINGS.NYC.trainingDays || 2;
   const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-
   let report = `OTHERSHIP NYC — TRAINING PAYROLL REPORT\n`;
   report += `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} ${WAVE_SETTINGS.NYC.year}\n`;
   report += `Rate: $${HOURLY_RATE}/hr  |  Generated: ${today}\n`;
   report += `${'─'.repeat(52)}\n\n`;
-
   let grandTotal = 0;
-
   nycGuides.forEach(g => {
     const daysAttended = g.attendance.filter(Boolean).length;
     const dayMins = daysAttended * TRAINING_DAY_MINUTES;
-
-    // Sum all task minutes
     let taskMins = 0;
     Object.values(TASK_MINUTES).forEach(m => taskMins += m);
-
     const totalMins = taskMins + dayMins;
     const { hrs, pay } = minsToHrsPay(totalMins);
     grandTotal += parseFloat(pay);
-
     report += `${g.name} (@${g.discord})\n`;
     report += `  Online & admin tasks:   ${taskMins} min\n`;
     report += `  In-person training days: ${daysAttended}/${trainingDays} days (${dayMins} min)\n`;
     report += `  ─────────────────────────────────────\n`;
     report += `  TOTAL: ${hrs} hrs × $${HOURLY_RATE} = $${pay}\n\n`;
   });
-
   report += `${'═'.repeat(52)}\n`;
   report += `TOTAL PAYROLL THIS WAVE: $${grandTotal.toFixed(2)}\n`;
   report += `NYC Guides included: ${nycGuides.length}\n`;
   report += `\nNote: CPR reimbursement handled separately at 3-month mark.`;
-
-  document.getElementById('payroll-report-sub').textContent =
-    `Wave ${WAVE_SETTINGS.NYC.waveNumber} — ${nycGuides.length} NYC guides — $${grandTotal.toFixed(2)} total`;
+  document.getElementById('payroll-report-sub').textContent = `Wave ${WAVE_SETTINGS.NYC.waveNumber} — ${nycGuides.length} NYC guides — $${grandTotal.toFixed(2)} total`;
   document.getElementById('payroll-report-text').textContent = report;
   openModal('modal-payroll-report');
 }
@@ -1026,11 +987,9 @@ function exportPayrollCSV() {
   const trainingDays = WAVE_SETTINGS.NYC.trainingDays || 2;
   const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const wave = `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} ${WAVE_SETTINGS.NYC.year}`;
-
   let csv = `Othership NYC Training Payroll Report\n`;
   csv += `${wave} | Rate: $${HOURLY_RATE}/hr | Generated: ${today}\n\n`;
   csv += `Name,Discord,Task Minutes,Training Days Attended,Training Day Minutes,Total Minutes,Total Hours,Total Pay,Notes\n`;
-
   let grandTotal = 0;
   nycGuides.forEach(g => {
     const daysAttended = g.attendance.filter(Boolean).length;
@@ -1042,10 +1001,8 @@ function exportPayrollCSV() {
     grandTotal += parseFloat(pay);
     csv += `"${g.name}","@${g.discord}",${taskMins},${daysAttended}/${trainingDays},${dayMins},${totalMins},${hrs},$${pay},CPR reimbursement separate\n`;
   });
-
   csv += `\nTOTAL,,,,,,,$${grandTotal.toFixed(2)},\n`;
   csv += `\nNote: CPR reimbursement handled separately at 3-month mark.`;
-
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1056,104 +1013,36 @@ function exportPayrollCSV() {
   showToast('CSV downloaded — open in Excel');
 }
 
-// ═══ WEEK DATA ═══
+// WEEK DATA (fallback defaults)
 const WEEKS = [
-  {id:'w1',label:'Week 1',dates:'Nov 30 – Dec 6',tasks:[
+  {id:'w1',label:'Week 1',dates:'',tasks:[
     {id:'profile',name:'Complete your crew profile',desc:'Name, contact details, headshot, uniform sizing, and class preferences.',type:'form',cta:'Open profile form'},
-    {id:'mt-profile',name:'Set up your Mariana Tek account',desc:"Create your Othership booking account or confirm your existing one. You'll receive 10 training credits once set up.",type:'modal',modal:'modal-mt',cta:'Set up account'},
-    {id:'discord-join',name:'Join the Othership Discord',desc:'Your main comms hub — all wave announcements, questions, and crew chat live here.',type:'modal',modal:'modal-discord',cta:'Join Discord',badge:'online'},
-    {id:'ff-journeyer',name:'Attend one Free Flow as a Journeyer',desc:'Experience the space from the other side before you guide it. Your 10 Mariana Tek credits cover this booking.',type:'check',badge:'in-ship'},
-    {id:'towel-pickup',name:'Pick up your Guide Towel Waving Towel',desc:'Pop into the front desk and ask for your Guide Waving Towel — they will hand you your speciality Towel Waving Towel that you are to practice with at home.',type:'check',badge:'in-person'},
-    {id:'training-w1',name:'Training Week 1',desc:'Othership foundations — approx. 50 min. Watch before your Welcome Zoom.',type:'video',cta:'Watch training',badge:'online'},
-  ]},
-  {id:'w2',label:'Week 2',dates:'Dec 7 – Dec 13',tasks:[
-    {id:'welcome-zoom',name:'Welcome Zoom',desc:'Live session with your Lead Guide and cohort. Look out for your Google Calendar invite with details.',type:'check',badge:'online'},
-    {id:'training-w2',name:'Training Week 2',desc:'Free Flow deep dive — approx. 225 min across the week.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'breathwork-journey',name:'Your Breathwork Journey',desc:'Get set up with unlimited access to the Othership Breathwork app. Read the steps and get started.',type:'modal',modal:'modal-breathwork',cta:'Open & read'},
-    {id:'crew-directory',name:'Complete Crew Directory Form',desc:'Fill out the Tally form to be added to the company-wide crew directory.',type:'link',url:'https://tally.so/r/wzjNeZ',cta:'Open Tally form'},
-    {id:'honorary-agreements',name:'Sign Honorary Agreements',desc:'Read and sign the Honorary Agreements to acknowledge the Othership relationship.',type:'modal',modal:'modal-ha',cta:'Read & Sign'},
-    {id:'guide-rate',name:'Review your Guide Rate',desc:'Familiarise yourself with your guide rate and pay structure.',type:'city-link',cta:'Review rates',badge:'notion'},
-    {id:'payroll-setup',name:'Review Payroll Setup',desc:"Understand how you'll be paid for shadow shifts and training. Instructions are specific to your city.",type:'payroll',cta:'Review payroll info'},
-    {id:'cpr-signup',name:'Sign up for CPR/AED + First Aid Certification',desc:'Required before you can work on the floor — due by end of Week 8. Read the city-specific instructions.',type:'modal',modal:'modal-cpr',cta:'Read instructions & book'},
-    {id:'ff-signup-1',name:'Sign up for FF Shadow Shift #1',desc:'Sign up via the schedule below. Max 4 guides per slot.',type:'link',url:'https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf',cta:'Open sign-up sheet',badge:'notion'},
-    {id:'crew-sweat',name:'Attend Crew Sweat',desc:'Mandatory in-person session. Look out for your Google Calendar invite with details.',type:'check',badge:'in-ship'},
-  ]},
-  {id:'w3',label:'Week 3',dates:'Dec 14 – Dec 20',tasks:[
-    {id:'training-w3',name:'Training Week 3',desc:'Sound Guide intro and class formats — approx. 395 min across the week.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'dei',name:'Read: Diversity, Equity & Inclusion',desc:"Othership's commitment and yours — required reading.",type:'link',url:'https://www.notion.so/othership/Diversity-Equity-and-Inclusion-287271660d72814fbe47c71423951c9d',cta:'Read page',badge:'notion'},
-    {id:'code-conduct',name:'Read: Code of Conduct',desc:"Othership's standards on deck before you hit the floor.",type:'modal',modal:'modal-conduct',cta:'Read page'},
-    {id:'contract',name:'Sign your Guide Contract',desc:'Sent via email — sign as soon as possible to ensure you are paid for training.',type:'check'},
-    {id:'ff-shadow-1',name:'Complete FF Shadow Shift #1',desc:'Your first Free Flow observation — approx. 150 min. You are watching the Mentor Guide and asking questions.',type:'check',badge:'in-ship'},
-    {id:'ff-signup-2',name:'Sign up for FF Shadow Shift #2',desc:'Sign up for your next observation via the schedule.',type:'link',url:'https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf',cta:'Open sign-up sheet',badge:'notion'},
-    {id:'towel-training-1',name:'Towel Waving Training #1',desc:'In-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.',type:'check',badge:'in-person'},
-  ]},
-  {id:'w4',label:'Week 4',dates:'Dec 21 – Dec 27',tasks:[
-    {id:'training-w4',name:'Training Week 4',desc:'Advanced Free Flow concepts — approx. 300 min across the week.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'ff-signup-3',name:'Sign up for FF Shadow Shift #3 (Final Observation)',desc:'Book your final Free Flow observation shift.',type:'link',url:'https://www.notion.so/othership/FF-S-Shadow-Observation-Schedule-145271660d72802f81afc7cea3a683cf',cta:'Open sign-up sheet',badge:'notion'},
-  ]},
-  {id:'w5',label:'Week 5',dates:'Dec 28 – Jan 3',tasks:[
-    {id:'training-w5',name:'Training Week 5',desc:'Sound Guide advanced — approx. 388 min across the week.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'ff-shadow-2',name:'Complete FF Shadow Shift #2',desc:'Second Free Flow observation — approx. 150 min. You are watching the Mentor and trying certain elements.',type:'check',badge:'in-ship'},
-    {id:'sg-signup-1',name:'Sign up for SG Shadow Shift #1',desc:"Reach out to the Support Guide you're shadowing 24 hours before to give them a heads up.",type:'link',url:'https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22',cta:'Open sign-up sheet',badge:'notion'},
-  ]},
-  {id:'w6',label:'Week 6',dates:'Jan 4 – Jan 10',tasks:[
-    {id:'training-w6',name:'Training Week 6',desc:'Class facilitation and guest experience — approx. 111 min.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'ff-shadow-3',name:'Complete FF Shadow Shift #3 (Final Observation)',desc:'Your final Free Flow observation — approx. 150 min. You are acting as a FF Guide; Mentors are observing and giving feedback.',type:'check',badge:'in-ship'},
-    {id:'sg-shadow-1',name:'Complete SG Shadow #1',desc:'First Sound Guide shadow shift — approx. 120 min. Reach out 24 hours before.',type:'check',badge:'in-ship'},
-    {id:'sg-obs-signup-1',name:'Sign up for SG Observation #1',desc:'Book your first Sound Guide observation slot. Only one guide can be observed as SG at a time.',type:'link',url:'https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22',cta:'Open sign-up sheet',badge:'notion'},
-    {id:'towel-training-2',name:'Towel Waving Training #2',desc:'Second in-person technique session — approx. 120 min. Look out for your Google Calendar invite with details.',type:'check',badge:'in-person'},
-  ]},
-  {id:'w7',label:'Week 7',dates:'Jan 11 – Jan 17',tasks:[
-    {id:'training-w7',name:'Training Week 7',desc:'Class mastery and the full guest journey — approx. 174 min.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'sg-obs-1',name:'Complete SG Observation #1',desc:'Your first Sound Guide observation — approx. 120 min. A Mentor will be with you.',type:'check',badge:'in-ship'},
-    {id:'sg-obs-signup-2',name:'Sign up for SG Observation #2',desc:'Book your second Sound Guide observation. Only one guide can be observed at a time.',type:'link',url:'https://www.notion.so/othership/SG-Shadow-Observation-Schedule-1d2271660d7280328858caf870f0dd22',cta:'Open sign-up sheet',badge:'notion'},
-    {id:'learn-landing',name:'Learn a Landing for In-Person Training',desc:"Prepare your landing for next week's crew sweat. Review the landing resources below.",type:'link',url:'https://www.notion.so/othership/FF-Landings-List-fdda5a268213468890db25dd5b429e44',cta:'Open landing resources',badge:'notion'},
-    {id:'privacy',name:'Read: Privacy & Confidentiality at Othership',desc:'Required reading before going floor-ready.',type:'modal',modal:'modal-privacy',cta:'Read page'},
-  ]},
-  {id:'w8',label:'Week 8',dates:'Jan 18 – Jan 24',tasks:[
-    {id:'training-w8',name:'Training Week 8',desc:'Operations, floor mechanics and final prep — approx. 180 min.',type:'video',cta:'Watch training',badge:'online'},
-    {id:'sg-obs-2',name:'Complete SG Observation #2',desc:'Your second Sound Guide observation — approx. 120 min.',type:'check',badge:'in-ship'},
-    {id:'inperson-av',name:'In-Person AV & Landing Training',desc:'Tech training + crew sweat. Come ready with a landing prepared. Look out for your Google Calendar invite with details.',type:'check',badge:'in-ship'},
-    {id:'cpr-upload',name:'Upload CPR/AED + First Aid Certificate',desc:'PDF format only. Uploads directly to your crew card. Must be uploaded before going floor-ready.',type:'cpr-upload',cta:'Upload certificate'},
-    {id:'crew-pass-policy',name:'Read: Crew Pass Booking Policy',desc:'Know the rules before your pass is activated.',type:'modal',modal:'modal-crewpass',cta:'Read policy'},
-    {id:'perks',name:'Othership Team Perks',desc:'Crew pass, F&F passes, and everything that comes with being on the ship.',type:'link',url:'https://www.notion.so/othership/Partner-Perks-e366f32cd98e420ba50975fae48ca462',cta:'View perks',badge:'notion'},
-  ]},
-  {id:'w9',label:'Week 9',dates:'Jan 25 – Jan 31',tasks:[
-    {id:'towel-training-3',name:'Towel Waving Training #3',desc:'Final in-person towel waving technique session — approx. 120 min. Look out for your Google Calendar invite with details.',type:'check',badge:'in-person'},
-    {id:'uniform-pickup',name:'Pick up your uniform',desc:'Collect your Othership uniform from your Lead Guide or Ship Captain.',type:'check',badge:'in-person'},
-    {id:'approved-ff',name:'Approved to work FF + Social Shifts',desc:'Your Lead Guide marks you approved after passing your observations.',type:'check',badge:'in-person'},
-    {id:'approved-sg',name:'Approved to work SG Shifts',desc:'Your Lead Guide marks you approved for Sound Guide shifts.',type:'check',badge:'in-person'},
-  ]},
-  {id:'w9-11',label:'Weeks 9–11',dates:'Jan 25 – Feb 14',tasks:[
-    {id:'tw-kajabi',name:'Towel Waving Training Module',desc:'Online training module to complement your in-person sessions — approx. 134 min.',type:'video',cta:'Watch training',badge:'online'},
   ]},
 ];
 
-// ═══ STATE ═══
+// STATE
 const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{}};
-WEEKS.forEach(w=>w.tasks.forEach(t=>{state.tasks[t.id]=false;}));
 
-// ── Load tasks from Notion and rebuild WEEKS ──
+// Load tasks from Notion and rebuild WEEKS
 function loadTasksFromNotion(){
-  const city = JSON.parse(localStorage.getItem('os_guide_state')||'{}').city || 'nyc';
+  const city = state.city || JSON.parse(localStorage.getItem('othership_guide_state')||'{}').city || 'nyc';
   const cityParam = city === 'toronto' ? 'Toronto' : 'NYC';
   fetch(`${BACKEND}/api/tasks?city=${cityParam}`)
     .then(r=>r.json())
     .then(data=>{
       if(!data.success || !data.tasks || !data.tasks.length) return;
-      console.log('Tasks from Notion:', data.tasks.length, 'Week 1 tasks:', data.tasks.filter(t=>t.week===1).map(t=>t.name));
+      console.log('Tasks from Notion:', data.tasks.length);
       const weekMap = {};
       data.tasks.forEach(t => {
         const w = t.week || 1;
         if(!weekMap[w]) weekMap[w] = [];
         weekMap[w].push(t);
       });
-      const newWeeks = Object.keys(weekMap).sort((a,b)=>a-b).map(w => {
-        const existing = WEEKS.find(ew => ew.id === `w${w}`);
+      const newWeeks = Object.keys(weekMap).sort((a,b)=>Number(a)-Number(b)).map(w => {
         return {
           id: `w${w}`,
           label: `Week ${w}`,
-          dates: existing ? existing.dates : '',
+          dates: '',
           tasks: weekMap[w].map(t => {
             const taskType = mapTaskType(t.type, t.name);
             const taskUrl = t.notionUrl || t.vimeoUrl || '';
@@ -1191,7 +1080,7 @@ function getTaskId(name){
   if(n.includes('towel')) return 'towel-pickup';
   if(n.includes('availability')) return 'availability';
   if(n.includes('vimeo account')) return 'vimeo-account';
-  if(n.includes('training week')) {
+  if(n.includes('training week') || n.includes('kajabi training')) {
     const match = name.match(/\d+/);
     return match ? `training-w${match[0]}` : 'training';
   }
@@ -1210,6 +1099,7 @@ function mapTaskType(type, name){
   if(tl === 'video') return 'video';
   if(tl === 'typeform') return 'link';
   if(tl === 'notion-link') return 'link';
+  if(tl === 'form') return 'link';
   if(tl === 'upload') return 'cpr-upload';
   return 'checkbox';
 }
@@ -1226,6 +1116,7 @@ function getTaskCTA(type, name){
   if(tl === 'video') return 'Watch training';
   if(tl === 'typeform') return 'Open form';
   if(tl === 'notion-link') return 'Open page';
+  if(tl === 'form') return 'Open form';
   if(tl === 'upload') return 'Upload certificate';
   return 'Mark complete';
 }
@@ -1273,7 +1164,6 @@ function saveState(){
       tasks: state.tasks
     };
     localStorage.setItem('othership_guide_state', JSON.stringify(stateToSave));
-    // Sync to Notion in background if guide is logged in and has a profile
     if(state.guideEmail && state.city && state.intakeComplete){
       fetch(`${BACKEND}/api/progress/save`, {
         method: 'POST',
@@ -1298,7 +1188,6 @@ async function loadProgressFromNotion(email, city){
     const res = await fetch(`${BACKEND}/api/progress/load?email=${encodeURIComponent(email)}&city=${city}`);
     const data = await res.json();
     if(data.success && data.progress){
-      // Notion progress takes priority over localStorage
       if(data.progress.tasks) state.tasks = data.progress.tasks;
       if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
       if(data.progress.guideName) state.guideName = data.progress.guideName;
@@ -1310,7 +1199,6 @@ async function loadProgressFromNotion(email, city){
   }
 }
 
-// ═══ CONTEXT-AWARE MANAGER BUTTONS ═══
 let currentMgrFilter = 'all';
 
 function handleRemindAll(){
@@ -1324,7 +1212,6 @@ function handlePayroll(){
 }
 
 function remindNewsletterBehind(){
-  // Get latest newsletter
   if(!NEWSLETTERS.length){ showToast('No newsletters found'); return; }
   const latest = NEWSLETTERS[0];
   const behind = GUIDES_DATA.filter(g => g.status === 'alumni' && !(g.newslettersWatched||[]).includes(latest.id));
@@ -1335,7 +1222,8 @@ function remindNewsletterBehind(){
       fetch(`${BACKEND}/api/discord-dm`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ discordUsername: g.discord, message: msg })
-const city = state.city || JSON.parse(localStorage.getItem('os_guide_state')||'{}').city || 'nyc';    }
+      }).catch(e => console.log('DM error:', e));
+    }
   });
   showToast(`Reminders sent to ${behind.length} guide${behind.length>1?'s':''}`);
 }
@@ -1352,11 +1240,7 @@ function exportNewsletterPayroll(){
   watched.forEach(g => report += `  · ${g.name}\n`);
   report += `\n✗ NOT WATCHED (${notWatched.length} guides):\n`;
   notWatched.forEach(g => report += `  · ${g.name}\n`);
-
-  // Copy to clipboard
   navigator.clipboard.writeText(report).then(() => showToast('Payroll report copied to clipboard'));
-
-  // Also CSV export
   let csv = 'Name,Status,Newsletter\n';
   watched.forEach(g => csv += `${g.name},Watched,${latest.title}\n`);
   notWatched.forEach(g => csv += `${g.name},Not Watched,${latest.title}\n`);
@@ -1371,31 +1255,19 @@ function exportNewsletterPayroll(){
 function renderNewsletterMgrView(){
   const container = document.getElementById('newsletter-mgr-view');
   const activeGuides = GUIDES_DATA.filter(g => g.status === 'alumni');
-
   if(!NEWSLETTERS.length){
     container.innerHTML = '<div class="newsletter-empty" style="padding:40px">No newsletters published yet.</div>';
     return;
   }
-
-  // Latest newsletter summary
   const latest = NEWSLETTERS[0];
   const watchedCount = activeGuides.filter(g => (g.newslettersWatched||[]).includes(latest.id)).length;
-
-  let html = `<div class="nl-payroll-bar">
-    <h3>Latest: ${latest.title}</h3>
-    <p>${watchedCount} of ${activeGuides.length} active guides have watched</p>
-  </div>
-  <table class="nl-mgr-table">
-    <thead><tr>
-      <th>Guide</th>
-      <th>City</th>`;
-
+  let html = `<div class="nl-payroll-bar"><h3>Latest: ${latest.title}</h3><p>${watchedCount} of ${activeGuides.length} active guides have watched</p></div>
+  <table class="nl-mgr-table"><thead><tr><th>Guide</th><th>City</th>`;
   NEWSLETTERS.forEach(n => {
     const date = n.releaseDate ? new Date(n.releaseDate).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : n.title;
     html += `<th>${date}</th>`;
   });
   html += `</tr></thead><tbody>`;
-
   activeGuides.forEach(g => {
     html += `<tr><td>${g.name}</td><td>${g.city}</td>`;
     NEWSLETTERS.forEach(n => {
@@ -1404,12 +1276,10 @@ function renderNewsletterMgrView(){
     });
     html += `</tr>`;
   });
-
   html += `</tbody></table>`;
   container.innerHTML = html;
 }
 
-// ═══ NEWSLETTERS ═══
 let NEWSLETTERS = [];
 
 async function loadNewsletters(){
@@ -1458,61 +1328,36 @@ function toggleNewsletter(id){
 }
 
 function checkFloorReadyStatus(){
-  // Show newsletter tab only if guide is floor ready
-  // For now show it if intakeComplete — will refine with actual floor ready status
   if(state.intakeComplete){
     document.getElementById('newsletter-tab').style.display = '';
   }
 }
 
-// ═══ MANAGER DATA ═══
+// MANAGER DATA
 const GUIDES_DATA=[
-  {name:'Amanda Test',pct:22,missing:['CPR certificate','Availability form'],status:'needs',discord:'amandalaine',city:'NYC',hireDate:20260421,
-   obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
-  {name:'Kai Osei',pct:22,missing:['CPR certificate','Availability form','Uniform sizes'],status:'needs',discord:'kai_osei',city:'NYC',hireDate:20260420,
-   obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
-  {name:'Priya Mehta',pct:65,missing:['CPR certificate'],status:'track',discord:'priya.m',city:'NYC',hireDate:20260415,
-   obs:{ff:'pass',sg:'pending'},attendance:[true,true,false,false,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:78},{w:'Week 4',p:20}]},
-  {name:'Jordan Blake',pct:45,missing:['CPR certificate','Contract signed'],status:'needs',discord:'jblake_',city:'Toronto',hireDate:20260419,
-   obs:{ff:'pending',sg:'pending'},attendance:[true,false,false,false,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:30},{w:'Week 4',p:0}]},
-  {name:'Sofia Reyes',pct:80,missing:['CPR certificate'],status:'track',discord:'sofiareyes',city:'NYC',hireDate:20260414,
-   obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:65}]},
-  {name:'Marcus Webb',pct:15,missing:['Profile form','CPR certificate','Discord','Availability form'],status:'needs',discord:'marcuswebb',city:'Toronto',hireDate:20260418,
-   obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],
-   training:[{w:'Week 1',p:60},{w:'Week 2',p:0},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
-  {name:'Anika Patel',pct:100,missing:[],status:'alumni',discord:'anika.p',city:'NYC',hireDate:20260101,
-   obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,true,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
-  {name:'Jordan Lee',pct:100,missing:[],status:'alumni',discord:'jordan.lee',city:'Toronto',hireDate:20260101,
-   obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false,false],
-   training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
+  {name:'Amanda Test',pct:22,missing:['CPR certificate','Availability form'],status:'needs',discord:'amandalaine',city:'NYC',hireDate:20260421,obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
+  {name:'Kai Osei',pct:22,missing:['CPR certificate','Availability form','Uniform sizes'],status:'needs',discord:'kai_osei',city:'NYC',hireDate:20260420,obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
+  {name:'Priya Mehta',pct:65,missing:['CPR certificate'],status:'track',discord:'priya.m',city:'NYC',hireDate:20260415,obs:{ff:'pass',sg:'pending'},attendance:[true,true,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:78},{w:'Week 4',p:20}]},
+  {name:'Jordan Blake',pct:45,missing:['CPR certificate','Contract signed'],status:'needs',discord:'jblake_',city:'Toronto',hireDate:20260419,obs:{ff:'pending',sg:'pending'},attendance:[true,false,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:30},{w:'Week 4',p:0}]},
+  {name:'Sofia Reyes',pct:80,missing:['CPR certificate'],status:'track',discord:'sofiareyes',city:'NYC',hireDate:20260414,obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:65}]},
+  {name:'Marcus Webb',pct:15,missing:['Profile form','CPR certificate','Discord','Availability form'],status:'needs',discord:'marcuswebb',city:'Toronto',hireDate:20260418,obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],training:[{w:'Week 1',p:60},{w:'Week 2',p:0},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
+  {name:'Anika Patel',pct:100,missing:[],status:'alumni',discord:'anika.p',city:'NYC',hireDate:20260101,obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,true,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
+  {name:'Jordan Lee',pct:100,missing:[],status:'alumni',discord:'jordan.lee',city:'Toronto',hireDate:20260101,obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
 ];
 
-// ═══ INIT ═══
+// INIT
 async function init(){
-  // Check for magic link token in URL first
   const tokenValid = await checkMagicToken();
-
-  // Restore any saved email
   if(!state.guideEmail){
     const savedEmail = localStorage.getItem('othership_guide_email');
     if(savedEmail) state.guideEmail = savedEmail;
   }
-
-  // Show login screen if not logged in
   if(!isLoggedIn()){
     showLoginScreen();
     return;
   }
-
   hideLoginScreen();
   restoreState();
-  // If logged in with email and city, try loading progress from Notion
   if(state.guideEmail && state.city){
     await loadProgressFromNotion(state.guideEmail, state.city);
   }
@@ -1528,15 +1373,13 @@ async function init(){
   document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML.default;
   renderWeeks();
   renderManagerCards(getFilteredGuides("all"));
-
-  // Only show intake modal if profile not yet complete
   if(!state.intakeComplete){
     setTimeout(()=>openModal('modal-intake'),500);
   }
 }
 function fmtDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 
-// ═══ RENDER WEEKS ═══
+// RENDER WEEKS
 function renderWeeks(){
   const c=document.getElementById('weeks-container');
   const openWeeks = new Set();
@@ -1546,14 +1389,14 @@ function renderWeeks(){
   });
   const total=WEEKS.reduce((a,w)=>a+w.tasks.length,0);
   const done=Object.values(state.tasks).filter(Boolean).length;
-  const pct=Math.round((done/total)*100);
+  const pct=total>0?Math.round((done/total)*100):0;
   document.getElementById('main-fill').style.width=pct+'%';
   document.getElementById('pct-label').textContent=pct+'% complete';
   c.innerHTML='';
   WEEKS.forEach((week,idx)=>{
     const wDone=week.tasks.filter(t=>state.tasks[t.id]).length;
     const wTotal=week.tasks.length;
-    const isComplete=wDone===wTotal;
+    const isComplete=wDone===wTotal&&wTotal>0;
     const prevDone=idx===0||WEEKS.slice(0,idx).every(pw=>pw.tasks.every(t=>state.tasks[t.id]));
     const isActive=!isComplete&&prevDone;
     const wasOpen = openWeeks.has(week.label);
@@ -1582,20 +1425,23 @@ function renderTask(t){
   let actionHTML='';
   if(t.type==='form') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">${t.cta}</button></div>`;
   else if(t.type==='cpr-upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${t.cta}</button></div>`;
-  else if(t.type==='modal') actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${t.cta}</button></div>`;
+  else if(t.type==='modal'&&t.modal) actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${t.cta}</button></div>`;
   else if(t.type==='payroll') actionHTML=`<div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">${t.cta}</button></div>`;
   else if(t.type==='link'){
     const linkUrl = t.url || t.notionUrl || t.vimeoUrl || '#';
     actionHTML=`<div class="task-action"><a class="btn-sm btn-outline" href="${linkUrl}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},1500)">${t.cta} →</a></div>`;
   }
   else if(t.type==='city-link') actionHTML=`<div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">${t.cta} →</button></div>`;
-  else if(t.type==='video') actionHTML=`<div class="task-action"><a class="btn-sm btn-lemon" href="${t.vimeoUrl||t.url||'https://vimeo.com'}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},2000)">${t.cta} →</a></div>`;
+  else if(t.type==='video'){
+    const vidUrl = t.vimeoUrl || t.url || '#';
+    actionHTML=`<div class="task-action"><a class="btn-sm btn-lemon" href="${vidUrl}" target="_blank" onclick="setTimeout(()=>{markTask('${t.id}');renderWeeks();},2000)">${t.cta} →</a></div>`;
+  }
   return `
     <div class="task">
       <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${t.id}')"></div>
       <div class="task-body">
         <div class="task-name">${t.name}${badgeHTML}</div>
-        <div class="task-desc">${t.desc}</div>
+        <div class="task-desc">${t.desc||''}</div>
         ${actionHTML}
       </div>
     </div>
@@ -1633,7 +1479,6 @@ function markTask(id){
   }
 }
 
-// ═══ CITY HELPERS ═══
 function openCityLink(){
   if(!state.city){showToast('Complete your profile first to see city-specific content');return;}
   window.open(CITY_RATE_URLS[state.city],'_blank');
@@ -1683,7 +1528,10 @@ async function submitIntake(){
   document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
   state.tasks['profile']=true;
   document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML[city]||CPR_CONTENT_HTML.default;
-closeModal('modal-intake');renderWeeks();loadTasksFromNotion();  showToast(`Welcome aboard, ${first} — creating your crew card...`);
+  closeModal('modal-intake');
+  renderWeeks();
+  loadTasksFromNotion();
+  showToast(`Welcome aboard, ${first} — creating your crew card...`);
   const payload = {
     name, legalName: name, email,
     phone: document.getElementById('f-phone').value.trim(),
@@ -1710,7 +1558,6 @@ closeModal('modal-intake');renderWeeks();loadTasksFromNotion();  showToast(`Welc
   }
 }
 
-// ═══ CPR ═══
 const CPR_FOLDERS = {
   nyc: 'https://drive.google.com/drive/folders/13DkBCY9iwjPMW0SUX-8SZ9rQwfFt03Fs?usp=sharing',
   toronto: 'https://drive.google.com/drive/folders/1gU4BexeN3y3zoXXwZxy8wH5AHKGS21lX?usp=sharing'
@@ -1728,7 +1575,6 @@ async function confirmCPR(){
   if(state.guideEmail && state.city) await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
 }
 
-// ═══ HA ═══
 async function signHA(){
   const name=document.getElementById('ha-name').value.trim();
   const date=document.getElementById('ha-date').value;
@@ -1740,7 +1586,6 @@ async function signHA(){
   if(state.guideEmail && state.city) callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: 'honorary-agreements' });
 }
 
-// ═══ MARIANA TEK ═══
 async function confirmMT(){
   const mtEmail = document.getElementById('mt-email-input').value.trim();
   if(!mtEmail){showToast('Please enter your Mariana Tek email');return;}
@@ -1789,9 +1634,7 @@ function renderManagerCards(guides){
           </div>
         </div>
       </div>`;
-    const cityTrainingDays = g.city === 'Toronto'
-      ? (WAVE_SETTINGS.Toronto.trainingDays || 3)
-      : (WAVE_SETTINGS.NYC.trainingDays || 2);
+    const cityTrainingDays = g.city === 'Toronto' ? (WAVE_SETTINGS.Toronto.trainingDays || 3) : (WAVE_SETTINGS.NYC.trainingDays || 2);
     const attendanceHTML=`
       <div class="attendance-row">
         <span class="attendance-label">Training days</span>
@@ -1872,7 +1715,6 @@ function genAttendanceSummary(){
   openModal('modal-attendance');
 }
 
-// ── Wave settings ──
 let WAVE_SETTINGS = { NYC: { waveNumber: '', season: '', year: '', trainingDays: 2 }, Toronto: { waveNumber: '', season: '', year: '', trainingDays: 3 } };
 
 function loadWaveSettings(){
@@ -1886,7 +1728,7 @@ function loadWaveSettings(){
           if(w.city==='NYC') WAVE_SETTINGS.NYC.trainingDays = w.trainingDays || 2;
           if(w.city==='Toronto') WAVE_SETTINGS.Toronto.trainingDays = w.trainingDays || 3;
         });
-        const st=JSON.parse(localStorage.getItem('os_guide_state')||'{}');
+        const st=JSON.parse(localStorage.getItem('othership_guide_state')||'{}');
         const city=st.city==='toronto'?'Toronto':'NYC';
         const ws=WAVE_SETTINGS[city];
         const badge=document.getElementById('wave-badge');
@@ -1929,11 +1771,9 @@ function filterG(type,btn){
   currentFilter=type;
   currentMgrFilter=type;
   document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
-
   const gcards = document.getElementById('gcards');
   const nlView = document.getElementById('newsletter-mgr-view');
   const btnWave = document.getElementById('btn-wave-channels');
-
   if(type === 'newsletters'){
     gcards.style.display = 'none';
     nlView.style.display = 'block';
@@ -1951,7 +1791,6 @@ function filterG(type,btn){
   }
 }
 
-// ═══ REMINDERS ═══
 let _rg='',_rm=[];
 function openReminderFor(name,missing){_rg=name;_rm=missing;document.getElementById('reminder-sub').textContent=`Personalised nudge for ${name}`;openModal('modal-reminder');genReminder(name,missing);}
 function openReminderAll(){_rg='all';_rm=[];const n=GUIDES_DATA.filter(g=>g.missing.length).length;document.getElementById('reminder-sub').textContent=`Posting to wave channel — ${n} guides have outstanding items`;openModal('modal-reminder');genReminder('all',[]);}
@@ -1975,11 +1814,11 @@ function genReminder(name,missing){
 function submitDiscordUsername(){
   const username = document.getElementById('discord-username-input').value.trim();
   if(!username){ showToast('Please enter your Discord username'); return; }
-  const savedState = JSON.parse(localStorage.getItem('os_guide_state')||'{}');
+  const savedState = JSON.parse(localStorage.getItem('othership_guide_state')||'{}');
   savedState.discordUsername = username;
-  localStorage.setItem('os_guide_state', JSON.stringify(savedState));
-  const email = savedState.email || '';
-  const city = savedState.city || 'nyc';
+  localStorage.setItem('othership_guide_state', JSON.stringify(savedState));
+  const email = state.guideEmail || savedState.email || '';
+  const city = state.city || savedState.city || 'nyc';
   if(email) callBackend('/api/task-complete', { email, city, taskId: 'discord-join', discordUsername: username });
   closeModal('modal-discord');
   markTask('discord-join');
@@ -2012,7 +1851,6 @@ async function sendReminder(){
   }
 }
 
-// ═══ UTILS ═══
 function openModal(id){
   document.getElementById(id).classList.add('open');
   if(id==='modal-discord') updateDiscordPanel();
@@ -2052,5 +1890,4 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('clic
 
 init();
 </script>
-
 </body></html>
