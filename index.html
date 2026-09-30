@@ -1335,8 +1335,7 @@ function remindNewsletterBehind(){
       fetch(`${BACKEND}/api/discord-dm`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ discordUsername: g.discord, message: msg })
-      }).catch(e => console.log('DM error:', e));
-    }
+const city = state.city || JSON.parse(localStorage.getItem('os_guide_state')||'{}').city || 'nyc';    }
   });
   showToast(`Reminders sent to ${behind.length} guide${behind.length>1?'s':''}`);
 }
