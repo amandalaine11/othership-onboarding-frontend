@@ -1116,6 +1116,10 @@ function getTaskCTA(type, name){
   if(n.includes('mariana tek')) return 'Set up account';
   if(n.includes('honorary')) return 'Read & sign';
   if(n.includes('contract')) return 'Read & sign';
+  if(n.includes('breathwork')) return 'Open & read';
+if(n.includes('code of conduct')) return 'Read page';
+if(n.includes('privacy')) return 'Read page';
+if(n.includes('crew pass')) return 'Read policy';
   if(n.includes('cpr') || n.includes('certificate')) return 'Upload certificate';
   if(tl === 'video') return 'Watch training';
   if(tl === 'typeform') return 'Open form';
@@ -1138,6 +1142,9 @@ function getModal(name){
   if(n.includes('mariana tek')) return 'modal-mt';
   if(n.includes('honorary')) return 'modal-ha';
   if(n.includes('contract')) return 'modal-contract';
+  if(n.includes('conduct')) return 'modal-conduct';
+if(n.includes('privacy')) return 'modal-privacy';
+if(n.includes('crew pass')) return 'modal-crewpass';
   if(n.includes('breathwork') || n.includes('breathwork app')) return 'modal-breathwork';
   return null;
 }
