@@ -1095,6 +1095,9 @@ function mapTaskType(type, name){
   if(n.includes('honorary')) return 'modal';
   if(n.includes('contract')) return 'modal';
   if(n.includes('breathwork')) return 'modal';
+  if(n.includes('code of conduct')) return 'modal';
+if(n.includes('privacy')) return 'modal';
+if(n.includes('crew pass')) return 'modal';
   if(n.includes('cpr') || n.includes('certificate')) return 'cpr-upload';
   const tl = (type||'').toLowerCase();
   if(tl === 'video') return 'video';
