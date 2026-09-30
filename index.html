@@ -1094,6 +1094,7 @@ function mapTaskType(type, name){
   if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'modal';
   if(n.includes('honorary')) return 'modal';
   if(n.includes('contract')) return 'modal';
+  if(n.includes('breathwork')) return 'modal';
   if(n.includes('cpr') || n.includes('certificate')) return 'cpr-upload';
   const tl = (type||'').toLowerCase();
   if(tl === 'video') return 'video';
