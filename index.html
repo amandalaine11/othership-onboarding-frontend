@@ -1339,6 +1339,31 @@ function toggleNewsletter(id){
 function checkFloorReadyStatus(){
   // newsletter tab hidden
 }
+async function loadRealGuides(){
+  const city = sessionStorage.getItem('mgr_city') || 'toronto';
+  try {
+    const res = await fetch(`${BACKEND}/api/guides?city=${city}`);
+    const data = await res.json();
+    if(data.success && data.guides && data.guides.length){
+      GUIDES_DATA.length = 0;
+      data.guides.forEach(g => {
+        GUIDES_DATA.push({
+          name: g.name, pct: g.pct, missing: g.missing, status: g.status,
+          discord: g.discord, city: g.city, hireDate: 0,
+          obs: { ff: 'pending', sg: 'pending' },
+          attendance: [false, false, false],
+          training: [], week: g.week, expectedWeek: g.expectedWeek,
+          isBehind: g.isBehind, email: g.email
+        });
+      });
+      renderManagerCards(getFilteredGuides('all'));
+      document.getElementById('s-total').textContent = GUIDES_DATA.length;
+      document.getElementById('s-needs').textContent = GUIDES_DATA.filter(g=>g.status==='needs').length;
+      document.getElementById('s-track').textContent = GUIDES_DATA.filter(g=>g.status==='track').length;
+      document.getElementById('s-done').textContent = GUIDES_DATA.filter(g=>g.status==='alumni').length;
+    }
+  } catch(e){ console.log('Could not load real guides:', e); }
+}
 
 // MANAGER DATA
 const GUIDES_DATA=[
