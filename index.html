@@ -1894,10 +1894,12 @@ function switchView(view,e){
       if(label) label.textContent = `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} — New York City`;
       if(title) title.textContent = `NYC Guides — Wave ${WAVE_SETTINGS.NYC.waveNumber}`;
       currentCityFilter = 'NYC';
+      document.getElementById('btn-payroll').style.display = '';
     } else if(city === 'toronto'){
       if(label) label.textContent = `Wave ${WAVE_SETTINGS.Toronto.waveNumber} ${WAVE_SETTINGS.Toronto.season} — Toronto`;
       if(title) title.textContent = `Toronto Guides — Wave ${WAVE_SETTINGS.Toronto.waveNumber}`;
       currentCityFilter = 'TO';
+      document.getElementById('btn-payroll').style.display = 'none';
     } else { currentCityFilter = 'all'; }
     loadRealGuides();
   }
