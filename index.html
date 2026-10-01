@@ -1909,7 +1909,7 @@ function switchView(view,e){
       if(title) title.textContent = `Toronto Guides — Wave ${WAVE_SETTINGS.Toronto.waveNumber}`;
       currentCityFilter = 'TO';
     } else { currentCityFilter = 'all'; }
-    renderManagerCards(getFilteredGuides('all'));
+    loadRealGuides();
   }
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
