@@ -1672,17 +1672,7 @@ function renderManagerCards(guides){
         <span class="attendance-label">Training days</span>
         ${Array.from({length: cityTrainingDays}, (_,d)=>`<button class="day-btn ${g.attendance[d]?'present':''}" onclick="toggleAttendance(${gi},${d},this)">D${d+1}</button>`).join('')}
       </div>`;
-    const trainingHTML=`
-      <div class="training-progress">
-        <div class="training-progress-label">Vimeo training progress</div>
-        ${g.training.map(t=>`
-          <div class="training-week-row">
-            <div class="training-week-name">${t.w}</div>
-            <div class="training-week-bar"><div class="training-week-fill" style="width:${t.p}%"></div></div>
-            <div class="training-week-pct">${t.p}%</div>
-          </div>
-        `).join('')}
-      </div>`;
+    const trainingHTML='';
     const actionsHTML=`
       <div class="gcard-actions" style="margin-top:10px;">
         ${g.status!=='done'?`<button class="btn-remind" onclick="openReminderFor('${g.name}',${JSON.stringify(g.missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
