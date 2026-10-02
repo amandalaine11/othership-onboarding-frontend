@@ -1196,14 +1196,15 @@ function saveState(){
 
 async function loadProgressFromNotion(email, city){
   try {
-    const res = await fetch(`${BACKEND}/api/progress/load?email=${encodeURIComponent(email)}&city=${city}`);
+    const res = await fetch(`${BACKEND}/api/progress/load?email=${encodeURIComponent(email)}&city=${city||''}`);
     const data = await res.json();
     if(data.success && data.progress){
       if(data.progress.tasks) state.tasks = data.progress.tasks;
       if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
       if(data.progress.guideName) state.guideName = data.progress.guideName;
       if(data.progress.notionPageId) state.notionPageId = data.progress.notionPageId;
-      console.log('Progress loaded from Notion');
+      if(data.city && !state.city) state.city = data.city;
+      console.log('Progress loaded from Notion, city:', data.city);
     }
   } catch(e){
     console.log('Could not load from Notion, using local:', e);
