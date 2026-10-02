@@ -1393,9 +1393,9 @@ async function init(){
   }
   hideLoginScreen();
   restoreState();
-  if(state.guideEmail && state.city){
-    await loadProgressFromNotion(state.guideEmail, state.city);
-  }
+  if(state.guideEmail){
+  await loadProgressFromNotion(state.guideEmail, state.city || '');
+}
   loadWaveSettings();
   loadTasksFromNotion();
   loadNewsletters();
