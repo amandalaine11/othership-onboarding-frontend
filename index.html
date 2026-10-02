@@ -1395,6 +1395,11 @@ async function init(){
   restoreState();
   if(state.guideEmail){
   await loadProgressFromNotion(state.guideEmail, state.city || '');
+  if(state.guideName) document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
+  if(state.city){
+    document.getElementById('meta-city').textContent = state.city==='nyc'?'New York City':'Toronto';
+    document.getElementById('cpr-content').innerHTML = CPR_CONTENT_HTML[state.city]||CPR_CONTENT_HTML.default;
+  }
 }
   loadWaveSettings();
   loadTasksFromNotion();
