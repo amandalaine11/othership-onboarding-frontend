@@ -94,6 +94,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .task-name{font-size:16px;font-weight:500;color:var(--cloud);margin-bottom:4px;transition:opacity 0.2s;}
 .task-check.checked~.task-body .task-name{opacity:0.38;text-decoration:line-through;text-decoration-color:rgba(236,232,227,0.25);}
 .task-desc{font-size:14px;color:rgba(236,232,227,0.5);font-weight:300;line-height:1.6;}
+.task-desc a{color:var(--teal);text-decoration:none;}
+.task-desc a:hover{text-decoration:underline;}
+.empty-state{padding:8px 4px 36px;color:rgba(236,232,227,0.55);font-size:14px;line-height:1.6;max-width:540px;}
 .task-action{margin-top:7px;display:flex;gap:8px;flex-wrap:wrap;}
 
 /* BADGES */
@@ -364,14 +367,14 @@ select.form-input option{background:#271829;}
 <div id="view-guide" class="view active">
   <div class="guide-hero">
     <div class="wave-badge" id="wave-badge">Wave · Path 1</div>
-    <h1>Welcome<br>Aboard,<br><em id="guide-first-name">test</em></h1>
+    <h1>Welcome<br>Aboard,<br><em id="guide-first-name">there</em></h1>
     <p>Your onboarding is laid out week by week — each phase builds on the last. Stay close to the dates, lean into the training, and trust that everything you need is right here. The ship is ready. So are you.</p>
     <div class="guide-meta">
       <div class="meta-chip"><strong>Guide Level</strong>Navigator A</div>
       <div class="meta-chip"><strong>Guide Path</strong>Path 1 — FF / SG / Social</div>
-      <div class="meta-chip"><strong>City</strong><span id="meta-city">New York City</span></div>
-      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">Apr 23, 2026</span></div>
-      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">Oct 23, 2026</span></div>
+      <div class="meta-chip"><strong>City</strong><span id="meta-city">—</span></div>
+      <div class="meta-chip"><strong>Date Onboarded</strong><span id="start-date-display">—</span></div>
+      <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">—</span></div>
     </div>
   </div>
   <div class="progress-bar-wrap">
@@ -406,11 +409,11 @@ select.form-input option{background:#271829;}
     </div>
   </div>
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-num c-lemon" id="s-total">6</div><div class="stat-label">Guides in wave</div></div>
-    <div class="stat-card"><div class="stat-num c-rust" id="s-needs">3</div><div class="stat-label">Need follow-up</div></div>
-    <div class="stat-card"><div class="stat-num c-teal" id="s-track">2</div><div class="stat-label">On track</div></div>
-    <div class="stat-card"><div class="stat-num" id="s-done">1</div><div class="stat-label">Floor ready</div></div>
-    <div class="stat-card"><div class="stat-num c-rust">4</div><div class="stat-label">CPR pending</div></div>
+    <div class="stat-card"><div class="stat-num c-lemon" id="s-total">—</div><div class="stat-label">Guides in wave</div></div>
+    <div class="stat-card"><div class="stat-num c-rust" id="s-needs">—</div><div class="stat-label">Need follow-up</div></div>
+    <div class="stat-card"><div class="stat-num c-teal" id="s-track">—</div><div class="stat-label">On track</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-done">—</div><div class="stat-label">Floor ready</div></div>
+    <div class="stat-card"><div class="stat-num c-rust" id="s-cpr">—</div><div class="stat-label">CPR pending</div></div>
   </div>
   <div class="table-section">
     <div class="table-top">
@@ -536,6 +539,7 @@ select.form-input option{background:#271829;}
   <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Self-Care Sweat - Up" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Self-Care Sweat - Up</label>
   <label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:rgba(236,232,227,0.7);cursor:pointer;"><input type="checkbox" value="Arctic Tundra - Up" class="class-checkbox" style="accent-color:var(--teal);width:14px;height:14px;flex-shrink:0;"> Arctic Tundra - Up</label>
 </div>
+    </div>
     <button class="btn-submit" onclick="submitIntake()">Begin My Journey →</button>
   </div>
 </div>
@@ -1015,118 +1019,128 @@ function exportPayrollCSV() {
   showToast('CSV downloaded — open in Excel');
 }
 
-// WEEK DATA (fallback defaults)
-const WEEKS = [
-  {id:'w1',label:'Week 1',dates:'',tasks:[
-    {id:'profile',name:'Complete your crew profile',desc:'Name, contact details, headshot, uniform sizing, and class preferences.',type:'form',cta:'Open profile form'},
-  ]},
-];
+// WEEK DATA — filled from Notion. Nothing is shown until the guide's city is known.
+const WEEKS = [];
+let tasksLoadError = '';
+let tasksLoading = false;
+let taskAliases = {};
 
 // STATE
 const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{}};
 
-// Load tasks from Notion and rebuild WEEKS
-function loadTasksFromNotion(){
-  const city = state.city || JSON.parse(localStorage.getItem('othership_guide_state')||'{}').city || 'nyc';
-  const cityParam = city === 'toronto' ? 'Toronto' : 'NYC';
-  fetch(`${BACKEND}/api/tasks?city=${cityParam}`)
-    .then(r=>r.json())
-    .then(data=>{
-      if(!data.success || !data.tasks || !data.tasks.length) return;
-      console.log('Tasks from Notion:', data.tasks.length);
-      const weekMap = {};
-      data.tasks.forEach(t => {
-        const w = t.week || 1;
-        if(!weekMap[w]) weekMap[w] = [];
-        weekMap[w].push(t);
-      });
-      const newWeeks = Object.keys(weekMap).sort((a,b)=>Number(a)-Number(b)).map(w => {
-        return {
-          id: `w${w}`,
-          label: `Week ${w}`,
-          dates: '',
-          tasks: weekMap[w].map(t => {
-            const taskType = mapTaskType(t.type, t.name);
-            const taskUrl = t.notionUrl || t.vimeoUrl || '';
-            return {
-              id: getTaskId(t.name),
-              name: t.name,
-              desc: t.description,
-              type: taskType,
-              cta: getTaskCTA(t.type, t.name),
-              url: taskUrl,
-              notionUrl: t.notionUrl || '',
-              vimeoUrl: t.vimeoUrl || '',
-              badge: getBadge(t.type),
-              modal: getModal(t.name),
-              minToComplete: t.minToComplete || 0,
-            };
-          })
-        };
-      });
-      WEEKS.length = 0;
-      newWeeks.forEach(w => WEEKS.push(w));
-      WEEKS.forEach(w=>w.tasks.forEach(t=>{ if(state.tasks[t.id]===undefined) state.tasks[t.id]=false; }));
-      renderWeeks();
-    }).catch(e => console.log('Tasks not loaded from Notion, using defaults:', e));
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
 }
 
+function linkifyText(value){
+  return escapeHtml(value).replace(/https?:\/\/[^\s<]+/g, raw => {
+    const href = raw.replace(/[),.;]+$/,'');
+    const trail = raw.slice(href.length);
+    return `<a href="${href}" target="_blank" rel="noopener">${href}</a>${trail}`;
+  });
+}
+
+function slugId(name){
+  return String(name || '').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'') || 'task';
+}
+
+// Stable progress ids. CPR signup and CPR upload must never share one.
+// Instruction pop-ups use the same id their confirm button already saves.
 function getTaskId(name){
-  const n = name.toLowerCase();
-  if(n.includes('crew profile')) return 'profile';
+  const n = String(name || '').toLowerCase();
+  if(n.includes('crew profile') && !n.includes('mt ')) return 'profile';
   if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'mt-profile';
   if(n.includes('discord')) return 'discord-join';
   if(n.includes('honorary')) return 'honorary-agreements';
-  if(n.includes('contract')) return 'contract';
-  if(n.includes('cpr') || n.includes('certificate')) return 'cpr-upload';
+  if(n.includes('contract') && !n.includes('conduct')) return 'contract';
+  if((n.includes('submit') || n.includes('upload')) && n.includes('cpr')) return 'cpr-upload';
+  if(n.includes('cpr') && (n.includes('sign up') || n.includes('certification'))) return 'cpr-signup';
   if(n.includes('towel')) return 'towel-pickup';
   if(n.includes('availability')) return 'availability';
   if(n.includes('vimeo account')) return 'vimeo-account';
+  if(n.includes('code of conduct')) return 'code-conduct';
+  if(n.includes('privacy')) return 'privacy';
+  if(n.includes('crew pass')) return 'crew-pass-policy';
+  if(n.includes('breathwork')) return 'breathwork-journey';
   if(n.includes('training week') || n.includes('kajabi training')) {
-    const match = name.match(/\d+/);
+    const match = String(name).match(/\d+/);
     return match ? `training-w${match[0]}` : 'training';
   }
-  return name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  return slugId(name);
 }
 
-function mapTaskType(type, name){
+function firstUrl(text){
+  const match = String(text || '').match(/https?:\/\/[^\s)]+/);
+  return match ? match[0].replace(/[),.;]+$/, '') : '';
+}
+
+function taskLink(t){
+  const explicit = String((t && (t.notionUrl || t.vimeoUrl)) || '').trim();
+  if(explicit) return explicit;
+  return firstUrl(t && t.description);
+}
+
+// Pop-ups whose text lives in this page. A real link on the card wins over these.
+function getModal(name){
+  const n = String(name || '').toLowerCase();
+  if(n.includes('discord')) return 'modal-discord';
+  if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'modal-mt';
+  if(n.includes('honorary')) return 'modal-ha';
+  if(n.includes('code of conduct')) return 'modal-conduct';
+  if(n.includes('privacy')) return 'modal-privacy';
+  if(n.includes('crew pass')) return 'modal-crewpass';
+  if(n.includes('breathwork')) return 'modal-breathwork';
+  return null;
+}
+
+// Type and the link fields decide what the card does. The title only fills in
+// the button words when Notion has not sent its own label.
+function classifyKind(t){
+  const type = String(t.type || '').toLowerCase();
+  const name = t.name || '';
+  const url = taskLink(t);
+  const modal = getModal(name);
+  if(type === 'upload') return { behavior:'upload', url, modal:null };
+  if(url){
+    if(type === 'video' || t.vimeoUrl) return { behavior:'video', url, modal:null };
+    return { behavior:'link', url, modal:null };
+  }
+  if(modal) return { behavior:'modal', url:'', modal };
   const n = name.toLowerCase();
-  if(n.includes('crew profile') || n.includes('profile form')) return 'form';
-  if(n.includes('discord')) return 'modal';
-  if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'modal';
-  if(n.includes('honorary')) return 'modal';
-  if(n.includes('breathwork')) return 'modal';
-  if(n.includes('code of conduct')) return 'modal';
-if(n.includes('privacy')) return 'modal';
-if(n.includes('crew pass')) return 'modal';
-  if(n.includes('cpr') || n.includes('certificate')) return 'cpr-upload';
-  const tl = (type||'').toLowerCase();
-  if(tl === 'video') return 'video';
-  if(tl === 'typeform') return 'link';
-  if(tl === 'notion-link') return 'link';
-  if(tl === 'form') return 'link';
-  if(tl === 'upload') return 'cpr-upload';
-  return 'checkbox';
+  if((type === 'form' || type === 'typeform') && n.includes('crew profile') && !n.includes('mt ')){
+    return { behavior:'profile', url:'', modal:null };
+  }
+  return { behavior:'checkbox', url:'', modal:null };
 }
 
-function getTaskCTA(type, name){
-  const n = (name||'').toLowerCase();
-  const tl = (type||'').toLowerCase();
-  if(n.includes('crew profile')) return 'Open profile form';
-  if(n.includes('discord')) return 'Join Discord';
-  if(n.includes('mariana tek')) return 'Set up account';
-  if(n.includes('honorary')) return 'Read & sign';
-  if(n.includes('breathwork')) return 'Open & read';
-if(n.includes('code of conduct')) return 'Read page';
-if(n.includes('privacy')) return 'Read page';
-if(n.includes('crew pass')) return 'Read policy';
-  if(n.includes('cpr') || n.includes('certificate')) return 'Upload certificate';
-  if(tl === 'video') return 'Watch training';
-  if(tl === 'typeform') return 'Open form';
-if(n.includes('kajabi')) return 'Open Kajabi training';
-  if(tl === 'form') return 'Open form';
-  if(tl === 'upload') return 'Upload certificate';
-  return 'Mark complete';
+function buttonLabel(t, behavior){
+  const fromNotion = [t.buttonLabel, t.button, t.cta].find(v => typeof v === 'string' && v.trim());
+  if(fromNotion) return fromNotion.trim();
+  const name = t.name || '';
+  const type = String(t.type || '').toLowerCase();
+  if(behavior === 'upload') return 'Upload certificate';
+  if(behavior === 'video') return 'Watch training';
+  if(behavior === 'profile') return 'Open profile form';
+  if(behavior === 'modal'){
+    const modal = getModal(name);
+    if(modal === 'modal-discord') return 'Join Discord';
+    if(modal === 'modal-mt') return 'Set up account';
+    if(modal === 'modal-ha') return 'Read & sign';
+    if(modal === 'modal-breathwork') return 'Open & read';
+    if(modal === 'modal-crewpass') return 'Read policy';
+    return 'Read page';
+  }
+  if(behavior === 'link'){
+    if(/kajabi training/i.test(name)) return 'Open Kajabi training';
+    if(/^sign up\b/i.test(name)) return 'Sign up here';
+    if(/^join\b/i.test(name)) return name;
+    if(/^download\b/i.test(name)) return 'Download the app';
+    if(type === 'form' || type === 'typeform') return 'Open form';
+    return 'Open link';
+  }
+  return '';
 }
 
 function getBadge(type){
@@ -1136,17 +1150,99 @@ function getBadge(type){
   return null;
 }
 
-function getModal(name){
-  const n = name.toLowerCase();
-  if(n.includes('discord')) return 'modal-discord';
-  if(n.includes('mariana tek')) return 'modal-mt';
-  if(n.includes('honorary')) return 'modal-ha';
-  if(n.includes('contract')) return 'modal-contract';
-  if(n.includes('conduct')) return 'modal-conduct';
-if(n.includes('privacy')) return 'modal-privacy';
-if(n.includes('crew pass')) return 'modal-crewpass';
-  if(n.includes('breathwork') || n.includes('breathwork app')) return 'modal-breathwork';
-  return null;
+function isTaskDone(id){
+  if(Object.prototype.hasOwnProperty.call(state.tasks, id)) return !!state.tasks[id];
+  return (taskAliases[id] || []).some(alias => !!state.tasks[alias]);
+}
+
+function writeTaskDone(id, value){
+  state.tasks[id] = !!value;
+  (taskAliases[id] || []).forEach(alias => { delete state.tasks[alias]; });
+}
+
+function buildTask(t, used){
+  const name = t.name || 'Task';
+  let id = getTaskId(name);
+  if(used.has(id)){
+    const suffix = String(t.id || slugId(name)).replace(/[^a-z0-9]/gi,'').slice(0, 8).toLowerCase() || '2';
+    id = `${id}-${suffix}`;
+  }
+  used.add(id);
+  const raw = slugId(name);
+  const aliasIds = raw && raw !== id && !used.has(raw) ? [raw] : [];
+  if(aliasIds.length) taskAliases[id] = aliasIds;
+  const kind = classifyKind(t);
+  return {
+    id,
+    aliasIds,
+    notionPageId: t.id || '',
+    name,
+    desc: t.description || '',
+    type: kind.behavior,
+    cta: buttonLabel(t, kind.behavior),
+    url: kind.url,
+    notionUrl: t.notionUrl || '',
+    vimeoUrl: t.vimeoUrl || '',
+    badge: getBadge(t.type),
+    modal: kind.modal,
+    minToComplete: t.minToComplete || 0
+  };
+}
+
+function loadTasksFromNotion(){
+  const city = state.city;
+  if(city !== 'toronto' && city !== 'nyc'){
+    tasksLoading = false;
+    tasksLoadError = '';
+    WEEKS.length = 0;
+    renderWeeks();
+    return;
+  }
+  const cityParam = city === 'toronto' ? 'Toronto' : 'NYC';
+  tasksLoading = true;
+  tasksLoadError = '';
+  WEEKS.length = 0;
+  renderWeeks();
+  fetch(`${BACKEND}/api/tasks?city=${encodeURIComponent(cityParam)}`)
+    .then(r => {
+      if(!r.ok) throw new Error('Could not load tasks');
+      return r.json();
+    })
+    .then(data => {
+      tasksLoading = false;
+      if(!data.success || !Array.isArray(data.tasks)){
+        tasksLoadError = 'Could not load your tasks. Refresh the page to try again.';
+        WEEKS.length = 0;
+        renderWeeks();
+        return;
+      }
+      const weekMap = {};
+      data.tasks.forEach(t => {
+        const w = t.week || 1;
+        if(!weekMap[w]) weekMap[w] = [];
+        weekMap[w].push(t);
+      });
+      const used = new Set();
+      taskAliases = {};
+      const newWeeks = Object.keys(weekMap).sort((a,b)=>Number(a)-Number(b)).map(w => ({
+        id: `w${w}`,
+        label: `Week ${w}`,
+        dates: '',
+        tasks: weekMap[w].map(t => buildTask(t, used))
+      }));
+      WEEKS.length = 0;
+      newWeeks.forEach(w => WEEKS.push(w));
+      WEEKS.forEach(w => w.tasks.forEach(t => {
+        if(state.tasks[t.id] === undefined && !isTaskDone(t.id)) state.tasks[t.id] = false;
+      }));
+      renderWeeks();
+    })
+    .catch(() => {
+      tasksLoading = false;
+      tasksLoadError = 'Could not load your tasks. Refresh the page to try again.';
+      WEEKS.length = 0;
+      renderWeeks();
+    });
 }
 
 function restoreState(){
@@ -1189,9 +1285,19 @@ function saveState(){
             notionPageId: state.notionPageId
           }
         })
-      }).catch(e => console.log('Notion sync error:', e));
+      }).then(async res => {
+        let data = null;
+        try { data = await res.json(); } catch(e){ data = null; }
+        if(!res.ok || (data && data.success === false)){
+          showToast('Your progress is saved on this device, but it did not save to your crew card. Check your connection and tick the task again.');
+        }
+      }).catch(() => {
+        showToast('Your progress is saved on this device, but it did not save to your crew card. Check your connection and tick the task again.');
+      });
     }
-  } catch(e){ console.log('Could not save state'); }
+  } catch(e){
+    showToast('Could not save your progress on this device.');
+  }
 }
 
 async function loadProgressFromNotion(email, city){
@@ -1224,6 +1330,7 @@ function handlePayroll(){
 }
 
 function remindNewsletterBehind(){
+  if(!guidesReadyForMessages()) return;
   if(!NEWSLETTERS.length){ showToast('No newsletters found'); return; }
   const latest = NEWSLETTERS[0];
   const behind = GUIDES_DATA.filter(g => g.status === 'alumni' && !(g.newslettersWatched||[]).includes(latest.id));
@@ -1295,6 +1402,7 @@ function renderNewsletterMgrView(){
 let NEWSLETTERS = [];
 
 async function loadNewsletters(){
+  if(state.city !== 'toronto' && state.city !== 'nyc') return;
   try {
     const city = state.city === 'toronto' ? 'Toronto' : 'NYC';
     const res = await fetch(`${BACKEND}/api/newsletters?city=${city}`);
@@ -1342,47 +1450,117 @@ function toggleNewsletter(id){
 function checkFloorReadyStatus(){
   // newsletter tab hidden
 }
-async function loadRealGuides(){
-  const city = sessionStorage.getItem('mgr_city') || 'toronto';
-  try {
-    const res = await fetch(`${BACKEND}/api/guides?city=${city}`);
-    const data = await res.json();
-    if(data.success && data.guides && data.guides.length){
-      GUIDES_DATA.length = 0;
-      data.guides.forEach(g => {
-        GUIDES_DATA.push({
-          name: g.name, pct: g.pct, missing: g.missing, status: g.status,
-          discord: g.discord, city: g.city, hireDate: 0,
-          obs: { ff: 'pending', sg: 'pending' },
-          attendance: [false, false, false],
-          training: [], week: g.week, expectedWeek: g.expectedWeek,
-          isBehind: g.isBehind, email: g.email
-        });
-      });
-      renderManagerCards(getFilteredGuides('all'));
-      document.getElementById('s-total').textContent = GUIDES_DATA.length;
-      document.getElementById('s-needs').textContent = GUIDES_DATA.filter(g=>g.status==='needs').length;
-      document.getElementById('s-track').textContent = GUIDES_DATA.filter(g=>g.status==='track').length;
-      document.getElementById('s-done').textContent = GUIDES_DATA.filter(g=>g.status==='alumni').length;
-    }
-  } catch(e){ console.log('Could not load real guides:', e); }
+let guidesStatus = 'idle';
+let GUIDES_DATA = [];
+
+function guidesReadyForMessages(){
+  if(guidesStatus === 'ready' && GUIDES_DATA.length) return true;
+  showToast('No guides are loaded, so no messages were sent.');
+  return false;
 }
 
-// MANAGER DATA
-const GUIDES_DATA=[
-  {name:'Amanda Test',pct:22,missing:['CPR certificate','Availability form'],status:'needs',discord:'amandalaine',city:'NYC',hireDate:20260421,obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
-  {name:'Kai Osei',pct:22,missing:['CPR certificate','Availability form','Uniform sizes'],status:'needs',discord:'kai_osei',city:'NYC',hireDate:20260420,obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:45},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
-  {name:'Priya Mehta',pct:65,missing:['CPR certificate'],status:'track',discord:'priya.m',city:'NYC',hireDate:20260415,obs:{ff:'pass',sg:'pending'},attendance:[true,true,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:78},{w:'Week 4',p:20}]},
-  {name:'Jordan Blake',pct:45,missing:['CPR certificate','Contract signed'],status:'needs',discord:'jblake_',city:'Toronto',hireDate:20260419,obs:{ff:'pending',sg:'pending'},attendance:[true,false,false,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:30},{w:'Week 4',p:0}]},
-  {name:'Sofia Reyes',pct:80,missing:['CPR certificate'],status:'track',discord:'sofiareyes',city:'NYC',hireDate:20260414,obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:65}]},
-  {name:'Marcus Webb',pct:15,missing:['Profile form','CPR certificate','Discord','Availability form'],status:'needs',discord:'marcuswebb',city:'Toronto',hireDate:20260418,obs:{ff:'pending',sg:'pending'},attendance:[false,false,false,false,false],training:[{w:'Week 1',p:60},{w:'Week 2',p:0},{w:'Week 3',p:0},{w:'Week 4',p:0}]},
-  {name:'Anika Patel',pct:100,missing:[],status:'alumni',discord:'anika.p',city:'NYC',hireDate:20260101,obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,true,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
-  {name:'Jordan Lee',pct:100,missing:[],status:'alumni',discord:'jordan.lee',city:'Toronto',hireDate:20260101,obs:{ff:'pass',sg:'pass'},attendance:[true,true,true,false,false],training:[{w:'Week 1',p:100},{w:'Week 2',p:100},{w:'Week 3',p:100},{w:'Week 4',p:100}]},
-];
+function updateManagerStats(){
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = value;
+  };
+  if(guidesStatus !== 'ready'){
+    ['s-total','s-needs','s-track','s-done','s-cpr'].forEach(id => set(id, '—'));
+    return;
+  }
+  const cprPending = GUIDES_DATA.filter(g => g.status !== 'alumni' && (g.missing || []).some(m => /cpr/i.test(String(m)))).length;
+  set('s-total', GUIDES_DATA.length);
+  set('s-needs', GUIDES_DATA.filter(g => g.status === 'needs').length);
+  set('s-track', GUIDES_DATA.filter(g => g.status === 'track').length);
+  set('s-done', GUIDES_DATA.filter(g => g.status === 'alumni').length);
+  set('s-cpr', cprPending);
+}
+
+async function loadRealGuides(){
+  const city = sessionStorage.getItem('mgr_city') || 'toronto';
+  guidesStatus = 'loading';
+  GUIDES_DATA = [];
+  updateManagerStats();
+  renderManagerCards([]);
+  try {
+    const res = await fetch(`${BACKEND}/api/guides?city=${encodeURIComponent(city)}`);
+    const data = await res.json();
+    if(!res.ok || !data.success){
+      guidesStatus = 'error';
+      GUIDES_DATA = [];
+    } else if(!Array.isArray(data.guides) || !data.guides.length){
+      guidesStatus = 'empty';
+      GUIDES_DATA = [];
+    } else {
+      guidesStatus = 'ready';
+      GUIDES_DATA = data.guides.map(g => ({
+        name: g.name,
+        pct: g.pct,
+        missing: Array.isArray(g.missing) ? g.missing : [],
+        status: g.status,
+        discord: g.discord || '',
+        city: g.city,
+        hireDate: g.hireDate || 0,
+        obs: g.obs && typeof g.obs === 'object' ? g.obs : { ff:'pending', sg:'pending' },
+        attendance: Array.isArray(g.attendance) ? g.attendance.slice() : [],
+        training: Array.isArray(g.training) ? g.training : [],
+        week: g.week,
+        expectedWeek: g.expectedWeek,
+        isBehind: g.isBehind,
+        email: g.email
+      }));
+    }
+  } catch(e){
+    guidesStatus = 'error';
+    GUIDES_DATA = [];
+  }
+  updateManagerStats();
+  if(currentMgrFilter === 'newsletters') renderNewsletterMgrView();
+  else renderManagerCards(getFilteredGuides(currentFilter || 'all'));
+}
+
+function applyCprContent(){
+  const el = document.getElementById('cpr-content');
+  if(!el) return;
+  el.innerHTML = CPR_CONTENT_HTML[state.city] || CPR_CONTENT_HTML.default;
+}
+
+function refreshGuideHeader(){
+  const cityName = state.city === 'nyc' ? 'New York City' : state.city === 'toronto' ? 'Toronto' : '—';
+  const cityEl = document.getElementById('meta-city');
+  if(cityEl) cityEl.textContent = cityName;
+  const key = state.city === 'toronto' ? 'Toronto' : state.city === 'nyc' ? 'NYC' : null;
+  const ws = key ? WAVE_SETTINGS[key] : null;
+  const badge = document.getElementById('wave-badge');
+  if(badge){
+    if(ws && ws.waveNumber){
+      const season = ws.season ? ` &nbsp;&middot;&nbsp; ${escapeHtml(ws.season)}` : '';
+      badge.innerHTML = `Wave ${escapeHtml(ws.waveNumber)}${season}`;
+    } else if(!key){
+      badge.textContent = 'Your onboarding';
+    }
+  }
+  const startEl = document.getElementById('start-date-display');
+  const checkEl = document.getElementById('checkin-date-display');
+  if(startEl){
+    if(ws && ws.startDate) startEl.textContent = fmtDate(new Date(ws.startDate));
+    else if(ws && ws.onboardingStart) startEl.textContent = fmtDate(new Date(ws.onboardingStart));
+    else startEl.textContent = '—';
+  }
+  if(checkEl){
+    const start = ws && (ws.startDate || ws.onboardingStart);
+    if(start){
+      const ci = new Date(start);
+      ci.setMonth(ci.getMonth() + 6);
+      checkEl.textContent = fmtDate(ci);
+    } else checkEl.textContent = '—';
+  }
+  applyCprContent();
+}
 
 // INIT
 async function init(){
-  const tokenValid = await checkMagicToken();
+  await checkMagicToken();
   if(!state.guideEmail){
     const savedEmail = localStorage.getItem('othership_guide_email');
     if(savedEmail) state.guideEmail = savedEmail;
@@ -1394,25 +1572,16 @@ async function init(){
   hideLoginScreen();
   restoreState();
   if(state.guideEmail){
-  await loadProgressFromNotion(state.guideEmail, state.city || '');
-  if(state.guideName) document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
-  if(state.city){
-    document.getElementById('meta-city').textContent = state.city==='nyc'?'New York City':'Toronto';
-    document.getElementById('cpr-content').innerHTML = CPR_CONTENT_HTML[state.city]||CPR_CONTENT_HTML.default;
+    await loadProgressFromNotion(state.guideEmail, state.city || '');
+    if(state.guideName) document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
   }
-}
+  refreshGuideHeader();
   loadWaveSettings();
   loadTasksFromNotion();
   loadNewsletters();
   checkFloorReadyStatus();
-  const today=new Date();
-  document.getElementById('start-date-display').textContent=fmtDate(today);
-  const ci=new Date(today);ci.setMonth(ci.getMonth()+6);
-  document.getElementById('checkin-date-display').textContent=fmtDate(ci);
-  document.getElementById('ha-date').value=today.toISOString().split('T')[0];
-  document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML.default;
-  renderWeeks();
-  renderManagerCards(getFilteredGuides("all"));
+  const haDate = document.getElementById('ha-date');
+  if(haDate && !haDate.value) haDate.value = new Date().toISOString().split('T')[0];
   if(!state.intakeComplete){
     setTimeout(()=>openModal('modal-intake'),500);
   }
@@ -1427,17 +1596,26 @@ function renderWeeks(){
     const label = w.querySelector('.week-label');
     if(label) openWeeks.add(label.textContent);
   });
-  const total=WEEKS.reduce((a,w)=>a+w.tasks.length,0);
-  const done=Object.values(state.tasks).filter(Boolean).length;
+  const allTasks=WEEKS.reduce((list,w)=>list.concat(w.tasks),[]);
+  const total=allTasks.length;
+  const done=allTasks.filter(t=>isTaskDone(t.id)).length;
   const pct=total>0?Math.round((done/total)*100):0;
   document.getElementById('main-fill').style.width=pct+'%';
   document.getElementById('pct-label').textContent=pct+'% complete';
   c.innerHTML='';
+  if(!WEEKS.length){
+    let msg = 'No tasks are set up for your city yet.';
+    if(state.city !== 'toronto' && state.city !== 'nyc') msg = 'Choose your city in the profile form to see your tasks.';
+    else if(tasksLoading) msg = 'Loading your tasks…';
+    else if(tasksLoadError) msg = tasksLoadError;
+    c.innerHTML = `<div class="empty-state">${escapeHtml(msg)}</div>`;
+    return;
+  }
   WEEKS.forEach((week,idx)=>{
-    const wDone=week.tasks.filter(t=>state.tasks[t.id]).length;
+    const wDone=week.tasks.filter(t=>isTaskDone(t.id)).length;
     const wTotal=week.tasks.length;
     const isComplete=wDone===wTotal&&wTotal>0;
-    const prevDone=idx===0||WEEKS.slice(0,idx).every(pw=>pw.tasks.every(t=>state.tasks[t.id]));
+    const prevDone=idx===0||WEEKS.slice(0,idx).every(pw=>pw.tasks.every(t=>isTaskDone(t.id)));
     const isActive=!isComplete&&prevDone;
     const wasOpen = openWeeks.has(week.label);
     const shouldOpen = wasOpen || (isActive && openWeeks.size === 0);
@@ -1460,28 +1638,25 @@ function renderWeeks(){
 }
 
 function renderTask(t){
-  const checked=state.tasks[t.id];
+  const checked=isTaskDone(t.id);
   const badgeHTML=t.badge?`<span class="badge ${t.badge==='in-ship'?'badge-inship':t.badge==='in-person'?'badge-inperson':t.badge==='online'?'badge-online':'badge-notion'}">${t.badge==='in-ship'?'In-Ship':t.badge==='in-person'?'In-Person':t.badge==='online'?'Online':'Notion'}</span>`:'';
+  const label=escapeHtml(t.cta||'');
+  const safeId=String(t.id).replace(/[^a-z0-9-]/gi,'');
   let actionHTML='';
-  if(t.type==='form') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">${t.cta}</button></div>`;
-  else if(t.type==='cpr-upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${t.cta}</button></div>`;
-  else if(t.type==='modal'&&t.modal) actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${t.cta}</button></div>`;
-  else if(t.type==='payroll') actionHTML=`<div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">${t.cta}</button></div>`;
-  else if(t.type==='link'){
-    const linkUrl = t.notionUrl || t.vimeoUrl || '#';
-    actionHTML=`<div class="task-action"><a class="btn-sm btn-outline" href="${linkUrl}" target="_blank">${t.cta} →</a></div>`;
-  }
-  else if(t.type==='city-link') actionHTML=`<div class="task-action"><button class="btn-sm btn-outline" onclick="openCityLink()">${t.cta} →</button></div>`;
-  else if(t.type==='video'){
-    const vidUrl = t.vimeoUrl || t.url || '#';
-    actionHTML=`<div class="task-action"><a class="btn-sm btn-lemon" href="${vidUrl}" target="_blank">${t.cta} →</a></div>`;
+  if(t.type==='profile') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">${label}</button></div>`;
+  else if(t.type==='upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${label}</button></div>`;
+  else if(t.type==='modal'&&t.modal) actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${label}</button></div>`;
+  else if((t.type==='link'||t.type==='video') && t.url){
+    const klass = t.type==='video' ? 'btn-lemon' : 'btn-outline';
+    actionHTML=`<div class="task-action"><a class="btn-sm ${klass}" href="${escapeHtml(t.url)}" target="_blank" rel="noopener">${label} →</a></div>`;
   }
   return `
     <div class="task">
-      <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${t.id}')"></div>
+      <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${safeId}')"></div>
       <div class="task-body">
-        <div class="task-name">${t.name}${badgeHTML}</div>
-        <div class="task-desc">${t.desc||''}</div>
+        <div class="task-name">${escapeHtml(t.name)}${badgeHTML}</div>
+        <div class="task-desc">${linkifyText(t.desc||'')}</div>
+        ${/floor ready check-in/i.test(t.name) ? '<div class="task-desc">Leave this circle for your lead guide. Ticking it only updates your own list — it does not assign shifts or message your lead.</div>' : ''}
         ${actionHTML}
       </div>
     </div>
@@ -1500,7 +1675,7 @@ const NOTION_SYNC_TASKS = {
 };
 
 function toggleTask(id){
-  state.tasks[id]=!state.tasks[id];
+  writeTaskDone(id, !isTaskDone(id));
   saveState();
   renderWeeks();
   if(state.tasks[id]){
@@ -1511,7 +1686,7 @@ function toggleTask(id){
   }
 }
 function markTask(id){
-  state.tasks[id]=true;
+  writeTaskDone(id, true);
   saveState();
   renderWeeks();
   if(NOTION_SYNC_TASKS[id] && state.guideEmail && state.city){
@@ -1567,7 +1742,8 @@ async function submitIntake(){
   document.getElementById('guide-first-name').textContent=first;
   document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
   state.tasks['profile']=true;
-  document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML[city]||CPR_CONTENT_HTML.default;
+  applyCprContent();
+  refreshGuideHeader();
   closeModal('modal-intake');
   renderWeeks();
   loadTasksFromNotion();
@@ -1603,16 +1779,28 @@ const CPR_FOLDERS = {
   toronto: 'https://drive.google.com/drive/folders/1gU4BexeN3y3zoXXwZxy8wH5AHKGS21lX?usp=sharing'
 };
 function openCPRFolder(){
-  window.open(CPR_FOLDERS[state.city] || CPR_FOLDERS.nyc, '_blank');
+  const folder = CPR_FOLDERS[state.city];
+  if(!folder){
+    showToast('Select your city in your profile before opening the CPR folder.');
+    return;
+  }
+  window.open(folder, '_blank');
 }
 async function confirmCPR(){
   const expiry = document.getElementById('cpr-expiry').value;
   if(!expiry){showToast('Please enter your certificate expiry date');return;}
-  state.tasks['cpr-upload']=true;
+  if(!state.city){ showToast('Select your city in your profile before confirming CPR.'); return; }
+  writeTaskDone('cpr-upload', true);
   closeModal('modal-cpr-upload');
   renderWeeks();
-  showToast('CPR certificate confirmed — logged to your Notion card');
-  if(state.guideEmail && state.city) await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
+  saveState();
+  if(state.guideEmail){
+    const result = await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
+    if(result && result.success) showToast('CPR certificate confirmed — logged to your crew card');
+    else showToast('The tick is saved on this device, but the certificate did not reach your crew card. Try again.');
+  } else {
+    showToast('CPR noted on this device. Finish your profile so it can reach your crew card.');
+  }
 }
 
 async function signHA(){
@@ -1636,22 +1824,55 @@ async function confirmMT(){
   showToast('Mariana Tek confirmed — credits will be added shortly');
 }
 
+function trainingChecklist(g){
+  const weeks = Array.isArray(g.training) ? g.training.filter(w => w && (w.w || w.p != null)) : [];
+  if(weeks.length){
+    const last = weeks[weeks.length - 1];
+    return { ok: weeks.every(w => Number(w.p) >= 100), label: `${last.w || 'Training'} complete` };
+  }
+  const city = String(g.city || '').toLowerCase();
+  const key = city === 'toronto' || city === 'to' ? 'Toronto' : city === 'nyc' ? 'NYC' : null;
+  const wave = key ? WAVE_SETTINGS[key] : null;
+  const label = wave && wave.waveNumber ? `Wave ${wave.waveNumber} onboarding complete` : 'Onboarding complete';
+  return { ok: Number(g.pct) >= 100, label };
+}
+
 function renderManagerCards(guides){
-  const c=document.getElementById('gcards');c.innerHTML='';
-  guides.forEach((g,gi)=>{
+  const c=document.getElementById('gcards');
+  if(!c) return;
+  if(guidesStatus !== 'ready'){
+    const msg = guidesStatus === 'error'
+      ? 'Could not load guides. No reminders were sent. Open Manager View again to retry.'
+      : guidesStatus === 'loading'
+        ? 'Loading guides…'
+        : guidesStatus === 'empty'
+          ? 'No active guides for this city.'
+          : 'Open Manager View to load guides.';
+    c.innerHTML = `<div class="empty-state">${escapeHtml(msg)}</div>`;
+    return;
+  }
+  if(!guides.length){
+    c.innerHTML = '<div class="empty-state">No guides match this filter.</div>';
+    return;
+  }
+  c.innerHTML='';
+  guides.forEach((g)=>{
+    const gi = GUIDES_DATA.indexOf(g);
     const el=document.createElement('div');
     el.className=`gcard ${g.status}`;el.dataset.status=g.status;
     const barColor=g.pct===100?'var(--moss)':g.pct>50?'var(--teal)':'#e07a50';
-    const missingHTML=g.missing.length
-      ?`<div class="missing-tags">${g.missing.map(m=>`<span class="mtag">${m}</span>`).join('')}</div>`
+    const missing = g.missing || [];
+    const missingHTML=missing.length
+      ?`<div class="missing-tags">${missing.map(m=>`<span class="mtag">${escapeHtml(m)}</span>`).join('')}</div>`
       :`<div style="font-size:12px;color:var(--teal);margin-top:4px;">All tasks complete ✓</div>`;
-    const ffStatus=g.obs.ff;const sgStatus=g.obs.sg;
-    const cprOk=!g.missing.includes('CPR certificate');
-    const trainingOk=g.training[2]&&g.training[2].p>=100;
+    const ffStatus=g.obs&&g.obs.ff;const sgStatus=g.obs&&g.obs.sg;
+    const cprOk=!missing.some(m => /cpr/i.test(String(m)));
+    const training = trainingChecklist(g);
+    const trainingOk = training.ok;
     const isFloorReady=ffStatus==='pass'&&sgStatus==='pass'&&cprOk&&trainingOk;
     const checklistHTML=`
       <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot ${trainingOk?'pass':'pending'}"></div><span>Training Week 7 complete</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot ${trainingOk?'pass':'pending'}"></div><span>${escapeHtml(training.label)}</span></div>
         <div class="floor-check-item"><div class="floor-check-dot ${cprOk?'pass':'fail'}"></div><span>CPR valid</span></div>
         <div class="floor-check-item"><div class="floor-check-dot ${ffStatus==='pass'?'pass':ffStatus==='fail'?'fail':'pending'}"></div><span>FF observation passed</span></div>
         <div class="floor-check-item"><div class="floor-check-dot ${sgStatus==='pass'?'pass':sgStatus==='fail'?'fail':'pending'}"></div><span>SG observation passed</span></div>
@@ -1674,7 +1895,8 @@ function renderManagerCards(guides){
           </div>
         </div>
       </div>`;
-    const cityTrainingDays = g.city === 'Toronto' ? (WAVE_SETTINGS.Toronto.trainingDays || 3) : (WAVE_SETTINGS.NYC.trainingDays || 2);
+    const cityKey = /toronto/i.test(g.city || '') ? 'Toronto' : /nyc/i.test(g.city || '') ? 'NYC' : null;
+    const cityTrainingDays = (cityKey && WAVE_SETTINGS[cityKey].trainingDays) || 2;
     const attendanceHTML=`
       <div class="attendance-row">
         <span class="attendance-label">Training days</span>
@@ -1683,15 +1905,15 @@ function renderManagerCards(guides){
     const trainingHTML='';
     const actionsHTML=`
       <div class="gcard-actions" style="margin-top:10px;">
-        ${g.status!=='done'?`<button class="btn-remind" onclick="openReminderFor('${g.name}',${JSON.stringify(g.missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
+        ${g.status!=='done'?`<button class="btn-remind" onclick="openReminderFor(${JSON.stringify(g.name).replace(/"/g,'&quot;')},${JSON.stringify(missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
         ${isFloorReady&&g.status!=='done'?`<button class="btn-floor-ready" onclick="markFloorReady(${gi})">✓ Mark floor ready</button>`:''}
         <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
       </div>`;
     el.innerHTML=`
       <div class="gcard-top">
         <div>
-          <div class="gcard-name">${g.name}</div>
-          <div class="gcard-meta">@${g.discord} &nbsp;·&nbsp; ${g.city}</div>
+          <div class="gcard-name">${escapeHtml(g.name)}</div>
+          <div class="gcard-meta">@${escapeHtml(g.discord || '—')} &nbsp;·&nbsp; ${escapeHtml(g.city || '—')}</div>
           ${missingHTML}
         </div>
         <div class="gcard-right">
@@ -1753,22 +1975,18 @@ function loadWaveSettings(){
     .then(data=>{
       if(data.success && data.waves){
         data.waves.forEach(w=>{
-          if(w.city==='NYC') WAVE_SETTINGS.NYC=w;
-          if(w.city==='Toronto') WAVE_SETTINGS.Toronto=w;
-          if(w.city==='NYC') WAVE_SETTINGS.NYC.trainingDays = w.trainingDays || 2;
-          if(w.city==='Toronto') WAVE_SETTINGS.Toronto.trainingDays = w.trainingDays || 3;
+          if(w.city==='NYC') WAVE_SETTINGS.NYC=Object.assign({}, w, { trainingDays: w.trainingDays || 2 });
+          if(w.city==='Toronto') WAVE_SETTINGS.Toronto=Object.assign({}, w, { trainingDays: w.trainingDays || 2 });
         });
-        const st=JSON.parse(localStorage.getItem('othership_guide_state')||'{}');
-        const city=st.city==='toronto'?'Toronto':'NYC';
-        const ws=WAVE_SETTINGS[city];
-        const badge=document.getElementById('wave-badge');
-        if(badge&&ws.waveNumber) badge.innerHTML=`Wave ${ws.waveNumber} &nbsp;&middot;&nbsp; Path 1`;
-        const label=document.getElementById('mgr-city-label');
-        if(label) label.textContent=`Wave ${WAVE_SETTINGS.NYC.waveNumber}/${WAVE_SETTINGS.Toronto.waveNumber} — NYC + Toronto`;
-        const title=document.getElementById('mgr-table-title');
-        if(title) title.textContent=`All guides — Wave ${WAVE_SETTINGS.NYC.waveNumber}/${WAVE_SETTINGS.Toronto.waveNumber}`;
+        refreshGuideHeader();
+        if(!sessionStorage.getItem('mgr_city')){
+          const label=document.getElementById('mgr-city-label');
+          if(label) label.textContent=`Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'} — NYC + Toronto`;
+          const title=document.getElementById('mgr-table-title');
+          if(title) title.textContent=`All guides — Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'}`;
+        }
       }
-    }).catch(e=>console.log('Wave settings not loaded:',e));
+    }).catch(()=>showToast('Could not load wave settings.'));
 }
 
 async function createWaveChannels(){
@@ -1823,14 +2041,21 @@ function filterG(type,btn){
 
 let _rg='',_rm=[];
 function openReminderFor(name,missing){_rg=name;_rm=missing;document.getElementById('reminder-sub').textContent=`Personalised nudge for ${name}`;openModal('modal-reminder');genReminder(name,missing);}
-function openReminderAll(){_rg='all';_rm=[];const n=GUIDES_DATA.filter(g=>g.missing.length).length;document.getElementById('reminder-sub').textContent=`Posting to wave channel — ${n} guides have outstanding items`;openModal('modal-reminder');genReminder('all',[]);}
+function openReminderAll(){
+  if(!guidesReadyForMessages()) return;
+  _rg='all';_rm=[];
+  const n=GUIDES_DATA.filter(g=>(g.missing||[]).length && g.discord).length;
+  document.getElementById('reminder-sub').textContent=`Sending a direct message to ${n} guide${n===1?'':'s'} with outstanding items`;
+  openModal('modal-reminder');
+  genReminder('all',[]);
+}
 function regenReminder(){genReminder(_rg,_rm);}
 function genReminder(name,missing){
   document.getElementById('reminder-text').innerHTML='<span class="loading-dot">Generating message</span>';
   setTimeout(()=>{
     let msg;
     if(name==='all'){
-      const behind=GUIDES_DATA.filter(g=>g.missing.length).map(g=>`@${g.discord}`).join(' ');
+      const behind=GUIDES_DATA.filter(g=>(g.missing||[]).length && g.discord).map(g=>`@${g.discord}`).join(' ');
       msg=`Hey team — as we close out this week, a few of you need to catch up before moving forward:\n\n${behind}\n\nHead into your onboarding portal and knock off your remaining tasks as soon as you can so we stay on track together. Any questions drop them here. 💪`;
     } else {
       const first=name.split(' ')[0];
@@ -1856,10 +2081,11 @@ function submitDiscordUsername(){
 }
 
 async function sendReminder(){
+  if(!guidesReadyForMessages()) return;
   const msg = document.getElementById('reminder-text').textContent;
   if(!msg || msg.includes('Generating')) return showToast('Message still generating — wait a moment');
   if(_rg === 'all'){
-    const behind = GUIDES_DATA.filter(g => g.missing.length);
+    const behind = GUIDES_DATA.filter(g => (g.missing||[]).length && g.discord);
     let sent = 0;
     for(const g of behind){
       const first = g.name.split(' ')[0];
@@ -1873,6 +2099,7 @@ async function sendReminder(){
   } else {
     const guide = GUIDES_DATA.find(g => g.name === _rg);
     if(!guide) return showToast('Guide not found');
+    if(!guide.discord) return showToast('This guide has no Discord username, so no message was sent.');
     try {
       await callBackend('/api/discord-dm', { discordUsername: guide.discord, message: msg });
       closeModal('modal-reminder');
@@ -1882,9 +2109,14 @@ async function sendReminder(){
 }
 
 function openModal(id){
-  document.getElementById(id).classList.add('open');
+  const el = document.getElementById(id);
+  if(!el){
+    showToast('That step could not be opened. Refresh the page and try again.');
+    return;
+  }
+  el.classList.add('open');
   if(id==='modal-discord') updateDiscordPanel();
-  if(id==='modal-cpr'&&state.city) document.getElementById('cpr-content').innerHTML=CPR_CONTENT_HTML[state.city]||CPR_CONTENT_HTML.default;
+  if(id==='modal-cpr') applyCprContent();
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function switchView(view,e){
