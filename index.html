@@ -116,6 +116,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .btn-orchid:hover{background:rgba(203,114,196,0.22);}
 .btn-teal{background:rgba(167,207,201,0.15);border:1px solid rgba(167,207,201,0.3);color:var(--teal);}
 .btn-teal:hover{background:rgba(167,207,201,0.25);}
+/* Every task card uses one primary action. The checkbox is the only secondary control. */
+.task-action .btn-sm{background:#DBF572;color:#372338;border:1px solid #DBF572;font-weight:600;padding:8px 14px;line-height:1.35;white-space:normal;text-align:center;max-width:100%;}
+.task-action .btn-sm:hover{background:#cde84e;border-color:#cde84e;color:#372338;}
+.task-action .btn-sm:focus-visible{outline:2px solid #ECE8E3;outline-offset:2px;}
+.task-check.checked ~ .task-body .task-action .btn-sm{background:transparent;color:#A7CFC9;border-color:#A7CFC9;}
+.task-check.checked ~ .task-body .task-action .btn-sm:hover{background:rgba(167,207,201,0.16);color:#A7CFC9;border-color:#A7CFC9;}
+.step-callout{background:rgba(219,245,114,0.14);border-left:3px solid #DBF572;color:#ECE8E3;font-weight:600;font-size:15px;line-height:1.45;padding:10px 14px;margin:8px 0 12px;border-radius:0 8px 8px 0;}
 
 /* MODALS */
 .modal-overlay{position:fixed;inset:0;background:rgba(22,13,24,0.88);backdrop-filter:blur(10px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
@@ -335,6 +342,7 @@ select.form-input option{background:#271829;}
   .form-grid{grid-template-columns:1fr;}
   .sig-row{grid-template-columns:1fr;}
   .floor-checklist{grid-template-columns:1fr;}
+  .task-action .btn-sm{width:100%;justify-content:center;}
 }
 </style>
 </head>
@@ -562,6 +570,7 @@ select.form-input option{background:#271829;}
     </div>
     <div class="content-panel" style="margin-top:12px;">
       <h3>Step 4 — Enter your Discord username</h3>
+      <p class="step-callout">This is extremely important, as it's how you'll get added to the channels you need for onboarding.</p>
       <p>Enter your exact Discord username below (e.g. <strong>amandalaine</strong>).</p>
       <input type="text" id="discord-username-input" placeholder="Your Discord username" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(236,232,227,0.15);background:rgba(236,232,227,0.06);color:var(--cloud);font-size:14px;font-family:var(--font-body);margin-top:6px;box-sizing:border-box;">
     </div>
@@ -1082,6 +1091,21 @@ function taskLink(t){
   return firstUrl(t && t.description);
 }
 
+// A Checkbox that repeats a "Sign up…" card's URL is a completion tick, not another link.
+// Sign-up cards and CPR sign-up (name starts with "Sign up") keep their buttons.
+function linkHeldBySignupCard(t, siblings){
+  const type = String((t && t.type) || '').toLowerCase();
+  if(type !== 'checkbox') return false;
+  if(/^sign up\b/i.test((t && t.name) || '')) return false;
+  const url = String((t && (t.notionUrl || t.vimeoUrl)) || '').trim();
+  if(!url) return false;
+  return (siblings || []).some(other => {
+    if(!other || other === t || other.id === t.id) return false;
+    if(!/^sign up\b/i.test(other.name || '')) return false;
+    return String(other.notionUrl || other.vimeoUrl || '').trim() === url;
+  });
+}
+
 // Pop-ups whose text lives in this page. A real link on the card wins over these.
 function getModal(name){
   const n = String(name || '').toLowerCase();
@@ -1097,12 +1121,16 @@ function getModal(name){
 
 // Type and the link fields decide what the card does. The title only fills in
 // the button words when Notion has not sent its own label.
-function classifyKind(t){
+function classifyKind(t, siblings){
   const type = String(t.type || '').toLowerCase();
   const name = t.name || '';
-  const url = taskLink(t);
+  const url = linkHeldBySignupCard(t, siblings) ? '' : taskLink(t);
   const modal = getModal(name);
   if(type === 'upload') return { behavior:'upload', url, modal:null };
+  // "Set up 7shifts" is a Notion link with no URL. Open the city payroll note (7shifts in Toronto, ADP in NYC).
+  if(type === 'payroll' || ((type === 'notion-link' || type === 'link') && !url && /7\s*shifts/i.test(name))){
+    return { behavior:'payroll', url:'', modal:null };
+  }
   if(url){
     if(type === 'video' || t.vimeoUrl) return { behavior:'video', url, modal:null };
     return { behavior:'link', url, modal:null };
@@ -1121,6 +1149,7 @@ function buttonLabel(t, behavior){
   const name = t.name || '';
   const type = String(t.type || '').toLowerCase();
   if(behavior === 'upload') return 'Upload certificate';
+  if(behavior === 'payroll') return 'Review payroll info';
   if(behavior === 'video') return 'Watch training';
   if(behavior === 'profile') return 'Open profile form';
   if(behavior === 'modal'){
@@ -1160,7 +1189,7 @@ function writeTaskDone(id, value){
   (taskAliases[id] || []).forEach(alias => { delete state.tasks[alias]; });
 }
 
-function buildTask(t, used){
+function buildTask(t, used, siblings){
   const name = t.name || 'Task';
   let id = getTaskId(name);
   if(used.has(id)){
@@ -1171,7 +1200,7 @@ function buildTask(t, used){
   const raw = slugId(name);
   const aliasIds = raw && raw !== id && !used.has(raw) ? [raw] : [];
   if(aliasIds.length) taskAliases[id] = aliasIds;
-  const kind = classifyKind(t);
+  const kind = classifyKind(t, siblings);
   return {
     id,
     aliasIds,
@@ -1224,11 +1253,12 @@ function loadTasksFromNotion(){
       });
       const used = new Set();
       taskAliases = {};
+      const siblings = data.tasks;
       const newWeeks = Object.keys(weekMap).sort((a,b)=>Number(a)-Number(b)).map(w => ({
         id: `w${w}`,
         label: `Week ${w}`,
         dates: '',
-        tasks: weekMap[w].map(t => buildTask(t, used))
+        tasks: weekMap[w].map(t => buildTask(t, used, siblings))
       }));
       WEEKS.length = 0;
       newWeeks.forEach(w => WEEKS.push(w));
@@ -1646,6 +1676,7 @@ function renderTask(t){
   if(t.type==='profile') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">${label}</button></div>`;
   else if(t.type==='upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${label}</button></div>`;
   else if(t.type==='modal'&&t.modal) actionHTML=`<div class="task-action"><button class="btn-sm btn-orchid" onclick="openModal('${t.modal}')">${label}</button></div>`;
+  else if(t.type==='payroll') actionHTML=`<div class="task-action"><button class="btn-sm btn-teal" onclick="openPayroll()">${label}</button></div>`;
   else if((t.type==='link'||t.type==='video') && t.url){
     const klass = t.type==='video' ? 'btn-lemon' : 'btn-outline';
     actionHTML=`<div class="task-action"><a class="btn-sm ${klass}" href="${escapeHtml(t.url)}" target="_blank" rel="noopener">${label} →</a></div>`;
