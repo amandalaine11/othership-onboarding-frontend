@@ -36,6 +36,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .nav-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.06);border-radius:8px;padding:4px;}
 .nav-tab{padding:6px 16px;border-radius:6px;font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:rgba(236,232,227,0.45);transition:all 0.2s;font-family:var(--font-body);}
 .nav-tab.active{background:var(--lemon);color:var(--eggplant);}
+.nav-actions{display:flex;align-items:center;gap:12px;}
+.nav-signout{background:transparent;border:1px solid rgba(236,232,227,0.28);color:var(--cloud);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;font-family:var(--font-body);}
+.nav-signout:hover{border-color:var(--lemon);color:var(--lemon);}
+.nav-signout[hidden]{display:none;}
+.save-banner{margin:16px 40px 0;background:var(--rust);color:var(--cloud);padding:12px 16px;border-radius:10px;font-size:14px;font-weight:500;line-height:1.45;}
+.save-banner[hidden]{display:none;}
 
 /* VIEWS */
 .view{display:none;animation:fadeUp 0.3s ease;}
@@ -339,7 +345,8 @@ select.form-input option{background:#271829;}
 .login-sent p{color:var(--teal);font-size:14px;line-height:1.6;}
 
 @media(max-width:600px){
-  .guide-hero,.weeks,.mgr-header,.stats-row,.table-section{padding-left:18px;padding-right:18px;}
+  .guide-hero,.weeks,.mgr-header,.stats-row,.table-section,.save-banner{padding-left:18px;padding-right:18px;}
+  .save-banner{margin-left:18px;margin-right:18px;}
   .guide-hero::after{display:none;}
   .form-grid{grid-template-columns:1fr;}
   .sig-row{grid-template-columns:1fr;}
@@ -366,10 +373,13 @@ select.form-input option{background:#271829;}
 
 <nav class="nav">
   <div class="nav-logo">OTHER<span>SHIP</span></div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchView('guide',event)">My Journey</button>
-    <button class="nav-tab" id="newsletter-tab" onclick="switchView('newsletter',event)" style="display:none">Newsletters</button>
-    <button class="nav-tab" onclick="switchView('manager',event)">Manager View</button>
+  <div class="nav-actions">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchView('guide',event)">My Journey</button>
+      <button class="nav-tab" id="newsletter-tab" onclick="switchView('newsletter',event)" style="display:none">Newsletters</button>
+      <button class="nav-tab" onclick="switchView('manager',event)">Manager View</button>
+    </div>
+    <button class="nav-signout" id="guide-signout" type="button" hidden onclick="signOutGuide()">Sign out</button>
   </div>
 </nav>
 
@@ -387,6 +397,7 @@ select.form-input option{background:#271829;}
       <div class="meta-chip"><strong>6-Month Check-in</strong><span id="checkin-date-display">—</span></div>
     </div>
   </div>
+  <div class="save-banner" id="save-banner" hidden></div>
   <div class="progress-bar-wrap">
     <div class="progress-label"><span>Onboarding Progress</span><span id="pct-label">0% complete</span></div>
     <div class="progress-track"><div class="progress-fill" id="main-fill" style="width:0%"></div></div>
@@ -842,7 +853,43 @@ select.form-input option{background:#271829;}
 
 <script>
 const GUIDE_TOKEN_KEY = 'othership_guide_token';
+const GUIDE_EMAIL_KEY = 'othership_guide_email';
+const LEGACY_STATE_KEY = 'othership_guide_state';
 const MANAGER_TOKEN_KEY = 'othership_manager_token';
+
+function normalizeEmail(email){
+  return String(email || '').trim().toLowerCase();
+}
+function normalizePageId(id){
+  return String(id || '').replace(/-/g,'').trim().toLowerCase();
+}
+function stateStorageKey(email){
+  const key = normalizeEmail(email);
+  return key ? 'othership_guide_state:' + key : '';
+}
+function readStateBlob(key){
+  if(!key) return null;
+  try {
+    const raw = localStorage.getItem(key);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch(e){ return null; }
+}
+function currentGuideEmail(){
+  const stored = (localStorage.getItem(GUIDE_EMAIL_KEY) || '').trim();
+  if(guideToken() && stored) return stored;
+  return (state.guideEmail || stored).trim();
+}
+function retireLegacyState(){
+  const legacy = readStateBlob(LEGACY_STATE_KEY);
+  if(!legacy) return;
+  const key = stateStorageKey(legacy.guideEmail);
+  if(key && !localStorage.getItem(key)){
+    try { localStorage.setItem(key, JSON.stringify(legacy)); } catch(e){}
+  }
+  localStorage.removeItem(LEGACY_STATE_KEY);
+}
 
 function guideToken(){ return localStorage.getItem(GUIDE_TOKEN_KEY) || ''; }
 function setGuideToken(token){
@@ -882,8 +929,11 @@ async function checkMagicToken(){
   const res = await apiFetch('/api/auth/verify?token=' + encodeURIComponent(token), { method:'GET', auth:'none' });
   const data = res.data || {};
   if(data.success && data.email && data.token){
-    state.guideEmail = data.email;
-    localStorage.setItem('othership_guide_email', data.email);
+    const next = normalizeEmail(data.email);
+    const previous = normalizeEmail(localStorage.getItem(GUIDE_EMAIL_KEY));
+    if(previous && previous !== next) retireLegacyState();
+    state.guideEmail = String(data.email).trim();
+    localStorage.setItem(GUIDE_EMAIL_KEY, state.guideEmail);
     setGuideToken(data.token);
     window.history.replaceState({}, '', window.location.pathname);
     return true;
@@ -893,7 +943,7 @@ async function checkMagicToken(){
 }
 
 function isLoggedIn(){
-  return !!(guideToken() && (state.guideEmail || localStorage.getItem('othership_guide_email')));
+  return !!(guideToken() && currentGuideEmail());
 }
 
 function showLoginScreen(){
@@ -958,8 +1008,13 @@ async function apiFetch(path, options){
       }
     } else {
       setGuideToken('');
-      showToast(sentence);
+      const write = /\/api\/(progress\/save|task-complete|upload-cpr|intake)\b/.test(path);
+      const guideSentence = write ? "Couldn't save — please sign in again" : sentence;
+      if(write) showSaveError(guideSentence);
+      else showToast(guideSentence);
       showLoginScreen();
+      const signOut = document.getElementById('guide-signout');
+      if(signOut) signOut.hidden = true;
     }
   }
   return { ok: res.ok, status: res.status, data };
@@ -1150,7 +1205,7 @@ let tasksLoading = false;
 let taskAliases = {};
 
 // STATE
-const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{}};
+const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{},discordUsername:'',mtEmail:''};
 
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -1455,71 +1510,169 @@ function loadTasksFromNotion(){
     });
 }
 
-function restoreState(){
-  try {
-    const saved = localStorage.getItem('othership_guide_state');
-    if(saved){
-      const parsed = JSON.parse(saved);
-      Object.assign(state, parsed);
-      if(state.guideName) document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
-      if(state.city){
-        document.getElementById('meta-city').textContent = state.city==='nyc'?'New York City':'Toronto';
-        document.getElementById('cpr-content').innerHTML = CPR_CONTENT_HTML[state.city]||CPR_CONTENT_HTML.default;
-      }
-    }
-  } catch(e){ console.log('No saved state'); }
+function paintGuideIdentity(){
+  const nameEl = document.getElementById('guide-first-name');
+  if(nameEl) nameEl.textContent = state.guideName ? state.guideName.split(' ')[0] : 'there';
+  const cityEl = document.getElementById('meta-city');
+  if(cityEl) cityEl.textContent = state.city === 'nyc' ? 'New York City' : state.city === 'toronto' ? 'Toronto' : '—';
+  if(state.city){
+    const cpr = document.getElementById('cpr-content');
+    if(cpr) cpr.innerHTML = CPR_CONTENT_HTML[state.city] || CPR_CONTENT_HTML.default;
+  }
+  const signOut = document.getElementById('guide-signout');
+  if(signOut) signOut.hidden = !isLoggedIn();
 }
 
-function saveState(){
-  try {
-    const stateToSave = {
-      intakeComplete: state.intakeComplete,
-      guideName: state.guideName,
-      city: state.city,
-      guideEmail: state.guideEmail,
-      notionPageId: state.notionPageId,
-      tasks: state.tasks
-    };
-    stateToSave.tasks = taskPayload();
-    localStorage.setItem('othership_guide_state', JSON.stringify(stateToSave));
-    if(state.guideEmail && state.city && state.intakeComplete){
-      apiFetch('/api/progress/save', {
-        method: 'POST',
-        auth: 'guide',
-        body: {
-          email: state.guideEmail,
-          city: state.city,
-          progress: {
-            tasks: taskPayload(),
-            intakeComplete: state.intakeComplete,
-            guideName: state.guideName,
-            notionPageId: state.notionPageId
-          }
-        }
-      }).then(res => {
-        const data = res.data || {};
-        if(res.status === 401) return;
-        if(!res.ok || data.success === false){
-          showToast(data.error || 'Your progress is saved on this device, but it did not save to your crew card. Check your connection and tick the task again.');
-        }
-      });
-    }
-  } catch(e){
-    showToast('Could not save your progress on this device.');
+function clearProgressFields(){
+  state.tasks = {};
+  state.guideName = '';
+  state.notionPageId = '';
+  state.hasSigned = false;
+  state.intakeComplete = false;
+  state.resolvedById = {};
+}
+
+function showSaveError(message){
+  const banner = document.getElementById('save-banner');
+  if(banner){
+    banner.textContent = message;
+    banner.hidden = false;
   }
+  showToast(message, 6000);
+}
+
+function clearSaveError(){
+  const banner = document.getElementById('save-banner');
+  if(banner){
+    banner.textContent = '';
+    banner.hidden = true;
+  }
+}
+
+function saveFailureMessage(data, status){
+  const err = data && data.error ? String(data.error) : '';
+  if(status === 401 || status === 403 || /own guide record|sign in|unauthorized|expired/i.test(err)){
+    return "Couldn't save — please sign in again";
+  }
+  return err ? "Couldn't save — " + err : "Couldn't save — please sign in again";
+}
+
+function applyOwnedState(parsed){
+  if(!parsed) return;
+  if(parsed.guideName) state.guideName = parsed.guideName;
+  if(parsed.city) state.city = cityCode(parsed.city) || parsed.city;
+  if(parsed.notionPageId) state.notionPageId = parsed.notionPageId;
+  if(parsed.tasks && typeof parsed.tasks === 'object') state.tasks = parsed.tasks;
+  if(parsed.intakeComplete) state.intakeComplete = true;
+  if(parsed.hasSigned) state.hasSigned = true;
+  if(parsed.discordUsername) state.discordUsername = parsed.discordUsername;
+  if(parsed.mtEmail) state.mtEmail = parsed.mtEmail;
+  if(Array.isArray(parsed.newslettersWatched)) state.newslettersWatched = parsed.newslettersWatched;
+}
+
+function restoreState(signedInEmail){
+  const email = normalizeEmail(signedInEmail);
+  retireLegacyState();
+  const parsed = readStateBlob(stateStorageKey(email));
+  if(!parsed) return;
+  const blobEmail = normalizeEmail(parsed.guideEmail);
+  if(blobEmail && blobEmail !== email) return;
+  const blobCard = parsed.notionPageId || '';
+  const signedCard = state.notionPageId || '';
+  if(blobCard && signedCard && normalizePageId(blobCard) !== normalizePageId(signedCard)) return;
+  applyOwnedState(parsed);
+}
+
+function localStateSnapshot(){
+  return {
+    intakeComplete: state.intakeComplete,
+    hasSigned: !!state.hasSigned,
+    guideName: state.guideName,
+    city: state.city,
+    guideEmail: currentGuideEmail(),
+    notionPageId: state.notionPageId,
+    tasks: taskPayload(),
+    discordUsername: state.discordUsername || '',
+    mtEmail: state.mtEmail || '',
+    newslettersWatched: state.newslettersWatched || []
+  };
+}
+
+function persistLocalTasks(){
+  const email = currentGuideEmail();
+  const key = stateStorageKey(email);
+  if(!key) return;
+  try {
+    localStorage.setItem(key, JSON.stringify(localStateSnapshot()));
+    localStorage.removeItem(LEGACY_STATE_KEY);
+  } catch(e){}
+}
+
+async function saveState(){
+  state.guideEmail = currentGuideEmail();
+  const email = state.guideEmail;
+  try {
+    persistLocalTasks();
+  } catch(e){
+    const message = "Couldn't save — please sign in again";
+    showSaveError(message);
+    return { ok:false, error: message };
+  }
+  if(!(email && state.city && state.intakeComplete)){
+    return { ok:true, localOnly:true };
+  }
+  const res = await apiFetch('/api/progress/save', {
+    method: 'POST',
+    auth: 'guide',
+    body: {
+      email,
+      city: state.city,
+      progress: {
+        tasks: taskPayload(),
+        intakeComplete: state.intakeComplete,
+        guideName: state.guideName,
+        notionPageId: state.notionPageId
+      }
+    }
+  });
+  const data = res.data || {};
+  if(res.status === 401){
+    return { ok:false, status:401, error: data.error || "Couldn't save — please sign in again" };
+  }
+  if(!res.ok || data.success === false){
+    const message = saveFailureMessage(data, res.status);
+    showSaveError(message);
+    return { ok:false, status: res.status, error: message };
+  }
+  clearSaveError();
+  return { ok:true };
 }
 
 async function loadProgressFromNotion(email, city){
+  const localCard = state.notionPageId || '';
   const res = await apiFetch(`/api/progress/load?email=${encodeURIComponent(email)}&city=${encodeURIComponent(city||'')}`, { method:'GET', auth:'guide' });
   const data = res.data || {};
-  if(res.status === 401) return;
-  if(data.success && data.progress){
-    if(data.progress.tasks) state.tasks = data.progress.tasks;
-    if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
-    if(data.progress.guideName) state.guideName = data.progress.guideName;
-    if(data.progress.notionPageId) state.notionPageId = data.progress.notionPageId;
-    if(data.city && !state.city) state.city = data.city;
+  if(res.status === 401) return { ok:false, status:401, error: data.error || '' };
+  if(!res.ok || data.success === false || !data.progress){
+    const message = data.error || "Couldn't load your progress — please sign in again";
+    if(/own guide record|unauthorized|sign in/i.test(message)){
+      clearProgressFields();
+      showSaveError("Couldn't load your progress — please sign in again");
+    } else {
+      showSaveError(message);
+    }
+    return { ok:false, status: res.status, error: message };
   }
+  const serverCard = data.progress.notionPageId || '';
+  if(localCard && serverCard && normalizePageId(localCard) !== normalizePageId(serverCard)){
+    clearProgressFields();
+  }
+  if(data.progress.tasks && typeof data.progress.tasks === 'object') state.tasks = data.progress.tasks;
+  if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
+  if(data.progress.guideName) state.guideName = data.progress.guideName;
+  if(serverCard) state.notionPageId = serverCard;
+  if(data.city) state.city = cityCode(data.city) || state.city;
+  state.guideEmail = email;
   state.resolvedById = {};
   if(Array.isArray(data.resolved)){
     data.resolved.forEach(row => {
@@ -1529,6 +1682,7 @@ async function loadProgressFromNotion(email, city){
   const floorReady = readFloorReady(data);
   state.floorReadyKnown = floorReady !== null;
   state.floorReady = floorReady === true;
+  return { ok:true, notionPageId: state.notionPageId };
 }
 
 let currentMgrFilter = 'all';
@@ -1650,13 +1804,19 @@ function renderNewsletters(){
   }).join('');
 }
 
-function toggleNewsletter(id){
+async function toggleNewsletter(id){
   if(!state.newslettersWatched) state.newslettersWatched = [];
+  const before = state.newslettersWatched.slice();
   const idx = state.newslettersWatched.indexOf(id);
   if(idx > -1) state.newslettersWatched.splice(idx,1);
   else state.newslettersWatched.push(id);
-  saveState();
   renderNewsletters();
+  const saved = await saveState();
+  if(!saved.ok){
+    state.newslettersWatched = before;
+    persistLocalTasks();
+    renderNewsletters();
+  }
 }
 
 function checkFloorReadyStatus(){
@@ -1789,23 +1949,33 @@ function refreshGuideHeader(){
 async function init(){
   await checkMagicToken();
   if(!state.guideEmail){
-    const savedEmail = localStorage.getItem('othership_guide_email');
+    const savedEmail = localStorage.getItem(GUIDE_EMAIL_KEY);
     if(savedEmail) state.guideEmail = savedEmail;
   }
+  const signedIn = currentGuideEmail();
+  if(signedIn) state.guideEmail = signedIn;
   if(!isLoggedIn()){
     showLoginScreen();
+    const signOut = document.getElementById('guide-signout');
+    if(signOut) signOut.hidden = true;
     return;
   }
   hideLoginScreen();
-  restoreState();
+  restoreState(signedIn);
+  state.guideEmail = signedIn;
+  localStorage.setItem(GUIDE_EMAIL_KEY, signedIn);
   if(state.guideEmail){
-    await loadProgressFromNotion(state.guideEmail, state.city || '');
+    const loaded = await loadProgressFromNotion(state.guideEmail, state.city || '');
+    state.guideEmail = currentGuideEmail() || signedIn;
+    if(loaded && loaded.ok) persistLocalTasks();
     if(!guideToken()){
       showLoginScreen();
+      const signOut = document.getElementById('guide-signout');
+      if(signOut) signOut.hidden = true;
       return;
     }
-    if(state.guideName) document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
   }
+  paintGuideIdentity();
   refreshGuideHeader();
   loadWaveSettings();
   loadTasksFromNotion();
@@ -1924,33 +2094,72 @@ function legacySyncId(id){
   if(task && NOTION_SYNC_TASKS[task.legacyId]) return NOTION_SYNC_TASKS[task.legacyId];
   return NOTION_SYNC_TASKS[id] || '';
 }
-function toggleTask(id){
-  const task = findTaskByAnyId(id);
-  if(isFloorReadyCard(task)) return;
-  const key = task ? task.id : id;
-  const next = !isTaskDone(key);
-  writeTaskDone(key, next);
-  saveState();
-  renderWeeks();
-  if(next){
-    showToast('Logged — keep the momentum going');
-    const syncId = legacySyncId(key);
-    if(syncId && state.guideEmail && state.city){
-      callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: syncId });
-    }
-  }
-}
-function markTask(id){
-  const task = findTaskByAnyId(id);
-  if(isFloorReadyCard(task)) return;
-  const key = task ? task.id : id;
-  writeTaskDone(key, true);
-  saveState();
-  renderWeeks();
+async function syncTaskComplete(key){
   const syncId = legacySyncId(key);
-  if(syncId && state.guideEmail && state.city){
-    callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: syncId });
+  if(!syncId || !state.guideEmail || !state.city) return { success:true, skipped:true };
+  const body = { email: state.guideEmail, city: state.city, taskId: syncId };
+  if(syncId === 'discord-join' && state.discordUsername) body.discordUsername = state.discordUsername;
+  const result = await callBackend('/api/task-complete', body);
+  return result || { success:false, error:"Couldn't save — please sign in again" };
+}
+
+async function toggleTask(id){
+  const task = findTaskByAnyId(id);
+  if(isFloorReadyCard(task)) return;
+  const key = task ? task.id : id;
+  const prev = isTaskDone(key);
+  const next = !prev;
+  writeTaskDone(key, next);
+  renderWeeks();
+  const saved = await saveState();
+  if(!saved.ok){
+    writeTaskDone(key, prev);
+    persistLocalTasks();
+    renderWeeks();
+    return;
   }
+  if(!next) return;
+  const result = await syncTaskComplete(key);
+  if(!result.success){
+    writeTaskDone(key, prev);
+    if(guideToken()){
+      await saveState();
+      showSaveError(saveFailureMessage(result, 0));
+    } else {
+      persistLocalTasks();
+    }
+    renderWeeks();
+    return;
+  }
+  showToast('Logged — keep the momentum going');
+}
+async function markTask(id){
+  const task = findTaskByAnyId(id);
+  if(isFloorReadyCard(task)) return false;
+  const key = task ? task.id : id;
+  const prev = isTaskDone(key);
+  writeTaskDone(key, true);
+  renderWeeks();
+  const saved = await saveState();
+  if(!saved.ok){
+    writeTaskDone(key, prev);
+    persistLocalTasks();
+    renderWeeks();
+    return false;
+  }
+  const result = await syncTaskComplete(key);
+  if(!result.success){
+    writeTaskDone(key, prev);
+    if(guideToken()){
+      await saveState();
+      showSaveError(saveFailureMessage(result, 0));
+    } else {
+      persistLocalTasks();
+    }
+    renderWeeks();
+    return false;
+  }
+  return true;
 }
 
 function openCityLink(){
@@ -1996,19 +2205,27 @@ async function submitIntake(){
   if(!city){showToast('Select your city to continue');return;}
   const email=document.getElementById('f-email').value.trim();
   if(!email){showToast('Add your email to continue');return;}
-  state.guideName=name;state.city=city;state.guideEmail=email;state.intakeComplete=true;
+  const signed = currentGuideEmail();
+  if(signed && normalizeEmail(email) !== normalizeEmail(signed)){
+    showToast('This portal is signed in as ' + signed + '. Sign out to use a different email.');
+    return;
+  }
+  const identityEmail = signed || email;
+  const previous = {
+    guideName: state.guideName,
+    city: state.city,
+    guideEmail: state.guideEmail,
+    intakeComplete: state.intakeComplete,
+    profile: isTaskDone('profile')
+  };
+  state.guideName=name;state.city=city;state.guideEmail=identityEmail;state.intakeComplete=true;
   const first=name.split(' ')[0];
   document.getElementById('guide-first-name').textContent=first;
   document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
-  writeTaskDone('profile', true);
   applyCprContent();
   refreshGuideHeader();
-  closeModal('modal-intake');
-  renderWeeks();
-  loadTasksFromNotion();
-  showToast(`Welcome aboard, ${first} — creating your crew card...`);
   const payload = {
-    name, legalName: name, email,
+    name, legalName: name, email: identityEmail,
     phone: document.getElementById('f-phone').value.trim(),
     gender: document.getElementById('f-gender').value,
     city,
@@ -2023,13 +2240,26 @@ async function submitIntake(){
   };
   if(state.notionPageId) payload.pageId = state.notionPageId;
   const result = await callBackend('/api/intake', payload);
-  if(result.success){
-    state.notionPageId = result.pageId;
-    saveState();
+  if(result && result.success){
+    if(result.pageId) state.notionPageId = result.pageId;
+    writeTaskDone('profile', true);
+    const saved = await saveState();
+    if(!saved.ok){
+      writeTaskDone('profile', previous.profile);
+      renderWeeks();
+      return;
+    }
+    closeModal('modal-intake');
+    renderWeeks();
+    loadTasksFromNotion();
     showToast(payload.pageId ? `Crew card updated — changes saved` : `Crew card created in Notion — welcome aboard, ${first}`);
   } else {
-    saveState();
-    showToast(`Welcome aboard, ${first} — profile saved`);
+    state.guideName = previous.guideName;
+    state.city = previous.city;
+    state.guideEmail = previous.guideEmail;
+    state.intakeComplete = previous.intakeComplete;
+    paintGuideIdentity();
+    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
   }
 }
 
@@ -2049,17 +2279,28 @@ async function confirmCPR(){
   const expiry = document.getElementById('cpr-expiry').value;
   if(!expiry){showToast('Please enter your certificate expiry date');return;}
   if(!state.city){ showToast('Select your city in your profile before confirming CPR.'); return; }
-  writeTaskDone(progressKey('cpr-upload'), true);
+  const key = progressKey('cpr-upload');
+  const prev = isTaskDone(key);
+  if(!state.guideEmail){
+    showSaveError("Couldn't save — please sign in again");
+    return;
+  }
+  const result = await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
+  if(!result || !result.success){
+    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+    return;
+  }
+  writeTaskDone(key, true);
+  const saved = await saveState();
+  if(!saved.ok){
+    writeTaskDone(key, prev);
+    persistLocalTasks();
+    renderWeeks();
+    return;
+  }
   closeModal('modal-cpr-upload');
   renderWeeks();
-  saveState();
-  if(state.guideEmail){
-    const result = await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
-    if(result && result.success) showToast('CPR certificate confirmed — logged to your crew card');
-    else showToast('The tick is saved on this device, but the certificate did not reach your crew card. Try again.');
-  } else {
-    showToast('CPR noted on this device. Finish your profile so it can reach your crew card.');
-  }
+  showToast('CPR certificate confirmed — logged to your crew card');
 }
 
 async function signHA(){
@@ -2067,19 +2308,43 @@ async function signHA(){
   const date=document.getElementById('ha-date').value;
   if(!name){showToast('Enter your legal name to sign');return;}
   if(!date){showToast('Add the date to sign');return;}
-  state.hasSigned=true;writeTaskDone('honorary-agreements', true);
-  closeModal('modal-ha');renderWeeks();saveState();
+  const prevSigned = !!state.hasSigned;
+  const key = progressKey('honorary-agreements');
+  const prev = isTaskDone(key);
+  state.hasSigned=true;
+  writeTaskDone(key, true);
+  const saved = await saveState();
+  if(!saved.ok){
+    state.hasSigned = prevSigned;
+    writeTaskDone(key, prev);
+    persistLocalTasks();
+    renderWeeks();
+    return;
+  }
+  if(state.guideEmail && state.city){
+    const result = await callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: 'honorary-agreements' });
+    if(!result || !result.success){
+      state.hasSigned = prevSigned;
+      writeTaskDone(key, prev);
+      if(guideToken()) await saveState();
+      else persistLocalTasks();
+      renderWeeks();
+      if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+      return;
+    }
+  }
+  closeModal('modal-ha');
+  renderWeeks();
   showToast(`Signed by ${name} — logged to your crew card`);
-  if(state.guideEmail && state.city) callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: 'honorary-agreements' });
 }
 
 async function confirmMT(){
   const mtEmail = document.getElementById('mt-email-input').value.trim();
   if(!mtEmail){showToast('Please enter your Mariana Tek email');return;}
   state.mtEmail = mtEmail;
-  saveState();
+  const ok = await markTask('mt-profile');
+  if(!ok) return;
   closeModal('modal-mt');
-  markTask('mt-profile');
   showToast('Mariana Tek confirmed — credits will be added shortly');
 }
 
@@ -2363,18 +2628,47 @@ function genReminder(name,missing){
   },1300);
 }
 
-function submitDiscordUsername(){
+async function submitDiscordUsername(){
   const username = document.getElementById('discord-username-input').value.trim();
   if(!username){ showToast('Please enter your Discord username'); return; }
-  const savedState = JSON.parse(localStorage.getItem('othership_guide_state')||'{}');
-  savedState.discordUsername = username;
-  localStorage.setItem('othership_guide_state', JSON.stringify(savedState));
-  const email = state.guideEmail || savedState.email || '';
-  const city = state.city || savedState.city || 'nyc';
-  if(email) callBackend('/api/task-complete', { email, city, taskId: 'discord-join', discordUsername: username });
+  state.guideEmail = currentGuideEmail();
+  if(!state.guideEmail){
+    showSaveError("Couldn't save — please sign in again");
+    return;
+  }
+  state.discordUsername = username;
+  const ok = await markTask('discord-join');
+  if(!ok) return;
   closeModal('modal-discord');
-  markTask('discord-join');
   showToast('Discord confirmed — welcome to the crew');
+}
+
+function signOutGuide(){
+  const email = normalizeEmail(currentGuideEmail());
+  setGuideToken('');
+  localStorage.removeItem(GUIDE_EMAIL_KEY);
+  const key = stateStorageKey(email);
+  if(key) localStorage.removeItem(key);
+  localStorage.removeItem(LEGACY_STATE_KEY);
+  state.intakeComplete = false;
+  state.hasSigned = false;
+  state.guideName = '';
+  state.city = '';
+  state.guideEmail = '';
+  state.notionPageId = '';
+  state.tasks = {};
+  state.floorReady = false;
+  state.floorReadyKnown = false;
+  state.resolvedById = {};
+  state.discordUsername = '';
+  state.mtEmail = '';
+  state.newslettersWatched = [];
+  clearSaveError();
+  paintGuideIdentity();
+  WEEKS.length = 0;
+  renderWeeks();
+  showLoginScreen();
+  showToast('Signed out');
 }
 
 async function sendReminder(){
@@ -2414,6 +2708,10 @@ function openModal(id){
   el.classList.add('open');
   if(id==='modal-discord') updateDiscordPanel();
   if(id==='modal-cpr') applyCprContent();
+  if(id==='modal-intake'){
+    const emailInput = document.getElementById('f-email');
+    if(emailInput && !emailInput.value && state.guideEmail) emailInput.value = state.guideEmail;
+  }
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 async function promptManagerLogin(){
@@ -2467,7 +2765,7 @@ async function switchView(view,e){
   e.target.classList.add('active');
 }
 let _tt;
-function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
+function showToast(msg, ms){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'), ms || 3200);}
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
 
 init();
