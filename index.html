@@ -122,6 +122,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .task-action .btn-sm:focus-visible{outline:2px solid #ECE8E3;outline-offset:2px;}
 .task-check.checked ~ .task-body .task-action .btn-sm{background:transparent;color:#A7CFC9;border-color:#A7CFC9;}
 .task-check.checked ~ .task-body .task-action .btn-sm:hover{background:rgba(167,207,201,0.16);color:#A7CFC9;border-color:#A7CFC9;}
+.task-check.readonly{cursor:default;pointer-events:none;}
+.task-check.readonly:hover{border-color:rgba(236,232,227,0.22);}
 .step-callout{background:rgba(219,245,114,0.14);border-left:3px solid #DBF572;color:#ECE8E3;font-weight:600;font-size:15px;line-height:1.45;padding:10px 14px;margin:8px 0 12px;border-radius:0 8px 8px 0;}
 
 /* MODALS */
@@ -825,7 +827,7 @@ select.form-input option{background:#271829;}
 <div class="modal-overlay" id="modal-payroll-report">
   <div class="modal modal-lg">
     <button class="modal-close" onclick="closeModal('modal-payroll-report')">×</button>
-    <h2>NYC Payroll Report</h2>
+    <h2>Training Payroll Report</h2>
     <p class="modal-sub" id="payroll-report-sub">Training pay at $16/hr</p>
     <div class="reminder-preview" id="payroll-report-text" style="min-height:220px;font-size:12px;line-height:1.9;font-family:monospace;"></div>
     <div style="display:flex;gap:10px;margin-top:4px;">
@@ -839,6 +841,20 @@ select.form-input option{background:#271829;}
 <div class="toast" id="toast"></div>
 
 <script>
+const GUIDE_TOKEN_KEY = 'othership_guide_token';
+const MANAGER_TOKEN_KEY = 'othership_manager_token';
+
+function guideToken(){ return localStorage.getItem(GUIDE_TOKEN_KEY) || ''; }
+function setGuideToken(token){
+  if(token) localStorage.setItem(GUIDE_TOKEN_KEY, token);
+  else localStorage.removeItem(GUIDE_TOKEN_KEY);
+}
+function managerToken(){ return sessionStorage.getItem(MANAGER_TOKEN_KEY) || ''; }
+function setManagerToken(token){
+  if(token) sessionStorage.setItem(MANAGER_TOKEN_KEY, token);
+  else sessionStorage.removeItem(MANAGER_TOKEN_KEY);
+}
+
 // LOGIN / MAGIC LINK
 async function requestMagicLink(){
   const email = document.getElementById('login-email').value.trim();
@@ -846,24 +862,14 @@ async function requestMagicLink(){
   const btn = document.getElementById('login-btn');
   btn.disabled = true;
   btn.textContent = 'Sending...';
-  try {
-    const res = await fetch(`${BACKEND}/api/auth/magic-link`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if(data.success){
-      document.getElementById('login-sent-email').textContent = email;
-      document.getElementById('login-sent').classList.add('show');
-      btn.textContent = 'Link sent ✓';
-    } else {
-      showToast('Something went wrong — try again');
-      btn.disabled = false;
-      btn.textContent = 'Begin My Journey →';
-    }
-  } catch(e){
-    showToast('Could not send email — try again');
+  const res = await apiFetch('/api/auth/magic-link', { method:'POST', body:{ email }, auth:'none' });
+  const data = res.data || {};
+  if(data.success){
+    document.getElementById('login-sent-email').textContent = email;
+    document.getElementById('login-sent').classList.add('show');
+    btn.textContent = 'Link sent ✓';
+  } else {
+    showToast(data.error || 'Something went wrong — try again');
     btn.disabled = false;
     btn.textContent = 'Begin My Journey →';
   }
@@ -873,21 +879,21 @@ async function checkMagicToken(){
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
   if(!token) return false;
-  try {
-    const res = await fetch(`${BACKEND}/api/auth/verify?token=${token}`);
-    const data = await res.json();
-    if(data.success){
-      state.guideEmail = data.email;
-      localStorage.setItem('othership_guide_email', data.email);
-      window.history.replaceState({}, '', window.location.pathname);
-      return true;
-    }
-  } catch(e){ console.log('Token verify error:', e); }
+  const res = await apiFetch('/api/auth/verify?token=' + encodeURIComponent(token), { method:'GET', auth:'none' });
+  const data = res.data || {};
+  if(data.success && data.email && data.token){
+    state.guideEmail = data.email;
+    localStorage.setItem('othership_guide_email', data.email);
+    setGuideToken(data.token);
+    window.history.replaceState({}, '', window.location.pathname);
+    return true;
+  }
+  if(data.error) showToast(data.error);
   return false;
 }
 
 function isLoggedIn(){
-  return !!(state.guideEmail || localStorage.getItem('othership_guide_email'));
+  return !!(guideToken() && (state.guideEmail || localStorage.getItem('othership_guide_email')));
 }
 
 function showLoginScreen(){
@@ -900,18 +906,88 @@ function hideLoginScreen(){
 
 // BACKEND
 const BACKEND = 'https://othership-onboarding-backend.onrender.com';
+let handling401 = false;
+
+function isManagerPath(path){
+  return /^\/api\/(guides|floor-ready|manager\/|discord-|monday-reminder|message-templates)/.test(path);
+}
+
+async function apiFetch(path, options){
+  const opts = options || {};
+  const method = opts.method || (opts.body != null ? 'POST' : 'GET');
+  const auth = opts.auth || 'auto';
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+  const managerCall = auth === 'manager' || (auth === 'auto' && isManagerPath(path));
+  let token = '';
+  if(auth === 'guide') token = guideToken();
+  else if(auth === 'manager') token = managerToken();
+  else if(auth !== 'none') token = managerCall ? managerToken() : (guideToken() || managerToken());
+  if(token) headers.Authorization = 'Bearer ' + token;
+  const fetchOpts = { method, headers };
+  if(opts.body != null) fetchOpts.body = typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body);
+  let res;
+  try {
+    res = await fetch(BACKEND + path, fetchOpts);
+  } catch(e) {
+    return { ok:false, status:0, data:{ success:false, error:'Could not reach the server. Check your connection and try again.' } };
+  }
+  let data = null;
+  try { data = await res.json(); }
+  catch(e){ data = { success:false, error:'The server sent a response the page could not read.' }; }
+  if(!data || typeof data !== 'object') data = { success:false, error:'The server sent a response the page could not read.' };
+  if(data.success === undefined) data.success = res.ok;
+  if(res.status === 401 && auth !== 'none'){
+    const sentence = data.error || 'Please sign in again.';
+    data.error = sentence;
+    data.success = false;
+    if(managerCall){
+      setManagerToken('');
+      sessionStorage.removeItem('mgr_city');
+      sessionStorage.removeItem('mgr_cities');
+      if(!handling401){
+        handling401 = true;
+        showToast(sentence);
+        const view = document.getElementById('view-manager');
+        const onManager = view && view.classList.contains('active');
+        if(onManager){
+          const ok = await promptManagerLogin();
+          if(ok) await loadRealGuides();
+          else if(document.querySelector('.nav-tab')) document.querySelector('.nav-tab').click();
+        }
+        handling401 = false;
+      }
+    } else {
+      setGuideToken('');
+      showToast(sentence);
+      showLoginScreen();
+    }
+  }
+  return { ok: res.ok, status: res.status, data };
+}
 
 async function callBackend(endpoint, data, method) {
-  try {
-    const m = method || 'POST';
-    const opts = { method: m, headers: { 'Content-Type': 'application/json' } };
-    if(m !== 'GET' && data) opts.body = JSON.stringify(data);
-    const res = await fetch(`${BACKEND}${endpoint}`, opts);
-    return await res.json();
-  } catch(e) {
-    console.error('Backend error:', e);
-    return { success: false, error: e.message };
+  const res = await apiFetch(endpoint, { method: method || 'POST', body: data, auth: isManagerPath(endpoint) ? 'manager' : 'guide' });
+  return res.data || { success:false, error:'No response from the server.' };
+}
+
+function cityCode(city){
+  const c = String(city || '').toLowerCase();
+  if(c === 'to' || c === 'toronto') return 'toronto';
+  if(c === 'nyc' || c === 'new york' || c === 'new york city') return 'nyc';
+  return c;
+}
+
+function readFloorReady(data){
+  if(!data || typeof data !== 'object') return null;
+  const bag = data.progress && typeof data.progress === 'object' ? data.progress : {};
+  const guide = data.guide && typeof data.guide === 'object' ? data.guide : {};
+  const candidates = [data.floorReady, data.floor_ready, bag.floorReady, bag.floor_ready, guide.floorReady, guide.floor_ready];
+  for(const value of candidates){
+    if(value === true || value === false) return value;
+    if(typeof value === 'string' && /^(yes|true)$/i.test(value.trim())) return true;
+    if(typeof value === 'string' && /^(no|false)$/i.test(value.trim())) return false;
   }
+  return null;
 }
 
 // CITY CONFIG
@@ -936,58 +1012,94 @@ const PAYROLL_DATA = {
 const HOURLY_RATE = 16;
 const TRAINING_DAY_MINUTES = 480;
 
-const TASK_MINUTES = {
-  'profile': 5,'mt-profile': 3,'discord-join': 3,'vimeo-account': 3,'training-w1': 50,
-  'sign-contract': 5,'honorary-agreements': 3,'availability': 5,'training-w2': 225,
-  'welcome-zoom': 120,'breathwork-journey': 5,'training-w3': 395,'training-w4': 300,
-  'training-w5': 388,'ff-shadow-1': 150,'ff-shadow-2': 150,'ff-shadow-3': 150,
-  'training-w6': 111,'sg-shadow-1': 120,'sg-obs-1': 120,'sg-obs-2': 120,
-  'training-w7': 174,'training-w8': 180,'tw-kajabi': 134,'crew-sweat': 90,
-  'code-conduct': 5,'dei': 5,'learn-landing': 30,'crew-pass-policy': 5,'privacy': 5,
-};
-
-const PAY_PERIODS = [
-  { label: 'Pay Period 1 — Weeks 1–2', taskIds: ['profile','mt-profile','discord-join','vimeo-account','training-w1','welcome-zoom','training-w2','breathwork-journey','honorary-agreements','availability','crew-sweat'] },
-  { label: 'Pay Period 2 — Weeks 3–4', taskIds: ['training-w3','dei','code-conduct','sign-contract','ff-shadow-1','training-w4'] },
-  { label: 'Pay Period 3 — Weeks 5–6', taskIds: ['training-w5','ff-shadow-2','training-w6','ff-shadow-3','sg-shadow-1'] },
-  { label: 'Pay Period 4 — Weeks 7–8', taskIds: ['training-w7','sg-obs-1','learn-landing','privacy','training-w8','sg-obs-2','crew-pass-policy'] },
-  { label: 'Pay Period 5 — Weeks 9–11', taskIds: ['tw-kajabi'] },
-];
-
 function minsToHrsPay(mins) {
   const hrs = mins / 60;
   const pay = hrs * HOURLY_RATE;
   return { hrs: hrs.toFixed(2), pay: pay.toFixed(2) };
 }
 
-function openPayrollReport() {
-  const nycGuides = GUIDES_DATA.filter(g => g.city === 'NYC' && g.status !== 'alumni');
-  const trainingDays = WAVE_SETTINGS.NYC.trainingDays || 2;
+let PAYROLL_CATALOG = [];
+
+function taskTicked(ticks, task){
+  if(Object.prototype.hasOwnProperty.call(ticks, task.id)) return ticks[task.id] === true;
+  return !!(task.legacyId && ticks[task.legacyId] === true);
+}
+
+function guideTaskMinutes(g){
+  const ticks = g.progressTasks || {};
+  const cityName = cityCode(g.city) === 'toronto' ? 'Toronto' : 'NYC';
+  let mins = 0;
+  const seen = new Set();
+  PAYROLL_CATALOG.filter(t => t.city === cityName).forEach(t => {
+    if(!t.id || seen.has(t.id) || !taskTicked(ticks, t)) return;
+    seen.add(t.id);
+    mins += t.min;
+  });
+  return mins;
+}
+
+function payrollGuides(){
+  const city = sessionStorage.getItem('mgr_city') || 'nyc';
+  return GUIDES_DATA.filter(g => {
+    if(g.status === 'alumni') return false;
+    if(city === 'both') return true;
+    return cityCode(g.city) === cityCode(city);
+  });
+}
+
+async function loadPayrollCatalog(){
+  const city = sessionStorage.getItem('mgr_city') || 'nyc';
+  const codes = city === 'both' ? ['nyc','toronto'] : [cityCode(city)];
+  const all = [];
+  for(const code of codes){
+    const param = code === 'toronto' ? 'Toronto' : 'NYC';
+    const res = await apiFetch('/api/tasks?city=' + encodeURIComponent(param), { method:'GET', auth:'manager' });
+    const data = res.data || {};
+    if(res.status === 401) return false;
+    if(!data.success || !Array.isArray(data.tasks)){
+      showToast(data.error || 'Could not load task minutes for payroll.');
+      return false;
+    }
+    data.tasks.forEach(t => all.push({ id:String(t.id || ''), legacyId:t.legacyId || '', min:Number(t.minToComplete) || 0, city:param }));
+  }
+  PAYROLL_CATALOG = all;
+  return true;
+}
+
+async function openPayrollReport() {
+  const ready = await loadPayrollCatalog();
+  if(!ready) return;
+  const guides = payrollGuides();
   const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  let report = `OTHERSHIP NYC — TRAINING PAYROLL REPORT\n`;
-  report += `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} ${WAVE_SETTINGS.NYC.year}\n`;
+  const mgrCity = sessionStorage.getItem('mgr_city') || 'nyc';
+  const titleCity = mgrCity === 'toronto' ? 'TORONTO' : mgrCity === 'both' ? 'NYC + TORONTO' : 'NYC';
+  let report = `OTHERSHIP ${titleCity} — TRAINING PAYROLL REPORT\n`;
   report += `Rate: $${HOURLY_RATE}/hr  |  Generated: ${today}\n`;
+  report += `Minutes include only tasks each guide has ticked.\n`;
   report += `${'─'.repeat(52)}\n\n`;
   let grandTotal = 0;
-  nycGuides.forEach(g => {
-    const daysAttended = g.attendance.filter(Boolean).length;
+  guides.forEach(g => {
+    const code = cityCode(g.city);
+    const key = code === 'toronto' ? 'Toronto' : 'NYC';
+    const trainingDays = (WAVE_SETTINGS[key] && WAVE_SETTINGS[key].trainingDays) || 2;
+    const daysAttended = Array.isArray(g.attendance) ? g.attendance.filter(Boolean).length : 0;
     const dayMins = daysAttended * TRAINING_DAY_MINUTES;
-    let taskMins = 0;
-    Object.values(TASK_MINUTES).forEach(m => taskMins += m);
+    const taskMins = guideTaskMinutes(g);
     const totalMins = taskMins + dayMins;
     const { hrs, pay } = minsToHrsPay(totalMins);
     grandTotal += parseFloat(pay);
-    report += `${g.name} (@${g.discord})\n`;
-    report += `  Online & admin tasks:   ${taskMins} min\n`;
-    report += `  In-person training days: ${daysAttended}/${trainingDays} days (${dayMins} min)\n`;
+    const attendanceNote = Array.isArray(g.attendance) ? '' : ' (attendance not on the card yet)';
+    report += `${g.name} (@${g.discord || '—'}) — ${g.city || key}\n`;
+    report += `  Completed tasks:        ${taskMins} min\n`;
+    report += `  In-person training days: ${daysAttended}/${trainingDays} days (${dayMins} min)${attendanceNote}\n`;
     report += `  ─────────────────────────────────────\n`;
     report += `  TOTAL: ${hrs} hrs × $${HOURLY_RATE} = $${pay}\n\n`;
   });
   report += `${'═'.repeat(52)}\n`;
-  report += `TOTAL PAYROLL THIS WAVE: $${grandTotal.toFixed(2)}\n`;
-  report += `NYC Guides included: ${nycGuides.length}\n`;
-  report += `\nNote: CPR reimbursement handled separately at 3-month mark.`;
-  document.getElementById('payroll-report-sub').textContent = `Wave ${WAVE_SETTINGS.NYC.waveNumber} — ${nycGuides.length} NYC guides — $${grandTotal.toFixed(2)} total`;
+  report += `TOTAL PAYROLL: $${grandTotal.toFixed(2)}\n`;
+  report += `Guides included: ${guides.length}\n`;
+  report += `\nNote: CPR reimbursement handled separately at 3-month mark. The hourly rate on this page is $${HOURLY_RATE} for both cities.`;
+  document.getElementById('payroll-report-sub').textContent = `${guides.length} guides — $${grandTotal.toFixed(2)} total`;
   document.getElementById('payroll-report-text').textContent = report;
   openModal('modal-payroll-report');
 }
@@ -998,31 +1110,34 @@ function copyPayrollReport() {
 }
 
 function exportPayrollCSV() {
-  const nycGuides = GUIDES_DATA.filter(g => g.city === 'NYC' && g.status !== 'alumni');
-  const trainingDays = WAVE_SETTINGS.NYC.trainingDays || 2;
+  const guides = payrollGuides();
   const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  const wave = `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} ${WAVE_SETTINGS.NYC.year}`;
-  let csv = `Othership NYC Training Payroll Report\n`;
-  csv += `${wave} | Rate: $${HOURLY_RATE}/hr | Generated: ${today}\n\n`;
-  csv += `Name,Discord,Task Minutes,Training Days Attended,Training Day Minutes,Total Minutes,Total Hours,Total Pay,Notes\n`;
+  const mgrCity = sessionStorage.getItem('mgr_city') || 'nyc';
+  let csv = `Othership Training Payroll Report\n`;
+  csv += `${mgrCity} | Rate: $${HOURLY_RATE}/hr | Generated: ${today}\n`;
+  csv += `Task minutes count only ticked tasks.\n\n`;
+  csv += `Name,City,Discord,Task Minutes,Training Days Attended,Training Day Minutes,Total Minutes,Total Hours,Total Pay,Notes\n`;
   let grandTotal = 0;
-  nycGuides.forEach(g => {
-    const daysAttended = g.attendance.filter(Boolean).length;
+  guides.forEach(g => {
+    const code = cityCode(g.city);
+    const key = code === 'toronto' ? 'Toronto' : 'NYC';
+    const trainingDays = (WAVE_SETTINGS[key] && WAVE_SETTINGS[key].trainingDays) || 2;
+    const daysAttended = Array.isArray(g.attendance) ? g.attendance.filter(Boolean).length : 0;
     const dayMins = daysAttended * TRAINING_DAY_MINUTES;
-    const taskMins = Object.values(TASK_MINUTES).reduce((a,b) => a+b, 0);
+    const taskMins = guideTaskMinutes(g);
     const totalMins = taskMins + dayMins;
     const hrs = (totalMins / 60).toFixed(2);
     const pay = (parseFloat(hrs) * HOURLY_RATE).toFixed(2);
     grandTotal += parseFloat(pay);
-    csv += `"${g.name}","@${g.discord}",${taskMins},${daysAttended}/${trainingDays},${dayMins},${totalMins},${hrs},$${pay},CPR reimbursement separate\n`;
+    csv += `"${g.name}","${g.city || key}","@${g.discord || ''}",${taskMins},${daysAttended}/${trainingDays},${dayMins},${totalMins},${hrs},$${pay},CPR reimbursement separate\n`;
   });
-  csv += `\nTOTAL,,,,,,,$${grandTotal.toFixed(2)},\n`;
+  csv += `\nTOTAL,,,,,,,,,$${grandTotal.toFixed(2)},\n`;
   csv += `\nNote: CPR reimbursement handled separately at 3-month mark.`;
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Othership_NYC_Payroll_Wave${WAVE_SETTINGS.NYC.waveNumber}_${WAVE_SETTINGS.NYC.year}.csv`;
+  a.download = `Othership_Payroll_${mgrCity}_${today.replace(/\//g,'-')}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('CSV downloaded — open in Excel');
@@ -1035,7 +1150,7 @@ let tasksLoading = false;
 let taskAliases = {};
 
 // STATE
-const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{}};
+const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{}};
 
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -1179,32 +1294,60 @@ function getBadge(type){
   return null;
 }
 
+function findTaskByAnyId(id){
+  for(const w of WEEKS){
+    const t = w.tasks.find(task => task.id === id || task.legacyId === id || (task.aliasIds || []).includes(id));
+    if(t) return t;
+  }
+  return null;
+}
+
+function isFloorReadyCard(task){
+  return !!(task && (task.floorReadyCard || /floor ready check-in/i.test(task.name || '')));
+}
+
 function isTaskDone(id){
+  const task = findTaskByAnyId(id);
+  if(isFloorReadyCard(task)) return state.floorReady === true;
   if(Object.prototype.hasOwnProperty.call(state.tasks, id)) return !!state.tasks[id];
-  return (taskAliases[id] || []).some(alias => !!state.tasks[alias]);
+  if(state.resolvedById && Object.prototype.hasOwnProperty.call(state.resolvedById, id)) return !!state.resolvedById[id];
+  return (taskAliases[id] || []).some(alias => state.tasks[alias] === true);
 }
 
 function writeTaskDone(id, value){
-  state.tasks[id] = !!value;
-  (taskAliases[id] || []).forEach(alias => { delete state.tasks[alias]; });
+  const task = findTaskByAnyId(id);
+  if(isFloorReadyCard(task)) return;
+  const key = task ? task.id : id;
+  state.tasks[key] = !!value;
+  const aliases = task ? (task.aliasIds || []) : (taskAliases[key] || []);
+  aliases.forEach(alias => { delete state.tasks[alias]; });
+  if(task && task.legacyId && task.legacyId !== key) delete state.tasks[task.legacyId];
+}
+
+function progressKey(id){
+  const task = findTaskByAnyId(id);
+  return task ? task.id : id;
 }
 
 function buildTask(t, used, siblings){
   const name = t.name || 'Task';
-  let id = getTaskId(name);
-  if(used.has(id)){
-    const suffix = String(t.id || slugId(name)).replace(/[^a-z0-9]/gi,'').slice(0, 8).toLowerCase() || '2';
-    id = `${id}-${suffix}`;
-  }
+  const pageId = String(t.id || '').trim();
+  const legacyId = t.legacyId || getTaskId(name);
+  let id = pageId || legacyId;
+  if(used.has(id)) id = id + '-' + used.size;
   used.add(id);
+  const aliasIds = [];
+  if(legacyId && legacyId !== id) aliasIds.push(legacyId);
   const raw = slugId(name);
-  const aliasIds = raw && raw !== id && !used.has(raw) ? [raw] : [];
+  if(raw && raw !== id && raw !== legacyId) aliasIds.push(raw);
   if(aliasIds.length) taskAliases[id] = aliasIds;
   const kind = classifyKind(t, siblings);
   return {
     id,
+    legacyId,
     aliasIds,
-    notionPageId: t.id || '',
+    notionPageId: pageId,
+    floorReadyCard: /floor ready check-in/i.test(name),
     name,
     desc: t.description || '',
     type: kind.behavior,
@@ -1216,6 +1359,40 @@ function buildTask(t, used, siblings){
     modal: kind.modal,
     minToComplete: t.minToComplete || 0
   };
+}
+
+function placeFloorReadyLastInWeek6(weeks){
+  let card = null;
+  weeks.forEach(w => {
+    const idx = w.tasks.findIndex(t => t.floorReadyCard);
+    if(idx >= 0) card = w.tasks.splice(idx, 1)[0];
+  });
+  if(!card) return;
+  let week6 = weeks.find(w => w.id === 'w6');
+  if(!week6){
+    week6 = { id:'w6', label:'Week 6', dates:'', tasks:[] };
+    weeks.push(week6);
+  }
+  week6.tasks.push(card);
+  for(let i = weeks.length - 1; i >= 0; i--){
+    if(!weeks[i].tasks.length) weeks.splice(i, 1);
+  }
+  weeks.sort((a,b) => {
+    const num = id => id === 'wunset' ? 999 : Number(String(id).replace(/\D/g,'')) || 999;
+    return num(a.id) - num(b.id);
+  });
+}
+
+function taskPayload(){
+  const tasks = Object.assign({}, state.tasks);
+  WEEKS.forEach(w => w.tasks.forEach(t => {
+    if(!t.floorReadyCard) return;
+    delete tasks[t.id];
+    if(t.legacyId) delete tasks[t.legacyId];
+    (t.aliasIds || []).forEach(alias => delete tasks[alias]);
+  }));
+  delete tasks['floor-ready-check-in'];
+  return tasks;
 }
 
 function loadTasksFromNotion(){
@@ -1232,24 +1409,26 @@ function loadTasksFromNotion(){
   tasksLoadError = '';
   WEEKS.length = 0;
   renderWeeks();
-  fetch(`${BACKEND}/api/tasks?city=${encodeURIComponent(cityParam)}`)
-    .then(r => {
-      if(!r.ok) throw new Error('Could not load tasks');
-      return r.json();
-    })
-    .then(data => {
+  apiFetch(`/api/tasks?city=${encodeURIComponent(cityParam)}`, { method:'GET', auth:'guide' })
+    .then(res => {
+      const data = res.data || {};
       tasksLoading = false;
-      if(!data.success || !Array.isArray(data.tasks)){
-        tasksLoadError = 'Could not load your tasks. Refresh the page to try again.';
+      if(res.status === 401) return;
+      if(!res.ok || !data.success || !Array.isArray(data.tasks)){
+        tasksLoadError = data.error || 'Could not load your tasks. Refresh the page to try again.';
         WEEKS.length = 0;
         renderWeeks();
         return;
       }
       const weekMap = {};
+      const unscheduled = [];
       data.tasks.forEach(t => {
-        const w = t.week || 1;
-        if(!weekMap[w]) weekMap[w] = [];
-        weekMap[w].push(t);
+        if(t.week === null || t.week === undefined || t.week === '') unscheduled.push(t);
+        else {
+          const w = t.week;
+          if(!weekMap[w]) weekMap[w] = [];
+          weekMap[w].push(t);
+        }
       });
       const used = new Set();
       taskAliases = {};
@@ -1260,11 +1439,12 @@ function loadTasksFromNotion(){
         dates: '',
         tasks: weekMap[w].map(t => buildTask(t, used, siblings))
       }));
+      if(unscheduled.length){
+        newWeeks.push({ id:'wunset', label:'No week set', dates:'', tasks: unscheduled.map(t => buildTask(t, used, siblings)) });
+      }
+      placeFloorReadyLastInWeek6(newWeeks);
       WEEKS.length = 0;
       newWeeks.forEach(w => WEEKS.push(w));
-      WEEKS.forEach(w => w.tasks.forEach(t => {
-        if(state.tasks[t.id] === undefined && !isTaskDone(t.id)) state.tasks[t.id] = false;
-      }));
       renderWeeks();
     })
     .catch(() => {
@@ -1300,29 +1480,28 @@ function saveState(){
       notionPageId: state.notionPageId,
       tasks: state.tasks
     };
+    stateToSave.tasks = taskPayload();
     localStorage.setItem('othership_guide_state', JSON.stringify(stateToSave));
     if(state.guideEmail && state.city && state.intakeComplete){
-      fetch(`${BACKEND}/api/progress/save`, {
+      apiFetch('/api/progress/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        auth: 'guide',
+        body: {
           email: state.guideEmail,
           city: state.city,
           progress: {
-            tasks: state.tasks,
+            tasks: taskPayload(),
             intakeComplete: state.intakeComplete,
             guideName: state.guideName,
             notionPageId: state.notionPageId
           }
-        })
-      }).then(async res => {
-        let data = null;
-        try { data = await res.json(); } catch(e){ data = null; }
-        if(!res.ok || (data && data.success === false)){
-          showToast('Your progress is saved on this device, but it did not save to your crew card. Check your connection and tick the task again.');
         }
-      }).catch(() => {
-        showToast('Your progress is saved on this device, but it did not save to your crew card. Check your connection and tick the task again.');
+      }).then(res => {
+        const data = res.data || {};
+        if(res.status === 401) return;
+        if(!res.ok || data.success === false){
+          showToast(data.error || 'Your progress is saved on this device, but it did not save to your crew card. Check your connection and tick the task again.');
+        }
       });
     }
   } catch(e){
@@ -1331,20 +1510,25 @@ function saveState(){
 }
 
 async function loadProgressFromNotion(email, city){
-  try {
-    const res = await fetch(`${BACKEND}/api/progress/load?email=${encodeURIComponent(email)}&city=${city||''}`);
-    const data = await res.json();
-    if(data.success && data.progress){
-      if(data.progress.tasks) state.tasks = data.progress.tasks;
-      if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
-      if(data.progress.guideName) state.guideName = data.progress.guideName;
-      if(data.progress.notionPageId) state.notionPageId = data.progress.notionPageId;
-      if(data.city && !state.city) state.city = data.city;
-      console.log('Progress loaded from Notion, city:', data.city);
-    }
-  } catch(e){
-    console.log('Could not load from Notion, using local:', e);
+  const res = await apiFetch(`/api/progress/load?email=${encodeURIComponent(email)}&city=${encodeURIComponent(city||'')}`, { method:'GET', auth:'guide' });
+  const data = res.data || {};
+  if(res.status === 401) return;
+  if(data.success && data.progress){
+    if(data.progress.tasks) state.tasks = data.progress.tasks;
+    if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
+    if(data.progress.guideName) state.guideName = data.progress.guideName;
+    if(data.progress.notionPageId) state.notionPageId = data.progress.notionPageId;
+    if(data.city && !state.city) state.city = data.city;
   }
+  state.resolvedById = {};
+  if(Array.isArray(data.resolved)){
+    data.resolved.forEach(row => {
+      if(row && row.id) state.resolvedById[row.id] = !!row.done;
+    });
+  }
+  const floorReady = readFloorReady(data);
+  state.floorReadyKnown = floorReady !== null;
+  state.floorReady = floorReady === true;
 }
 
 let currentMgrFilter = 'all';
@@ -1368,10 +1552,7 @@ function remindNewsletterBehind(){
   behind.forEach(g => {
     if(g.discord){
       const msg = `Hey ${g.name.split(' ')[0]} — just a reminder to watch the latest Othership newsletter "${latest.title}". Head into your guide portal and check it off when done!`;
-      fetch(`${BACKEND}/api/discord-dm`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ discordUsername: g.discord, message: msg })
-      }).catch(e => console.log('DM error:', e));
+      callBackend('/api/discord-dm', { discordUsername: g.discord, message: msg });
     }
   });
   showToast(`Reminders sent to ${behind.length} guide${behind.length>1?'s':''}`);
@@ -1435,8 +1616,9 @@ async function loadNewsletters(){
   if(state.city !== 'toronto' && state.city !== 'nyc') return;
   try {
     const city = state.city === 'toronto' ? 'Toronto' : 'NYC';
-    const res = await fetch(`${BACKEND}/api/newsletters?city=${city}`);
-    const data = await res.json();
+    const res = await apiFetch(`/api/newsletters?city=${encodeURIComponent(city)}`, { method:'GET', auth:'guide' });
+    const data = res.data || {};
+    if(res.status === 401) return;
     if(data.success){
       NEWSLETTERS = data.newsletters;
       renderNewsletters();
@@ -1502,43 +1684,58 @@ function updateManagerStats(){
   set('s-total', GUIDES_DATA.length);
   set('s-needs', GUIDES_DATA.filter(g => g.status === 'needs').length);
   set('s-track', GUIDES_DATA.filter(g => g.status === 'track').length);
-  set('s-done', GUIDES_DATA.filter(g => g.status === 'alumni').length);
+  set('s-done', GUIDES_DATA.filter(g => g.floorReady).length);
   set('s-cpr', cprPending);
+}
+
+function mapGuide(g){
+  const floorFlag = g.floorReady === true || g.floor_ready === true || /^(yes|true)$/i.test(String(g.floorReady || g.floor_ready || ''));
+  return {
+    name: g.name,
+    pct: g.pct,
+    missing: Array.isArray(g.missing) ? g.missing : [],
+    status: g.status,
+    discord: g.discord || '',
+    city: g.city,
+    hireDate: g.hireDate || 0,
+    obs: g.obs && typeof g.obs === 'object' ? g.obs : { ff:'pending', sg:'pending' },
+    attendance: Array.isArray(g.attendance) ? g.attendance.slice() : [],
+    training: Array.isArray(g.training) ? g.training : [],
+    week: g.week,
+    expectedWeek: g.expectedWeek,
+    isBehind: g.isBehind,
+    email: g.email,
+    floorReady: floorFlag,
+    progressTasks: g.progressTasks && typeof g.progressTasks === 'object' ? g.progressTasks : {}
+  };
 }
 
 async function loadRealGuides(){
   const city = sessionStorage.getItem('mgr_city') || 'toronto';
+  const cities = city === 'both' ? ['toronto','nyc'] : [city];
   guidesStatus = 'loading';
   GUIDES_DATA = [];
   updateManagerStats();
   renderManagerCards([]);
   try {
-    const res = await fetch(`${BACKEND}/api/guides?city=${encodeURIComponent(city)}`);
-    const data = await res.json();
-    if(!res.ok || !data.success){
+    const loaded = [];
+    let failed = false;
+    for(const c of cities){
+      const res = await apiFetch(`/api/guides?city=${encodeURIComponent(c)}`, { method:'GET', auth:'manager' });
+      const data = res.data || {};
+      if(res.status === 401) return;
+      if(!res.ok || !data.success){ failed = true; break; }
+      if(Array.isArray(data.guides)) loaded.push(...data.guides.map(mapGuide));
+    }
+    if(failed){
       guidesStatus = 'error';
       GUIDES_DATA = [];
-    } else if(!Array.isArray(data.guides) || !data.guides.length){
+    } else if(!loaded.length){
       guidesStatus = 'empty';
       GUIDES_DATA = [];
     } else {
       guidesStatus = 'ready';
-      GUIDES_DATA = data.guides.map(g => ({
-        name: g.name,
-        pct: g.pct,
-        missing: Array.isArray(g.missing) ? g.missing : [],
-        status: g.status,
-        discord: g.discord || '',
-        city: g.city,
-        hireDate: g.hireDate || 0,
-        obs: g.obs && typeof g.obs === 'object' ? g.obs : { ff:'pending', sg:'pending' },
-        attendance: Array.isArray(g.attendance) ? g.attendance.slice() : [],
-        training: Array.isArray(g.training) ? g.training : [],
-        week: g.week,
-        expectedWeek: g.expectedWeek,
-        isBehind: g.isBehind,
-        email: g.email
-      }));
+      GUIDES_DATA = loaded;
     }
   } catch(e){
     guidesStatus = 'error';
@@ -1603,6 +1800,10 @@ async function init(){
   restoreState();
   if(state.guideEmail){
     await loadProgressFromNotion(state.guideEmail, state.city || '');
+    if(!guideToken()){
+      showLoginScreen();
+      return;
+    }
     if(state.guideName) document.getElementById('guide-first-name').textContent = state.guideName.split(' ')[0];
   }
   refreshGuideHeader();
@@ -1672,6 +1873,20 @@ function renderTask(t){
   const badgeHTML=t.badge?`<span class="badge ${t.badge==='in-ship'?'badge-inship':t.badge==='in-person'?'badge-inperson':t.badge==='online'?'badge-online':'badge-notion'}">${t.badge==='in-ship'?'In-Ship':t.badge==='in-person'?'In-Person':t.badge==='online'?'Online':'Notion'}</span>`:'';
   const label=escapeHtml(t.cta||'');
   const safeId=String(t.id).replace(/[^a-z0-9-]/gi,'');
+  if(t.floorReadyCard){
+    const note = checked
+      ? 'You are floor ready.'
+      : 'Your lead guide will mark you floor ready.';
+    return `
+      <div class="task">
+        <div class="task-check readonly ${checked?'checked':''}" aria-hidden="true"></div>
+        <div class="task-body">
+          <div class="task-name">${escapeHtml(t.name)}</div>
+          <div class="task-desc">${escapeHtml(note)}</div>
+        </div>
+      </div>
+    `;
+  }
   let actionHTML='';
   if(t.type==='profile') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openIntakeOrProfile()">${label}</button></div>`;
   else if(t.type==='upload') actionHTML=`<div class="task-action"><button class="btn-sm btn-lemon" onclick="openModal('modal-cpr-upload')">${label}</button></div>`;
@@ -1687,7 +1902,6 @@ function renderTask(t){
       <div class="task-body">
         <div class="task-name">${escapeHtml(t.name)}${badgeHTML}</div>
         <div class="task-desc">${linkifyText(t.desc||'')}</div>
-        ${/floor ready check-in/i.test(t.name) ? '<div class="task-desc">Leave this circle for your lead guide. Ticking it only updates your own list — it does not assign shifts or message your lead.</div>' : ''}
         ${actionHTML}
       </div>
     </div>
@@ -1705,23 +1919,37 @@ const NOTION_SYNC_TASKS = {
   'mt-profile': 'mt-profile',
 };
 
+function legacySyncId(id){
+  const task = findTaskByAnyId(id);
+  if(task && NOTION_SYNC_TASKS[task.legacyId]) return NOTION_SYNC_TASKS[task.legacyId];
+  return NOTION_SYNC_TASKS[id] || '';
+}
 function toggleTask(id){
-  writeTaskDone(id, !isTaskDone(id));
+  const task = findTaskByAnyId(id);
+  if(isFloorReadyCard(task)) return;
+  const key = task ? task.id : id;
+  const next = !isTaskDone(key);
+  writeTaskDone(key, next);
   saveState();
   renderWeeks();
-  if(state.tasks[id]){
+  if(next){
     showToast('Logged — keep the momentum going');
-    if(NOTION_SYNC_TASKS[id] && state.guideEmail && state.city){
-      callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: NOTION_SYNC_TASKS[id] });
+    const syncId = legacySyncId(key);
+    if(syncId && state.guideEmail && state.city){
+      callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: syncId });
     }
   }
 }
 function markTask(id){
-  writeTaskDone(id, true);
+  const task = findTaskByAnyId(id);
+  if(isFloorReadyCard(task)) return;
+  const key = task ? task.id : id;
+  writeTaskDone(key, true);
   saveState();
   renderWeeks();
-  if(NOTION_SYNC_TASKS[id] && state.guideEmail && state.city){
-    callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: NOTION_SYNC_TASKS[id] });
+  const syncId = legacySyncId(key);
+  if(syncId && state.guideEmail && state.city){
+    callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: syncId });
   }
 }
 
@@ -1772,7 +2000,7 @@ async function submitIntake(){
   const first=name.split(' ')[0];
   document.getElementById('guide-first-name').textContent=first;
   document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
-  state.tasks['profile']=true;
+  writeTaskDone('profile', true);
   applyCprContent();
   refreshGuideHeader();
   closeModal('modal-intake');
@@ -1821,7 +2049,7 @@ async function confirmCPR(){
   const expiry = document.getElementById('cpr-expiry').value;
   if(!expiry){showToast('Please enter your certificate expiry date');return;}
   if(!state.city){ showToast('Select your city in your profile before confirming CPR.'); return; }
-  writeTaskDone('cpr-upload', true);
+  writeTaskDone(progressKey('cpr-upload'), true);
   closeModal('modal-cpr-upload');
   renderWeeks();
   saveState();
@@ -1839,7 +2067,7 @@ async function signHA(){
   const date=document.getElementById('ha-date').value;
   if(!name){showToast('Enter your legal name to sign');return;}
   if(!date){showToast('Add the date to sign');return;}
-  state.hasSigned=true;state.tasks['honorary-agreements']=true;
+  state.hasSigned=true;writeTaskDone('honorary-agreements', true);
   closeModal('modal-ha');renderWeeks();saveState();
   showToast(`Signed by ${name} — logged to your crew card`);
   if(state.guideEmail && state.city) callBackend('/api/task-complete', { email: state.guideEmail, city: state.city, taskId: 'honorary-agreements' });
@@ -1855,17 +2083,20 @@ async function confirmMT(){
   showToast('Mariana Tek confirmed — credits will be added shortly');
 }
 
+function trainingWeekNumber(w){
+  const raw = w && (w.week != null ? w.week : w.w);
+  const match = String(raw == null ? '' : raw).match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
 function trainingChecklist(g){
-  const weeks = Array.isArray(g.training) ? g.training.filter(w => w && (w.w || w.p != null)) : [];
-  if(weeks.length){
-    const last = weeks[weeks.length - 1];
-    return { ok: weeks.every(w => Number(w.p) >= 100), label: `${last.w || 'Training'} complete` };
-  }
-  const city = String(g.city || '').toLowerCase();
-  const key = city === 'toronto' || city === 'to' ? 'Toronto' : city === 'nyc' ? 'NYC' : null;
-  const wave = key ? WAVE_SETTINGS[key] : null;
-  const label = wave && wave.waveNumber ? `Wave ${wave.waveNumber} onboarding complete` : 'Onboarding complete';
-  return { ok: Number(g.pct) >= 100, label };
+  const weeks = Array.isArray(g.training) ? g.training.filter(w => w && (w.w || w.p != null || w.week != null)) : [];
+  const core = weeks.filter(w => {
+    const n = trainingWeekNumber(w);
+    return n == null || n <= 6;
+  });
+  if(!core.length) return { ok:false, label:'Training complete' };
+  const ok = core.every(w => Number(w.p) >= 100 || (Number(w.total) > 0 && Number(w.done) >= Number(w.total)));
+  return { ok, label:'Training complete' };
 }
 
 function renderManagerCards(guides){
@@ -1936,8 +2167,8 @@ function renderManagerCards(guides){
     const trainingHTML='';
     const actionsHTML=`
       <div class="gcard-actions" style="margin-top:10px;">
-        ${g.status!=='done'?`<button class="btn-remind" onclick="openReminderFor(${JSON.stringify(g.name).replace(/"/g,'&quot;')},${JSON.stringify(missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
-        ${isFloorReady&&g.status!=='done'?`<button class="btn-floor-ready" onclick="markFloorReady(${gi})">✓ Mark floor ready</button>`:''}
+        ${!g.floorReady?`<button class="btn-remind" onclick="openReminderFor(${JSON.stringify(g.name).replace(/"/g,'&quot;')},${JSON.stringify(missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
+        ${isFloorReady&&!g.floorReady?`<button class="btn-floor-ready" onclick="markFloorReady(${gi})">✓ Mark floor ready</button>`:''}
         <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
       </div>`;
     el.innerHTML=`
@@ -1958,52 +2189,86 @@ function renderManagerCards(guides){
   });
 }
 
-function setObs(gi,type,result,btn){
-  GUIDES_DATA[gi].obs[type]=result;
-  btn.parentElement.querySelectorAll('.obs-btn').forEach(b=>{b.classList.remove('pass-active','fail-active');});
-  btn.classList.add(result==='pass'?'pass-active':'fail-active');
+async function setObs(gi,type,result){
+  const g = GUIDES_DATA[gi];
+  if(!g) return;
+  if(!g.obs) g.obs = { ff:'pending', sg:'pending' };
+  const prev = g.obs[type] || 'pending';
+  g.obs[type] = result;
   renderManagerCards(getFilteredGuides(currentFilter));
-  showToast(`${GUIDES_DATA[gi].name} — ${type.toUpperCase()} observation marked ${result}`);
+  const data = await callBackend('/api/manager/observation', { email:g.email, city:cityCode(g.city), kind:type, result });
+  if(!data.success){
+    g.obs[type] = prev;
+    renderManagerCards(getFilteredGuides(currentFilter));
+    showToast(data.error || 'Could not save the observation.');
+    return;
+  }
+  showToast(`${g.name} — ${type.toUpperCase()} observation marked ${result}`);
 }
 
-function toggleAttendance(gi,day,btn){
-  GUIDES_DATA[gi].attendance[day]=!GUIDES_DATA[gi].attendance[day];
-  btn.classList.toggle('present');
+async function toggleAttendance(gi,day){
+  const g = GUIDES_DATA[gi];
+  if(!g) return;
+  if(!Array.isArray(g.attendance)) g.attendance = [];
+  const prev = g.attendance.slice();
+  while(g.attendance.length <= day) g.attendance.push(false);
+  g.attendance[day] = !g.attendance[day];
+  renderManagerCards(getFilteredGuides(currentFilter));
+  const data = await callBackend('/api/manager/attendance', { email:g.email, city:cityCode(g.city), days:g.attendance });
+  if(!data.success){
+    g.attendance = prev;
+    renderManagerCards(getFilteredGuides(currentFilter));
+    showToast(data.error || 'Could not save attendance.');
+  }
 }
 
-function markFloorReady(gi){
-  const g=GUIDES_DATA[gi];
-  GUIDES_DATA[gi].status='alumni';GUIDES_DATA[gi].missing=[];GUIDES_DATA[gi].pct=100;
-  const floorReadyGuides=GUIDES_DATA.filter(g=>g.status==='alumni').map(g=>g.name);
-  document.getElementById('floor-notif-sub').textContent=`${g.name} is now floor ready`;
-  document.getElementById('floor-notif-text').textContent=`Hi team! 👋\n\nHere's the list of guides now floor ready:\n${floorReadyGuides.map(n=>`  · ${n}`).join('\n')}\n\nThey're cleared to start picking up shifts. Mariana Tek crew membership and employee role have been assigned automatically.\n\nThanks!`;
-  openModal('modal-floor-notif');
-  renderManagerCards(getFilteredGuides(currentFilter));
+async function markFloorReady(gi){
+  const g = GUIDES_DATA[gi];
+  if(!g) return;
+  const training = trainingChecklist(g);
+  const cprOk = !(g.missing || []).some(m => /cpr/i.test(String(m)));
+  const ready = g.obs && g.obs.ff === 'pass' && g.obs.sg === 'pass' && cprOk && training.ok && !g.floorReady;
+  if(!ready){ showToast('All four checks need to be green first.'); return; }
+  const data = await callBackend('/api/floor-ready', { email:g.email, city:cityCode(g.city) });
+  if(!data || !data.success){
+    showToast((data && data.error) || 'Could not mark floor ready.');
+    return;
+  }
+  if(data.discordRoleAssigned === false) showToast(data.discordError || 'Notion was updated, but the Discord role was not assigned.');
+  else showToast(g.name + ' is floor ready.');
+  await loadRealGuides();
 }
 
 function genAttendanceSummary(){
-  const trainingDays = WAVE_SETTINGS.NYC.trainingDays || 2;
-  const groups = {};
-  for(let i = trainingDays; i >= 0; i--) groups[i] = [];
-  GUIDES_DATA.filter(g=>g.city==='NYC'&&g.status!=='alumni').forEach(g=>{
-    const count = g.attendance.filter(Boolean).length;
-    if(groups[count] !== undefined) groups[count].push(g.name);
+  const mgrCity = sessionStorage.getItem('mgr_city') || 'nyc';
+  const codes = mgrCity === 'both' ? ['nyc','toronto'] : [cityCode(mgrCity)];
+  let summary = '';
+  codes.forEach(code => {
+    const key = code === 'toronto' ? 'Toronto' : 'NYC';
+    const trainingDays = (WAVE_SETTINGS[key] && WAVE_SETTINGS[key].trainingDays) || 2;
+    const groups = {};
+    for(let i = trainingDays; i >= 0; i--) groups[i] = [];
+    GUIDES_DATA.filter(g => cityCode(g.city) === code && g.status !== 'alumni').forEach(g => {
+      const count = Array.isArray(g.attendance) ? g.attendance.filter(Boolean).length : 0;
+      if(groups[count] !== undefined) groups[count].push(g.name);
+    });
+    summary += `Attendance summary for Wave ${WAVE_SETTINGS[key].waveNumber || '—'} ${key} in-person training days:\n\n`;
+    for(let i = trainingDays; i >= 0; i--){
+      if(groups[i] && groups[i].length) summary += `${i}/${trainingDays} days: ${groups[i].join(', ')}\n`;
+    }
+    summary += `\n`;
   });
-  let summary = `Hi Margaret,\n\nAttendance summary for Wave ${WAVE_SETTINGS.NYC.waveNumber} NYC in-person training days:\n\n`;
-  for(let i = trainingDays; i >= 0; i--){
-    if(groups[i] && groups[i].length) summary += `${i}/${trainingDays} days: ${groups[i].join(', ')}\n`;
-  }
-  summary += `\nReady for payment processing.\nThanks!`;
-  document.getElementById('attendance-text').textContent = summary;
+  document.getElementById('attendance-text').textContent = summary.trim();
   openModal('modal-attendance');
 }
 
 let WAVE_SETTINGS = { NYC: { waveNumber: '', season: '', year: '', trainingDays: 2 }, Toronto: { waveNumber: '', season: '', year: '', trainingDays: 3 } };
 
 function loadWaveSettings(){
-  fetch(`${BACKEND}/api/wave-settings`)
-    .then(r=>r.json())
-    .then(data=>{
+  apiFetch('/api/wave-settings', { method:'GET' })
+    .then(res => {
+      const data = res.data || {};
+      if(res.status === 401) return;
       if(data.success && data.waves){
         data.waves.forEach(w=>{
           if(w.city==='NYC') WAVE_SETTINGS.NYC=Object.assign({}, w, { trainingDays: w.trainingDays || 2 });
@@ -2016,7 +2281,7 @@ function loadWaveSettings(){
           const title=document.getElementById('mgr-table-title');
           if(title) title.textContent=`All guides — Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'}`;
         }
-      }
+      } else if(data.error) showToast(data.error);
     }).catch(()=>showToast('Could not load wave settings.'));
 }
 
@@ -2042,6 +2307,7 @@ function getFilteredGuides(status){
   if(currentCityFilter==='NYC') guides=guides.filter(g=>g.city==='NYC');
   if(currentCityFilter==='TO') guides=guides.filter(g=>g.city==='TO'||g.city==='Toronto');
   if(status==='alumni') return guides.filter(g=>g.status==='alumni');
+  if(status==='done') return guides.filter(g=>g.floorReady);
   if(status==='all') return guides.filter(g=>g.status!=='alumni');
   return guides.filter(g=>g.status===status&&g.status!=='alumni');
 }
@@ -2150,28 +2416,49 @@ function openModal(id){
   if(id==='modal-cpr') applyCprContent();
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-function switchView(view,e){
+async function promptManagerLogin(){
+  const pw = prompt('Enter manager password:');
+  if(pw === null) return false;
+  if(!String(pw).trim()){ showToast('Enter the manager password.'); return false; }
+  const res = await apiFetch('/api/auth/manager', { method:'POST', body:{ password:pw }, auth:'none' });
+  const data = res.data || {};
+  if(!res.ok || !data.success || !data.token){
+    showToast(data.error || 'That password was not accepted.');
+    return false;
+  }
+  setManagerToken(data.token);
+  const cities = Array.isArray(data.cities) ? data.cities.map(c => cityCode(c)) : [];
+  sessionStorage.setItem('mgr_cities', JSON.stringify(cities));
+  if(cities.length === 1) sessionStorage.setItem('mgr_city', cities[0]);
+  else if(cities.includes('toronto') && cities.includes('nyc')) sessionStorage.setItem('mgr_city', 'both');
+  else if(cities[0]) sessionStorage.setItem('mgr_city', cities[0]);
+  return true;
+}
+
+async function switchView(view,e){
   if(view === 'manager'){
-    if(sessionStorage.getItem('mgr_auth') !== 'yes'){
-      const pw = prompt('Enter manager password:');
-      if(pw === 'OthershipNYC2026'){ sessionStorage.setItem('mgr_auth','yes'); sessionStorage.setItem('mgr_city','nyc'); }
-      else if(pw === 'OthershipTO2026'){ sessionStorage.setItem('mgr_auth','yes'); sessionStorage.setItem('mgr_city','toronto'); }
-      else { showToast('Incorrect password'); return; }
+    if(!managerToken()){
+      const ok = await promptManagerLogin();
+      if(!ok) return;
     }
     const city = sessionStorage.getItem('mgr_city');
     const label = document.getElementById('mgr-city-label');
     const title = document.getElementById('mgr-table-title');
+    const payrollBtn = document.getElementById('btn-payroll');
     if(city === 'nyc'){
       if(label) label.textContent = `Wave ${WAVE_SETTINGS.NYC.waveNumber} ${WAVE_SETTINGS.NYC.season} — New York City`;
       if(title) title.textContent = `NYC Guides — Wave ${WAVE_SETTINGS.NYC.waveNumber}`;
       currentCityFilter = 'NYC';
-      document.getElementById('btn-payroll').style.display = '';
     } else if(city === 'toronto'){
       if(label) label.textContent = `Wave ${WAVE_SETTINGS.Toronto.waveNumber} ${WAVE_SETTINGS.Toronto.season} — Toronto`;
       if(title) title.textContent = `Toronto Guides — Wave ${WAVE_SETTINGS.Toronto.waveNumber}`;
       currentCityFilter = 'TO';
-      document.getElementById('btn-payroll').style.display = 'none';
-    } else { currentCityFilter = 'all'; }
+    } else {
+      currentCityFilter = 'all';
+      if(label) label.textContent = `Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'} — NYC + Toronto`;
+      if(title) title.textContent = `All guides — Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'}`;
+    }
+    if(payrollBtn) payrollBtn.style.display = '';
     loadRealGuides();
   }
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
