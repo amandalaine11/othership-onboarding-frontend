@@ -1374,6 +1374,9 @@ function placeFloorReadyLastInWeek6(weeks){
     weeks.push(week6);
   }
   week6.tasks.push(card);
+  for(let i = weeks.length - 1; i >= 0; i--){
+    if(!weeks[i].tasks.length) weeks.splice(i, 1);
+  }
   weeks.sort((a,b) => {
     const num = id => id === 'wunset' ? 999 : Number(String(id).replace(/\D/g,'')) || 999;
     return num(a.id) - num(b.id);
