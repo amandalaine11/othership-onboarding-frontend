@@ -102,6 +102,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .task-desc{font-size:14px;color:rgba(236,232,227,0.5);font-weight:300;line-height:1.6;}
 .task-desc a{color:var(--teal);text-decoration:none;}
 .task-desc a:hover{text-decoration:underline;}
+.task-callout{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(162,78,43,0.18);border:1px solid rgba(162,78,43,0.6);border-left:4px solid var(--rust);font-size:14px;line-height:1.5;color:var(--cloud);font-weight:400;}
+.task-callout strong{font-weight:600;color:#F2B48F;}
+.task-callout a{color:var(--teal);text-decoration:none;}
+.task-callout a:hover{text-decoration:underline;}
 .empty-state{padding:8px 4px 36px;color:rgba(236,232,227,0.55);font-size:14px;line-height:1.6;max-width:540px;}
 .task-action{margin-top:7px;display:flex;gap:8px;flex-wrap:wrap;}
 
@@ -1221,6 +1225,21 @@ function linkifyText(value){
   });
 }
 
+// Card descriptions: any text from a "⚠️" onward is shown in its own warning box.
+// A leading "VERY IMPORTANT:" (or similar caps label before a colon) is bolded.
+function renderTaskDesc(value){
+  const text = String(value || '');
+  const idx = text.indexOf('⚠️');
+  if(idx < 0) return `<div class="task-desc">${linkifyText(text)}</div>`;
+  const before = text.slice(0, idx).trim();
+  let warn = text.slice(idx + 2).replace(/^\uFE0F/,'').trim();
+  let label = '';
+  const m = warn.match(/^([A-Z][A-Z !]{2,40}):\s*/);
+  if(m){ label = m[1]; warn = warn.slice(m[0].length); }
+  const callout = `<div class="task-callout">⚠️ ${label ? `<strong>${escapeHtml(label)}:</strong> ` : ''}${linkifyText(warn)}</div>`;
+  return (before ? `<div class="task-desc">${linkifyText(before)}</div>` : '') + callout;
+}
+
 function slugId(name){
   return String(name || '').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'') || 'task';
 }
@@ -2071,7 +2090,7 @@ function renderTask(t){
       <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${safeId}')"></div>
       <div class="task-body">
         <div class="task-name">${escapeHtml(t.name)}${badgeHTML}</div>
-        <div class="task-desc">${linkifyText(t.desc||'')}</div>
+        ${renderTaskDesc(t.desc)}
         ${actionHTML}
       </div>
     </div>
