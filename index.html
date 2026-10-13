@@ -798,12 +798,12 @@ select.form-input option{background:#271829;}
   <div class="modal modal-sm">
     <button class="modal-close" onclick="closeModal('modal-floor-notif')">×</button>
     <h2>Floor Ready Notification</h2>
-    <p class="modal-sub" id="floor-notif-sub">Message for Margaret + Lead Guides.</p>
+    <p class="modal-sub" id="floor-notif-sub">Message for the Lead Guides.</p>
     <div class="discord-tag">⚡ Group chat message preview</div>
     <div class="reminder-preview" id="floor-notif-text"></div>
     <div style="display:flex;gap:10px">
       <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-floor-notif')">Close</button>
-      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal('modal-floor-notif');showToast('Message sent to Margaret + Lead Guides')">Send to group →</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="copyPreview('floor-notif-text','modal-floor-notif','Message')">Copy message →</button>
     </div>
   </div>
 </div>
@@ -813,12 +813,12 @@ select.form-input option{background:#271829;}
   <div class="modal modal-sm">
     <button class="modal-close" onclick="closeModal('modal-attendance')">×</button>
     <h2>Attendance Summary</h2>
-    <p class="modal-sub">End-of-onboarding summary for Margaret.</p>
-    <div class="discord-tag">⚡ Message for Margaret</div>
+    <p class="modal-sub">End-of-onboarding summary of in-person training days.</p>
+    <div class="discord-tag">📋 Summary preview</div>
     <div class="reminder-preview" id="attendance-text"></div>
     <div style="display:flex;gap:10px">
       <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-attendance')">Close</button>
-      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="closeModal('modal-attendance');showToast('Attendance summary sent to Margaret')">Send to Margaret →</button>
+      <button class="btn-mgr btn-mgr-primary" style="flex:1" onclick="copyPreview('attendance-text','modal-attendance','Attendance summary')">Copy summary →</button>
     </div>
   </div>
 </div>
@@ -1051,7 +1051,7 @@ function readFloorReady(data){
 
 // CITY CONFIG
 const CITY_DISCORD = {
-  nyc: ['tanyacurley','margaret.p','lindsey_69123'],
+  nyc: ['tanyacurley','lindsey_69123'],
   toronto: ['tanyacurley','Lawrencekiki']
 };
 const CITY_RATE_URLS = {
@@ -2521,6 +2521,14 @@ async function markFloorReady(gi){
   if(data.discordRoleAssigned === false) showToast(data.discordError || 'Notion was updated, but the Discord role was not assigned.');
   else showToast(g.name + ' is floor ready.');
   await loadRealGuides();
+}
+
+// Nothing in these previews is sent anywhere: copy the text so the manager can paste it.
+function copyPreview(textId, modalId, label){
+  const text = document.getElementById(textId).textContent;
+  navigator.clipboard.writeText(text)
+    .then(() => { closeModal(modalId); showToast(label + ' copied to clipboard'); })
+    .catch(() => showToast('Could not copy — select the text and copy it manually'));
 }
 
 function genAttendanceSummary(){
