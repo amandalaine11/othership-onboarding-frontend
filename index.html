@@ -431,6 +431,7 @@ select.form-input option{background:#271829;}
       <button class="btn-mgr btn-mgr-outline" id="btn-remind-all" onclick="handleRemindAll()">⚡ Send all reminders</button>
       <button class="btn-mgr btn-mgr-outline" id="btn-payroll" onclick="handlePayroll()">💰 Payroll Report</button>
       <button class="btn-mgr btn-mgr-outline" id="btn-wave-channels" onclick="createWaveChannels()"># Create wave channels</button>
+      <button class="btn-mgr btn-mgr-outline" id="btn-post-welcomes" onclick="postWelcomeMessages()">Post welcome messages</button>
     </div>
   </div>
   <div class="stats-row">
@@ -2591,6 +2592,82 @@ async function createWaveChannels(){
   } catch(e){ showToast('Failed to create channels'); }
 }
 
+function welcomeChannelLabel(raw){
+  const k = String(raw || '').toLowerCase().replace(/^#/, '').trim();
+  if(k === 'friendship' || k.endsWith('-friendship') || k.endsWith(' friendship')) return 'friendship';
+  if(k === 'feedback' || k.endsWith('-feedback') || k.endsWith(' feedback')) return 'feedback';
+  if(k === 'leadership' || k === 'main' || k === 'leadership/main' || k.endsWith('-main') || k.includes('leadership')) return 'leadership';
+  return k || 'channel';
+}
+
+function welcomeStatusPhrase(status){
+  const raw = status && typeof status === 'object' ? (status.status || status.result || status.state || '') : status;
+  const s = String(raw || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if(s === 'posted' || s === 'sent') return 'posted';
+  if(s === 'skipped' || s === 'skip' || s === 'already_posted') return 'skipped (already posted)';
+  if(s === 'missing' || s === 'not_found') return 'not found';
+  if(s === 'failed' || s === 'fail' || s === 'failure') return 'failed';
+  return String(raw || '').trim();
+}
+
+function welcomeResultEntries(data){
+  if(!data || typeof data !== 'object') return [];
+  const candidates = [data.channels, data.results, data.welcomes, data.messages, data.posts];
+  for(const list of candidates){
+    if(Array.isArray(list)) return list;
+    if(list && typeof list === 'object'){
+      return Object.keys(list).map(key => {
+        const value = list[key];
+        if(value && typeof value === 'object') return Object.assign({ channel: value.channel || value.name || key }, value);
+        return { channel: key, status: value };
+      });
+    }
+  }
+  const known = ['friendship', 'leadership', 'main', 'feedback'];
+  if(known.some(key => data[key] != null && key !== 'success')){
+    return known.filter(key => data[key] != null).map(key => {
+      const value = data[key];
+      if(value && typeof value === 'object') return Object.assign({ channel: value.channel || value.name || key }, value);
+      return { channel: key, status: value };
+    });
+  }
+  return [];
+}
+
+function summarizeWelcomePosts(data){
+  const order = { friendship: 0, leadership: 1, feedback: 2 };
+  const seen = new Set();
+  const parts = [];
+  welcomeResultEntries(data).forEach(entry => {
+    if(entry == null) return;
+    const source = typeof entry === 'string' ? { channel: entry } : entry;
+    const rawName = source.channel || source.name || source.key || source.id || source.channelName || source.type || source.slug || '';
+    const label = welcomeChannelLabel(rawName);
+    if(seen.has(label)) return;
+    seen.add(label);
+    const phrase = welcomeStatusPhrase(source.status || source.result || source.state || source.outcome);
+    if(!phrase) return;
+    parts.push({ label, phrase, order: order[label] != null ? order[label] : 9 });
+  });
+  if(!parts.length) return '';
+  parts.sort((a, b) => a.order - b.order);
+  return 'Welcome messages: ' + parts.map(part => part.label + ' ' + part.phrase).join(', ');
+}
+
+async function postWelcomeMessages(){
+  const city = sessionStorage.getItem('mgr_city') || 'nyc';
+  const cityName = city === 'toronto' ? 'Toronto' : city === 'nyc' ? 'New York City' : city === 'both' ? 'NYC + Toronto' : city;
+  if(!window.confirm('Post welcome messages to the ' + cityName + ' friendship, leadership, and feedback channels?')) return;
+  showToast('Posting welcome messages...');
+  try {
+    const data = await callBackend('/api/discord-post-welcomes', { city });
+    const summary = summarizeWelcomePosts(data);
+    if(summary) showToast(summary, 6000);
+    else if(data && data.success) showToast('Welcome messages posted');
+    else showToast('Error: ' + ((data && data.error) || 'Could not post welcome messages'));
+  } catch(e){ showToast('Failed to post welcome messages'); }
+}
+
 let currentFilter='all';
 let currentCityFilter='all';
 
@@ -2611,10 +2688,12 @@ function filterG(type,btn){
   const gcards = document.getElementById('gcards');
   const nlView = document.getElementById('newsletter-mgr-view');
   const btnWave = document.getElementById('btn-wave-channels');
+  const btnWelcomes = document.getElementById('btn-post-welcomes');
   if(type === 'newsletters'){
     gcards.style.display = 'none';
     nlView.style.display = 'block';
     btnWave.style.display = 'none';
+    if(btnWelcomes) btnWelcomes.style.display = 'none';
     document.getElementById('btn-remind-all').textContent = '⚡ Remind behind';
     document.getElementById('btn-payroll').textContent = '💰 Newsletter Payroll';
     renderNewsletterMgrView();
@@ -2622,6 +2701,7 @@ function filterG(type,btn){
     gcards.style.display = '';
     nlView.style.display = 'none';
     btnWave.style.display = '';
+    if(btnWelcomes) btnWelcomes.style.display = '';
     document.getElementById('btn-remind-all').textContent = '⚡ Send all reminders';
     document.getElementById('btn-payroll').textContent = '💰 Payroll Report';
     renderManagerCards(getFilteredGuides(type));
