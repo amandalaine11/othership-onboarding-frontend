@@ -1245,6 +1245,11 @@ function slugId(name){
   return String(name || '').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'') || 'task';
 }
 
+// Same rule as isSignContractTask() in the backend (lib/task-ids.js).
+function isSignContractTask(lowerName){
+  return /\bsign\b/.test(lowerName) && /\bcontracts?\b/.test(lowerName);
+}
+
 // Stable progress ids. CPR signup and CPR upload must never share one.
 // Instruction pop-ups use the same id their confirm button already saves.
 function getTaskId(name){
@@ -1253,7 +1258,9 @@ function getTaskId(name){
   if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'mt-profile';
   if(n.includes('discord')) return 'discord-join';
   if(n.includes('honorary')) return 'honorary-agreements';
-  if(n.includes('contract') && !n.includes('conduct')) return 'contract';
+  // Only the real "Sign your contract" card. "Contractor" titles must not match,
+  // or ticking them sets Contract Signed = Yes on the guide card.
+  if(isSignContractTask(n)) return 'contract';
   if((n.includes('submit') || n.includes('upload')) && n.includes('cpr')) return 'cpr-upload';
   if(n.includes('cpr') && (n.includes('sign up') || n.includes('certification'))) return 'cpr-signup';
   if(n.includes('towel')) return 'towel-pickup';
