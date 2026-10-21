@@ -100,6 +100,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .task-name{font-size:16px;font-weight:500;color:var(--cloud);margin-bottom:4px;transition:opacity 0.2s;}
 .task-check.checked~.task-body .task-name{opacity:0.38;text-decoration:line-through;text-decoration-color:rgba(236,232,227,0.25);}
 .task-desc{font-size:14px;color:rgba(236,232,227,0.5);font-weight:300;line-height:1.6;}
+.rates-list{margin-bottom:4px;}
+.rates-heading{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(219,245,114,0.72);font-weight:500;margin:18px 0 2px;}
+.rates-heading:first-child{margin-top:0;}
+.rates-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid rgba(236,232,227,0.08);}
+.rates-title{flex:1;min-width:0;font-size:15px;line-height:1.35;color:rgba(236,232,227,0.82);}
+.rates-rate{flex:0 0 auto;font-size:15px;font-weight:500;color:var(--cloud);text-align:right;}
+.rates-status{font-size:14px;line-height:1.5;color:rgba(236,232,227,0.6);padding:8px 0;}
+button.rates-retry{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 0;margin:0;color:var(--cloud);font-family:var(--font-body);font-size:14px;line-height:1.5;cursor:pointer;}
+button.rates-retry:hover{color:var(--lemon);}
 .task-desc a{color:var(--teal);text-decoration:none;}
 .task-desc a:hover{text-decoration:underline;}
 .task-callout{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(162,78,43,0.18);border:1px solid rgba(162,78,43,0.6);border-left:4px solid var(--rust);font-size:14px;line-height:1.5;color:var(--cloud);font-weight:400;}
@@ -356,6 +365,8 @@ select.form-input option{background:#271829;}
   .sig-row{grid-template-columns:1fr;}
   .floor-checklist{grid-template-columns:1fr;}
   .task-action .btn-sm{width:100%;justify-content:center;}
+  .rates-row{gap:12px;}
+  .rates-title,.rates-rate{font-size:14px;}
 }
 </style>
 </head>
@@ -670,6 +681,17 @@ select.form-input option{background:#271829;}
       <input class="form-input" id="cpr-expiry" type="date">
     </div>
     <button class="btn-submit" onclick="confirmCPR()">I've uploaded my certificate ✓</button>
+  </div>
+</div>
+
+<!-- GUIDE RATES -->
+<div class="modal-overlay" id="modal-rates">
+  <div class="modal modal-sm">
+    <button class="modal-close" onclick="closeModal('modal-rates')">×</button>
+    <h2>Review Guide Rates</h2>
+    <p class="modal-sub" id="rates-sub">Rates for your city.</p>
+    <div id="rates-body" class="rates-list" aria-live="polite"></div>
+    <button class="btn-submit" style="margin-top:18px" onclick="confirmGuideRates()">I've read this →</button>
   </div>
 </div>
 
@@ -1258,6 +1280,7 @@ function getTaskId(name){
   if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'mt-profile';
   if(n.includes('discord')) return 'discord-join';
   if(n.includes('honorary')) return 'honorary-agreements';
+  if(isGuideRatesTask(n)) return 'guide-rates';
   // Only the real "Sign your contract" card. "Contractor" titles must not match,
   // or ticking them sets Contract Signed = Yes on the guide card.
   if(isSignContractTask(n)) return 'contract';
@@ -1303,9 +1326,14 @@ function linkHeldBySignupCard(t, siblings){
   });
 }
 
+function isGuideRatesTask(name){
+  return /\breview guide rates\b/.test(String(name || '').toLowerCase());
+}
+
 // Pop-ups whose text lives in this page. A real link on the card wins over these.
 function getModal(name){
   const n = String(name || '').toLowerCase();
+  if(isGuideRatesTask(n)) return 'modal-rates';
   if(n.includes('discord')) return 'modal-discord';
   if(n.includes('mariana tek') && (n.includes('set up') || n.includes('account'))) return 'modal-mt';
   if(n.includes('honorary')) return 'modal-ha';
@@ -1321,6 +1349,7 @@ function getModal(name){
 function classifyKind(t, siblings){
   const type = String(t.type || '').toLowerCase();
   const name = t.name || '';
+  if(isGuideRatesTask(name)) return { behavior:'modal', url:'', modal:'modal-rates' };
   const url = linkHeldBySignupCard(t, siblings) ? '' : taskLink(t);
   const modal = getModal(name);
   if(type === 'upload') return { behavior:'upload', url, modal:null };
@@ -1341,6 +1370,7 @@ function classifyKind(t, siblings){
 }
 
 function buttonLabel(t, behavior){
+  if(isGuideRatesTask(t && t.name)) return 'Open';
   const fromNotion = [t.buttonLabel, t.button, t.cta].find(v => typeof v === 'string' && v.trim());
   if(fromNotion) return fromNotion.trim();
   const name = t.name || '';
@@ -1354,6 +1384,7 @@ function buttonLabel(t, behavior){
     if(modal === 'modal-discord') return 'Join Discord';
     if(modal === 'modal-mt') return 'Set up account';
     if(modal === 'modal-ha') return 'Read & sign';
+    if(modal === 'modal-rates') return 'Open';
     if(modal === 'modal-breathwork') return 'Open & read';
     if(modal === 'modal-crewpass') return 'Read policy';
     return 'Read page';
@@ -1465,6 +1496,70 @@ function placeFloorReadyLastInWeek6(weeks){
   });
 }
 
+function guideRatesTask(){
+  return {
+    id: 'guide-rates',
+    legacyId: 'guide-rates',
+    aliasIds: [],
+    notionPageId: '',
+    floorReadyCard: false,
+    name: 'Review Guide Rates',
+    desc: '',
+    type: 'modal',
+    cta: 'Open',
+    url: '',
+    notionUrl: '',
+    vimeoUrl: '',
+    badge: null,
+    modal: 'modal-rates',
+    minToComplete: 0
+  };
+}
+
+function placeGuideRatesCard(weeks){
+  let card = null;
+  weeks.forEach(w => {
+    for(let i = w.tasks.length - 1; i >= 0; i--){
+      const task = w.tasks[i];
+      if(!isGuideRatesTask(task.name) && task.modal !== 'modal-rates' && task.legacyId !== 'guide-rates' && task.id !== 'guide-rates') continue;
+      const removed = w.tasks.splice(i, 1)[0];
+      if(!card) card = removed;
+    }
+  });
+  for(let i = weeks.length - 1; i >= 0; i--){
+    if(!weeks[i].tasks.length) weeks.splice(i, 1);
+  }
+  card = card || guideRatesTask();
+  card.type = 'modal';
+  card.modal = 'modal-rates';
+  card.cta = 'Open';
+  card.url = '';
+  card.notionUrl = '';
+  card.vimeoUrl = '';
+  card.badge = null;
+  card.desc = '';
+  const aliases = Array.isArray(card.aliasIds) ? card.aliasIds.slice() : [];
+  if(card.id !== 'guide-rates' && !aliases.includes('guide-rates')) aliases.push('guide-rates');
+  card.aliasIds = aliases;
+  if(card.id) taskAliases[card.id] = aliases;
+  if(!card.legacyId) card.legacyId = 'guide-rates';
+  const payroll = weeks.map(w => ({ week:w, idx:w.tasks.findIndex(t => /reviewed contractor payroll sop/i.test(t.name || '')) })).find(hit => hit.idx >= 0);
+  if(payroll){
+    payroll.week.tasks.splice(payroll.idx + 1, 0, card);
+    return;
+  }
+  let week5 = weeks.find(w => w.id === 'w5');
+  if(!week5){
+    week5 = { id:'w5', label:'Week 5', dates:'', tasks:[] };
+    weeks.push(week5);
+    weeks.sort((a,b) => {
+      const num = id => id === 'wunset' ? 999 : Number(String(id).replace(/\D/g,'')) || 999;
+      return num(a.id) - num(b.id);
+    });
+  }
+  week5.tasks.push(card);
+}
+
 function taskPayload(){
   const tasks = Object.assign({}, state.tasks);
   WEEKS.forEach(w => w.tasks.forEach(t => {
@@ -1525,6 +1620,7 @@ function loadTasksFromNotion(){
         newWeeks.push({ id:'wunset', label:'No week set', dates:'', tasks: unscheduled.map(t => buildTask(t, used, siblings)) });
       }
       placeFloorReadyLastInWeek6(newWeeks);
+      placeGuideRatesCard(newWeeks);
       WEEKS.length = 0;
       newWeeks.forEach(w => WEEKS.push(w));
       renderWeeks();
@@ -2189,6 +2285,59 @@ async function markTask(id){
   return true;
 }
 
+function ratesCityLabel(code){
+  const c = String(code || '').toUpperCase();
+  if(c === 'TO' || c === 'TORONTO') return 'Toronto';
+  if(c === 'NYC' || c === 'NEW YORK' || c === 'NEW YORK CITY') return 'New York City';
+  if(state.city === 'toronto') return 'Toronto';
+  if(state.city === 'nyc') return 'New York City';
+  return 'your city';
+}
+
+function renderRateRows(rows){
+  return rows.map(row => {
+    const title = escapeHtml(row && row.title);
+    if(row && row.isHeader) return `<div class="rates-heading">${title}</div>`;
+    const rate = escapeHtml(row && row.rate != null ? row.rate : '');
+    return `<div class="rates-row"><span class="rates-title">${title}</span><span class="rates-rate">${rate}</span></div>`;
+  }).join('');
+}
+
+let ratesRequest = 0;
+async function loadGuideRates(){
+  const body = document.getElementById('rates-body');
+  const sub = document.getElementById('rates-sub');
+  if(!body) return;
+  const ticket = ++ratesRequest;
+  body.innerHTML = '<div class="rates-status">Loading rates…</div>';
+  if(sub) sub.textContent = 'Rates for your city.';
+  const showError = () => {
+    if(ticket !== ratesRequest) return;
+    body.innerHTML = '<button type="button" class="rates-status rates-retry" onclick="loadGuideRates()">Couldn\'t load rates, please try again</button>';
+  };
+  try {
+    const res = await apiFetch('/api/pay-rates', { method:'GET', auth:'guide' });
+    if(ticket !== ratesRequest) return;
+    const data = res.data || {};
+    const rows = data && Array.isArray(data.rows) ? data.rows : null;
+    if(!res.ok || data.success === false || !rows){
+      showError();
+      return;
+    }
+    if(sub) sub.textContent = 'Rates for ' + ratesCityLabel(data.city) + '.';
+    body.innerHTML = rows.length ? renderRateRows(rows) : '<div class="rates-status">No rates are listed yet.</div>';
+  } catch(e){
+    showError();
+  }
+}
+
+async function confirmGuideRates(){
+  const ok = await markTask('guide-rates');
+  if(!ok) return;
+  closeModal('modal-rates');
+  showToast('Guide rates reviewed');
+}
+
 function openCityLink(){
   if(!state.city){showToast('Complete your profile first to see city-specific content');return;}
   window.open(CITY_RATE_URLS[state.city],'_blank');
@@ -2822,6 +2971,7 @@ function openModal(id){
   el.classList.add('open');
   if(id==='modal-discord') updateDiscordPanel();
   if(id==='modal-cpr') applyCprContent();
+  if(id==='modal-rates') loadGuideRates();
   if(id==='modal-intake'){
     const emailInput = document.getElementById('f-email');
     if(emailInput && !emailInput.value && state.guideEmail) emailInput.value = state.guideEmail;
