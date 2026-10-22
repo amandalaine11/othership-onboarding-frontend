@@ -2161,11 +2161,28 @@ function renderWeeks(){
   });
 }
 
+function isCprCertificateTask(task){
+  if(!task) return false;
+  const ids = [task.id, task.legacyId].concat(task.aliasIds || []);
+  if(ids.indexOf('cpr-upload') !== -1) return true;
+  return getTaskId(task.name) === 'cpr-upload';
+}
+
+function openCprCertificate(event){
+  if(event && event.target && event.target.closest){
+    const interactive = event.target.closest('a, button');
+    if(interactive) return;
+  }
+  if(event && event.stopPropagation) event.stopPropagation();
+  openModal('modal-cpr-upload');
+}
+
 function renderTask(t){
   const checked=isTaskDone(t.id);
   const badgeHTML=t.badge?`<span class="badge ${t.badge==='in-ship'?'badge-inship':t.badge==='in-person'?'badge-inperson':t.badge==='online'?'badge-online':'badge-notion'}">${t.badge==='in-ship'?'In-Ship':t.badge==='in-person'?'In-Person':t.badge==='online'?'Online':'Notion'}</span>`:'';
   const label=escapeHtml(t.cta||'');
   const safeId=String(t.id).replace(/[^a-z0-9-]/gi,'');
+  const cprCert = isCprCertificateTask(t);
   if(t.floorReadyCard){
     const note = checked
       ? 'You are floor ready.'
@@ -2189,9 +2206,11 @@ function renderTask(t){
     const klass = t.type==='video' ? 'btn-lemon' : 'btn-outline';
     actionHTML=`<div class="task-action"><a class="btn-sm ${klass}" href="${escapeHtml(t.url)}" target="_blank" rel="noopener">${label} →</a></div>`;
   }
+  const taskClick = cprCert ? ' onclick="openCprCertificate(event)"' : '';
+  const checkClick = cprCert ? 'openCprCertificate(event)' : `toggleTask('${safeId}')`;
   return `
-    <div class="task">
-      <div class="task-check ${checked?'checked':''}" onclick="toggleTask('${safeId}')"></div>
+    <div class="task"${taskClick}>
+      <div class="task-check ${checked?'checked':''}" onclick="${checkClick}"></div>
       <div class="task-body">
         <div class="task-name">${escapeHtml(t.name)}${badgeHTML}</div>
         ${renderTaskDesc(t.desc)}
@@ -2229,6 +2248,10 @@ async function syncTaskComplete(key){
 async function toggleTask(id){
   const task = findTaskByAnyId(id);
   if(isFloorReadyCard(task)) return;
+  if(isCprCertificateTask(task)){
+    openModal('modal-cpr-upload');
+    return;
+  }
   const key = task ? task.id : id;
   const prev = isTaskDone(key);
   const next = !prev;
