@@ -220,6 +220,8 @@ select.form-input option{background:#271829;}
 /* DISCORD PANEL */
 .discord-usernames{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
 .discord-username{background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.3);color:#8fa0f8;font-size:12px;padding:4px 10px;border-radius:6px;font-weight:500;}
+.discord-role-note{display:none;margin:12px 0 0;padding:10px 12px;border-radius:8px;background:rgba(224,122,80,0.12);border:1px solid rgba(224,122,80,0.35);color:#f0c2b0;font-size:13px;line-height:1.45;}
+.discord-role-note.show{display:block;}
 
 /* MANAGER */
 .mgr-header{padding:32px 40px 22px;border-bottom:1px solid rgba(236,232,227,0.07);display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
@@ -591,18 +593,21 @@ select.form-input option{background:#271829;}
       <h3>Step 1 — Join the server</h3>
       <p>Click the link below to join the Othership Discord server.</p>
       <p><a href="https://discord.gg/WPjY2NZQK2" target="_blank">Join the Othership Discord →</a></p>
-      <h3>Step 2 — Introduce yourself</h3>
-      <p>Once you're in, introduce yourself in your wave channel so your crew knows you've arrived.</p>
-      <h3>Step 3 — Add your team as friends</h3>
+      <h3>Step 2 — Add your team as friends</h3>
       <p>Add the following people as Discord friends and say hello in a direct message.</p>
       <div class="discord-usernames" id="discord-usernames"></div>
     </div>
     <div class="content-panel" style="margin-top:12px;">
-      <h3>Step 4 — Enter your Discord username</h3>
+      <h3>Step 3 — Enter your Discord username</h3>
       <p class="step-callout">This is extremely important, as it's how you'll get added to the channels you need for onboarding.</p>
       <p>Enter your exact Discord username below (e.g. <strong>amandalaine</strong>).</p>
       <input type="text" id="discord-username-input" placeholder="Your Discord username" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(236,232,227,0.15);background:rgba(236,232,227,0.06);color:var(--cloud);font-size:14px;font-family:var(--font-body);margin-top:6px;box-sizing:border-box;">
     </div>
+    <div class="content-panel" style="margin-top:12px;">
+      <h3>Step 4 — Introduce yourself</h3>
+      <p>Once you're in, introduce yourself in your wave channel so your crew knows you've arrived.</p>
+    </div>
+    <p id="discord-role-note" class="discord-role-note" role="status" aria-live="polite"></p>
     <button class="btn-submit" onclick="submitDiscordUsername()">I've joined &amp; added the team →</button>
   </div>
 </div>
@@ -2177,12 +2182,29 @@ function openCprCertificate(event){
   openModal('modal-cpr-upload');
 }
 
+function isDiscordJoinTask(task){
+  if(!task) return false;
+  const ids = [task.id, task.legacyId].concat(task.aliasIds || []);
+  if(ids.indexOf('discord-join') !== -1) return true;
+  return getTaskId(task.name) === 'discord-join';
+}
+
+function openDiscordJoin(event){
+  if(event && event.target && event.target.closest){
+    const interactive = event.target.closest('a, button');
+    if(interactive) return;
+  }
+  if(event && event.stopPropagation) event.stopPropagation();
+  openModal('modal-discord');
+}
+
 function renderTask(t){
   const checked=isTaskDone(t.id);
   const badgeHTML=t.badge?`<span class="badge ${t.badge==='in-ship'?'badge-inship':t.badge==='in-person'?'badge-inperson':t.badge==='online'?'badge-online':'badge-notion'}">${t.badge==='in-ship'?'In-Ship':t.badge==='in-person'?'In-Person':t.badge==='online'?'Online':'Notion'}</span>`:'';
   const label=escapeHtml(t.cta||'');
   const safeId=String(t.id).replace(/[^a-z0-9-]/gi,'');
   const cprCert = isCprCertificateTask(t);
+  const discordJoin = isDiscordJoinTask(t);
   if(t.floorReadyCard){
     const note = checked
       ? 'You are floor ready.'
@@ -2206,8 +2228,8 @@ function renderTask(t){
     const klass = t.type==='video' ? 'btn-lemon' : 'btn-outline';
     actionHTML=`<div class="task-action"><a class="btn-sm ${klass}" href="${escapeHtml(t.url)}" target="_blank" rel="noopener">${label} →</a></div>`;
   }
-  const taskClick = cprCert ? ' onclick="openCprCertificate(event)"' : '';
-  const checkClick = cprCert ? 'openCprCertificate(event)' : `toggleTask('${safeId}')`;
+  const taskClick = cprCert ? ' onclick="openCprCertificate(event)"' : (discordJoin ? ' onclick="openDiscordJoin(event)"' : '');
+  const checkClick = cprCert ? 'openCprCertificate(event)' : (discordJoin ? 'openDiscordJoin(event)' : `toggleTask('${safeId}')`);
   return `
     <div class="task"${taskClick}>
       <div class="task-check ${checked?'checked':''}" onclick="${checkClick}"></div>
@@ -2250,6 +2272,10 @@ async function toggleTask(id){
   if(isFloorReadyCard(task)) return;
   if(isCprCertificateTask(task)){
     openModal('modal-cpr-upload');
+    return;
+  }
+  if(isDiscordJoinTask(task)){
+    openModal('modal-discord');
     return;
   }
   const key = task ? task.id : id;
@@ -2378,6 +2404,21 @@ function updateDiscordPanel(){
   const users=CITY_DISCORD[city]||[];
   const el=document.getElementById('discord-usernames');
   if(el) el.innerHTML=users.map(u=>`<span class="discord-username">@${u}</span>`).join('');
+  showDiscordRoleNote('');
+}
+
+function discordRoleMessage(reason){
+  if(reason === 'member_not_found'){
+    return "We couldn't find you in the Othership Discord yet. Make sure you've joined the server using the invite above (and that your username is exact), then press the button again.";
+  }
+  return "We couldn't add you to the wave channels. A lead guide will add you shortly.";
+}
+
+function showDiscordRoleNote(message){
+  const el = document.getElementById('discord-role-note');
+  if(!el) return;
+  el.textContent = message || '';
+  el.classList.toggle('show', !!message);
 }
 
 function handleHeadshot(input){
@@ -2917,14 +2958,36 @@ function genReminder(name,missing){
 async function submitDiscordUsername(){
   const username = document.getElementById('discord-username-input').value.trim();
   if(!username){ showToast('Please enter your Discord username'); return; }
+  showDiscordRoleNote('');
   state.guideEmail = currentGuideEmail();
   if(!state.guideEmail){
     showSaveError("Couldn't save — please sign in again");
     return;
   }
   state.discordUsername = username;
-  const ok = await markTask('discord-join');
-  if(!ok) return;
+  const key = progressKey('discord-join');
+  // task-complete saves the username on the guide card. It does not tick the
+  // task — that tick is /api/progress/save, and only after the role is assigned.
+  // No discord field means the old backend, which still ticks on success.
+  const result = await syncTaskComplete(key);
+  if(!result || !result.success){
+    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+    return;
+  }
+  if(result.discord && result.discord.roleAssigned !== true){
+    showDiscordRoleNote(discordRoleMessage(result.discord.reason));
+    return;
+  }
+  const prev = isTaskDone(key);
+  writeTaskDone(key, true);
+  renderWeeks();
+  const saved = await saveState();
+  if(!saved.ok){
+    writeTaskDone(key, prev);
+    persistLocalTasks();
+    renderWeeks();
+    return;
+  }
   closeModal('modal-discord');
   showToast('Discord confirmed — welcome to the crew');
 }
