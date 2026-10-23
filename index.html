@@ -160,6 +160,18 @@ button.rates-retry:hover{color:var(--lemon);}
 /* FORM */
 .form-row{margin-bottom:16px;}
 .form-row label{display:block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(236,232,227,0.45);margin-bottom:5px;}
+.form-row label.question{font-size:16px;letter-spacing:0;text-transform:none;color:var(--cloud);font-weight:500;margin-bottom:6px;}
+.form-help{font-size:13px;line-height:1.5;color:rgba(236,232,227,0.55);font-weight:300;margin:0 0 8px;}
+.form-help a{color:var(--teal);text-decoration:none;}
+.form-help a:hover{text-decoration:underline;}
+.mt-same{display:inline-block;margin-top:8px;padding:0;background:none;border:none;color:var(--lemon);font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;}
+.mt-same:hover{text-decoration:underline;}
+.mt-prompt{margin:16px 40px 0;padding:16px 18px;border-radius:12px;background:rgba(219,245,114,0.08);border:1px solid rgba(219,245,114,0.28);}
+.mt-prompt[hidden]{display:none;}
+.mt-prompt h3{font-size:16px;font-weight:500;color:var(--cloud);margin-bottom:6px;}
+.mt-prompt-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:4px;}
+.mt-prompt-actions .mt-same{margin-top:0;}
+.mt-prompt-actions .btn-sm{background:var(--lemon);color:var(--eggplant);border:none;}
 .form-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(236,232,227,0.1);border-radius:8px;padding:10px 13px;color:var(--cloud);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color 0.18s;}
 .form-input:focus{border-color:var(--lemon);}
 .form-input::placeholder{color:rgba(236,232,227,0.18);}
@@ -361,7 +373,7 @@ select.form-input option{background:#271829;}
 
 @media(max-width:600px){
   .guide-hero,.weeks,.mgr-header,.stats-row,.table-section,.save-banner{padding-left:18px;padding-right:18px;}
-  .save-banner{margin-left:18px;margin-right:18px;}
+  .save-banner,.mt-prompt{margin-left:18px;margin-right:18px;}
   .guide-hero::after{display:none;}
   .form-grid{grid-template-columns:1fr;}
   .sig-row{grid-template-columns:1fr;}
@@ -415,6 +427,15 @@ select.form-input option{background:#271829;}
     </div>
   </div>
   <div class="save-banner" id="save-banner" hidden></div>
+  <div class="mt-prompt" id="mt-email-prompt" hidden>
+    <h3>What's your Mariana Tek account email?</h3>
+    <p class="form-help">The email you use to book classes in the Othership app. We need it to add your training credits and Crew passes properly. No account yet? Create one in the <a href="https://www.othership.us/account?_mt=%2Faccount%2Fcreate%3FredirectURL%3D%252Faccount" target="_blank" rel="noopener">Othership app</a> first.</p>
+    <input class="form-input" id="mt-prompt-email" type="email" autocomplete="email" placeholder="The email on your booking account">
+    <div class="mt-prompt-actions">
+      <button type="button" class="mt-same" onclick="useSignInEmailForMt('mt-prompt-email')">Same as my sign-in email</button>
+      <button type="button" class="btn-sm btn-lemon" onclick="saveMarianaTekEmailFromPrompt()">Save email</button>
+    </div>
+  </div>
   <div class="progress-bar-wrap">
     <div class="progress-label"><span>Onboarding Progress</span><span id="pct-label">0% complete</span></div>
     <div class="progress-track"><div class="progress-fill" id="main-fill" style="width:0%"></div></div>
@@ -504,6 +525,12 @@ select.form-input option{background:#271829;}
     <div class="form-grid">
       <div class="form-row"><label>Email</label><input class="form-input" id="f-email" type="email" placeholder="you@email.com"></div>
       <div class="form-row"><label>Phone</label><input class="form-input" id="f-phone" placeholder="+1 555 000 0000"></div>
+    </div>
+    <div class="form-row">
+      <label class="question" for="f-mt-email">What's your Mariana Tek account email?</label>
+      <p class="form-help">The email you use to book classes in the Othership app. We need it to add your training credits and Crew passes properly. No account yet? Create one in the <a href="https://www.othership.us/account?_mt=%2Faccount%2Fcreate%3FredirectURL%3D%252Faccount" target="_blank" rel="noopener">Othership app</a> first.</p>
+      <input class="form-input" id="f-mt-email" type="email" autocomplete="email" placeholder="The email on your booking account">
+      <button type="button" class="mt-same" onclick="useSignInEmailForMt('f-mt-email')">Same as my sign-in email</button>
     </div>
     <div class="form-grid">
       <div class="form-row"><label>Gender</label>
@@ -1237,7 +1264,7 @@ let tasksLoading = false;
 let taskAliases = {};
 
 // STATE
-const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{},discordUsername:'',mtEmail:''};
+const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{},discordUsername:'',mtEmail:'',marianaTekEmail:''};
 
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -1649,6 +1676,7 @@ function paintGuideIdentity(){
   }
   const signOut = document.getElementById('guide-signout');
   if(signOut) signOut.hidden = !isLoggedIn();
+  renderMtEmailPrompt();
 }
 
 function clearProgressFields(){
@@ -1658,6 +1686,7 @@ function clearProgressFields(){
   state.hasSigned = false;
   state.intakeComplete = false;
   state.resolvedById = {};
+  state.marianaTekEmail = '';
 }
 
 function showSaveError(message){
@@ -1695,6 +1724,7 @@ function applyOwnedState(parsed){
   if(parsed.hasSigned) state.hasSigned = true;
   if(parsed.discordUsername) state.discordUsername = parsed.discordUsername;
   if(parsed.mtEmail) state.mtEmail = parsed.mtEmail;
+  if(parsed.marianaTekEmail) state.marianaTekEmail = parsed.marianaTekEmail;
   if(Array.isArray(parsed.newslettersWatched)) state.newslettersWatched = parsed.newslettersWatched;
 }
 
@@ -1711,6 +1741,91 @@ function restoreState(signedInEmail){
   applyOwnedState(parsed);
 }
 
+function progressPayload(){
+  const progress = {
+    tasks: taskPayload(),
+    intakeComplete: state.intakeComplete,
+    guideName: state.guideName,
+    notionPageId: state.notionPageId
+  };
+  if(state.marianaTekEmail) progress.marianaTekEmail = state.marianaTekEmail;
+  return progress;
+}
+
+function readMarianaTekEmail(data){
+  if(!data || typeof data !== 'object') return undefined;
+  const keys = ['marianaTekEmail', 'marianaTekAccountEmail', 'mariana_tek_email'];
+  const bags = [data, data.progress, data.guide, data.profile, data.card];
+  for(let i = 0; i < bags.length; i++){
+    const bag = bags[i];
+    if(!bag || typeof bag !== 'object') continue;
+    for(let k = 0; k < keys.length; k++){
+      if(Object.prototype.hasOwnProperty.call(bag, keys[k]) && bag[keys[k]] != null){
+        return String(bag[keys[k]]).trim();
+      }
+    }
+  }
+  return undefined;
+}
+
+function marianaTekEmailError(value){
+  const email = String(value || '').trim();
+  if(!email) return 'Add your Mariana Tek email to continue';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email for your Mariana Tek account';
+  return '';
+}
+
+function useSignInEmailForMt(inputId){
+  const input = document.getElementById(inputId);
+  if(!input) return;
+  const portal = document.getElementById('f-email');
+  const email = currentGuideEmail() || (portal ? portal.value.trim() : '');
+  if(!email){ showToast('Sign in to use your sign-in email'); return; }
+  input.value = email;
+  input.focus();
+}
+
+function renderMtEmailPrompt(){
+  const el = document.getElementById('mt-email-prompt');
+  if(!el) return;
+  el.hidden = !(state.intakeComplete && state.guideEmail && !String(state.marianaTekEmail || '').trim());
+}
+
+async function saveMarianaTekEmailFromPrompt(){
+  const input = document.getElementById('mt-prompt-email');
+  const mtEmail = input ? input.value.trim() : '';
+  const mtError = marianaTekEmailError(mtEmail);
+  if(mtError){ showToast(mtError); return; }
+  state.guideEmail = currentGuideEmail();
+  if(!state.guideEmail){
+    showSaveError("Couldn't save — please sign in again");
+    return;
+  }
+  if(!state.city){
+    showToast('Select your city in your profile before saving this email.');
+    return;
+  }
+  const payload = {
+    email: state.guideEmail,
+    name: state.guideName || '',
+    legalName: state.guideName || '',
+    city: state.city,
+    marianaTekEmail: mtEmail
+  };
+  if(state.notionPageId) payload.pageId = state.notionPageId;
+  const result = await callBackend('/api/intake', payload);
+  if(!result || !result.success){
+    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+    return;
+  }
+  if(result.pageId) state.notionPageId = result.pageId;
+  state.marianaTekEmail = readMarianaTekEmail(result) || mtEmail;
+  persistLocalTasks();
+  if(input) input.value = '';
+  renderMtEmailPrompt();
+  showToast('Mariana Tek email saved');
+}
+
 function localStateSnapshot(){
   return {
     intakeComplete: state.intakeComplete,
@@ -1722,6 +1837,7 @@ function localStateSnapshot(){
     tasks: taskPayload(),
     discordUsername: state.discordUsername || '',
     mtEmail: state.mtEmail || '',
+    marianaTekEmail: state.marianaTekEmail || '',
     newslettersWatched: state.newslettersWatched || []
   };
 }
@@ -1755,12 +1871,7 @@ async function saveState(){
     body: {
       email,
       city: state.city,
-      progress: {
-        tasks: taskPayload(),
-        intakeComplete: state.intakeComplete,
-        guideName: state.guideName,
-        notionPageId: state.notionPageId
-      }
+      progress: progressPayload()
     }
   });
   const data = res.data || {};
@@ -1800,7 +1911,10 @@ async function loadProgressFromNotion(email, city){
   if(data.progress.guideName) state.guideName = data.progress.guideName;
   if(serverCard) state.notionPageId = serverCard;
   if(data.city) state.city = cityCode(data.city) || state.city;
+  const savedMt = readMarianaTekEmail(data);
+  if(savedMt !== undefined) state.marianaTekEmail = savedMt;
   state.guideEmail = email;
+  renderMtEmailPrompt();
   state.resolvedById = {};
   if(Array.isArray(data.resolved)){
     data.resolved.forEach(row => {
@@ -2131,6 +2245,7 @@ function renderWeeks(){
   const pct=total>0?Math.round((done/total)*100):0;
   document.getElementById('main-fill').style.width=pct+'%';
   document.getElementById('pct-label').textContent=pct+'% complete';
+  renderMtEmailPrompt();
   c.innerHTML='';
   if(!WEEKS.length){
     let msg = 'No tasks are set up for your city yet.';
@@ -2445,6 +2560,9 @@ async function submitIntake(){
   if(!city){showToast('Select your city to continue');return;}
   const email=document.getElementById('f-email').value.trim();
   if(!email){showToast('Add your email to continue');return;}
+  const mtEmail = document.getElementById('f-mt-email').value.trim();
+  const mtError = marianaTekEmailError(mtEmail);
+  if(mtError){ showToast(mtError); return; }
   const signed = currentGuideEmail();
   if(signed && normalizeEmail(email) !== normalizeEmail(signed)){
     showToast('This portal is signed in as ' + signed + '. Sign out to use a different email.');
@@ -2477,11 +2595,13 @@ async function submitIntake(){
     shoeSize: document.getElementById('f-shoe').value.trim(),
     classes: Array.from(document.querySelectorAll('.class-checkbox:checked')).map(cb=>cb.value),
     favCategory: document.getElementById('f-fav').value,
+    marianaTekEmail: mtEmail,
   };
   if(state.notionPageId) payload.pageId = state.notionPageId;
   const result = await callBackend('/api/intake', payload);
   if(result && result.success){
     if(result.pageId) state.notionPageId = result.pageId;
+    state.marianaTekEmail = readMarianaTekEmail(result) || mtEmail;
     writeTaskDone('profile', true);
     const saved = await saveState();
     if(!saved.ok){
@@ -3011,6 +3131,7 @@ function signOutGuide(){
   state.resolvedById = {};
   state.discordUsername = '';
   state.mtEmail = '';
+  state.marianaTekEmail = '';
   state.newslettersWatched = [];
   clearSaveError();
   paintGuideIdentity();
@@ -3061,6 +3182,12 @@ function openModal(id){
   if(id==='modal-intake'){
     const emailInput = document.getElementById('f-email');
     if(emailInput && !emailInput.value && state.guideEmail) emailInput.value = state.guideEmail;
+    const mtInput = document.getElementById('f-mt-email');
+    if(mtInput) mtInput.value = state.marianaTekEmail || '';
+  }
+  if(id==='modal-mt'){
+    const mtTask = document.getElementById('mt-email-input');
+    if(mtTask && !mtTask.value && state.marianaTekEmail) mtTask.value = state.marianaTekEmail;
   }
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
