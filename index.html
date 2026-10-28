@@ -2495,10 +2495,15 @@ function renderWeeks(){
   });
 }
 
+function isCprUploadId(id){
+  const value = String(id || '');
+  return value === 'cpr-upload' || value.endsWith(':cpr-upload');
+}
+
 function isCprCertificateTask(task){
   if(!task) return false;
   const ids = [task.id, task.legacyId].concat(task.aliasIds || []);
-  if(ids.indexOf('cpr-upload') !== -1) return true;
+  if(ids.some(isCprUploadId)) return true;
   return getTaskId(task.name) === 'cpr-upload';
 }
 
@@ -2599,7 +2604,7 @@ async function syncTaskComplete(key){
 async function toggleTask(id){
   const task = findTaskByAnyId(id);
   if(isFloorReadyCard(task)) return;
-  if(isCprCertificateTask(task)){
+  if(isCprCertificateTask(task) || isCprUploadId(id)){
     openModal('modal-cpr-upload');
     return;
   }
@@ -2637,6 +2642,7 @@ async function toggleTask(id){
 async function markTask(id){
   const task = findTaskByAnyId(id);
   if(isFloorReadyCard(task)) return false;
+  if(isCprCertificateTask(task) || isCprUploadId(id)) return false;
   const key = task ? task.id : id;
   const prev = isTaskDone(key);
   writeTaskDone(key, true);
@@ -2869,6 +2875,32 @@ function openCPRFolder(){
   }
   window.open(folder, '_blank');
 }
+function cprStatusText(value){
+  if(Array.isArray(value)) return value.map(part => String(part).trim()).filter(Boolean).join(', ');
+  return String(value == null ? '' : value).trim();
+}
+
+function cprUploadSaved(result, expiry){
+  if(!result || result.success !== true) return false;
+  const wroteCpr = String(result.cpr == null ? '' : result.cpr).trim().toLowerCase();
+  const wroteExpiry = String(result.cprExpiration || result.expiration || '').slice(0, 10);
+  const wroteStatus = cprStatusText(result.cprStatus);
+  return wroteCpr === 'yes' && wroteExpiry === String(expiry || '') && wroteStatus.length > 0;
+}
+
+function cprFailureMessage(result){
+  if(result && result.success === true){
+    return "Couldn't save your CPR certificate on your crew card. Please try again.";
+  }
+  const message = saveFailureMessage(result, 0);
+  const prefix = "Couldn't save — ";
+  if(message.indexOf(prefix) === 0 && message !== "Couldn't save — please sign in again"){
+    return "Couldn't save your CPR certificate — " + message.slice(prefix.length);
+  }
+  if(message === "Couldn't save — please sign in again") return message;
+  return "Couldn't save your CPR certificate on your crew card. Please try again.";
+}
+
 async function confirmCPR(){
   const expiry = document.getElementById('cpr-expiry').value;
   if(!expiry){showToast('Please enter your certificate expiry date');return;}
@@ -2880,8 +2912,8 @@ async function confirmCPR(){
     return;
   }
   const result = await callBackend('/api/upload-cpr', { email: state.guideEmail, city: state.city, expiry });
-  if(!result || !result.success){
-    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+  if(!cprUploadSaved(result, expiry)){
+    if(guideToken()) showSaveError(cprFailureMessage(result));
     return;
   }
   writeTaskDone(key, true);
