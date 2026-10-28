@@ -172,6 +172,8 @@ button.rates-retry:hover{color:var(--lemon);}
 .mt-prompt-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:4px;}
 .mt-prompt-actions .mt-same{margin-top:0;}
 .mt-prompt-actions .btn-sm{background:var(--lemon);color:var(--eggplant);border:none;}
+.names-prompt .names-next{margin-top:14px;}
+.names-prompt .mt-prompt-actions{justify-content:flex-end;}
 .form-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(236,232,227,0.1);border-radius:8px;padding:10px 13px;color:var(--cloud);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color 0.18s;}
 .form-input:focus{border-color:var(--lemon);}
 .form-input::placeholder{color:rgba(236,232,227,0.18);}
@@ -427,6 +429,19 @@ select.form-input option{background:#271829;}
     </div>
   </div>
   <div class="save-banner" id="save-banner" hidden></div>
+  <div class="mt-prompt names-prompt" id="names-prompt" hidden>
+    <h3>What's your legal name?</h3>
+    <p class="form-help">Used only for contracts and payroll.</p>
+    <input class="form-input" id="names-prompt-legal" autocomplete="name" placeholder="Your full legal name">
+    <div class="names-next">
+      <h3>What name do you go by?</h3>
+      <p class="form-help">This is the name on your crew card.</p>
+      <input class="form-input" id="names-prompt-preferred" autocomplete="nickname" placeholder="The name you go by">
+    </div>
+    <div class="mt-prompt-actions">
+      <button type="button" class="btn-sm btn-lemon" onclick="saveNamesFromPrompt()">Save names</button>
+    </div>
+  </div>
   <div class="mt-prompt" id="mt-email-prompt" hidden>
     <h3>What's your Mariana Tek account email?</h3>
     <p class="form-help">The email you use to book classes in the Othership app. We need it to add your training credits and Crew passes properly. No account yet? Create one in the <a href="https://www.othership.us/account?_mt=%2Faccount%2Fcreate%3FredirectURL%3D%252Faccount" target="_blank" rel="noopener">Othership app</a> first.</p>
@@ -521,7 +536,16 @@ select.form-input option{background:#271829;}
     </div>
     <input type="file" id="headshot-file" style="display:none" accept="image/*" onchange="handleHeadshot(this)">
     <div class="form-section">Your details</div>
-    <div class="form-row"><label>Legal name</label><input class="form-input" id="f-name" placeholder="Your full legal name"></div>
+    <div class="form-row">
+      <label class="question" for="f-legal-name">What's your legal name?</label>
+      <p class="form-help">Used only for contracts and payroll.</p>
+      <input class="form-input" id="f-legal-name" autocomplete="name" placeholder="Your full legal name">
+    </div>
+    <div class="form-row">
+      <label class="question" for="f-preferred-name">What name do you go by?</label>
+      <p class="form-help">This is the name on your crew card.</p>
+      <input class="form-input" id="f-preferred-name" autocomplete="nickname" placeholder="The name you go by">
+    </div>
     <div class="form-grid">
       <div class="form-row"><label>Email</label><input class="form-input" id="f-email" type="email" placeholder="you@email.com"></div>
       <div class="form-row"><label>Phone</label><input class="form-input" id="f-phone" placeholder="+1 555 000 0000"></div>
@@ -1264,7 +1288,7 @@ let tasksLoading = false;
 let taskAliases = {};
 
 // STATE
-const state={intakeComplete:false,hasSigned:false,guideName:'',city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{},discordUsername:'',mtEmail:'',marianaTekEmail:''};
+const state={intakeComplete:false,hasSigned:false,guideName:'',legalName:'',preferredName:'',needsNames:false,city:'',guideEmail:'',notionPageId:'',tasks:{},floorReady:false,floorReadyKnown:false,resolvedById:{},discordUsername:'',mtEmail:'',marianaTekEmail:''};
 
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -1667,7 +1691,7 @@ function loadTasksFromNotion(){
 
 function paintGuideIdentity(){
   const nameEl = document.getElementById('guide-first-name');
-  if(nameEl) nameEl.textContent = state.guideName ? state.guideName.split(' ')[0] : 'there';
+  if(nameEl) nameEl.textContent = guideFirstName();
   const cityEl = document.getElementById('meta-city');
   if(cityEl) cityEl.textContent = state.city === 'nyc' ? 'New York City' : state.city === 'toronto' ? 'Toronto' : '—';
   if(state.city){
@@ -1682,6 +1706,9 @@ function paintGuideIdentity(){
 function clearProgressFields(){
   state.tasks = {};
   state.guideName = '';
+  state.legalName = '';
+  state.preferredName = '';
+  state.needsNames = false;
   state.notionPageId = '';
   state.hasSigned = false;
   state.intakeComplete = false;
@@ -1717,6 +1744,9 @@ function saveFailureMessage(data, status){
 function applyOwnedState(parsed){
   if(!parsed) return;
   if(parsed.guideName) state.guideName = parsed.guideName;
+  if(typeof parsed.legalName === 'string') state.legalName = parsed.legalName;
+  if(typeof parsed.preferredName === 'string') state.preferredName = parsed.preferredName;
+  if(typeof parsed.needsNames === 'boolean') state.needsNames = parsed.needsNames;
   if(parsed.city) state.city = cityCode(parsed.city) || parsed.city;
   if(parsed.notionPageId) state.notionPageId = parsed.notionPageId;
   if(parsed.tasks && typeof parsed.tasks === 'object') state.tasks = parsed.tasks;
@@ -1745,11 +1775,115 @@ function progressPayload(){
   const progress = {
     tasks: taskPayload(),
     intakeComplete: state.intakeComplete,
-    guideName: state.guideName,
+    guideName: state.preferredName || state.guideName,
     notionPageId: state.notionPageId
   };
   if(state.marianaTekEmail) progress.marianaTekEmail = state.marianaTekEmail;
   return progress;
+}
+
+function profileBags(data){
+  const bags = [];
+  if(!data || typeof data !== 'object') return bags;
+  bags.push(data);
+  ['profile', 'me', 'guide', 'card', 'progress'].forEach(key => {
+    if(data[key] && typeof data[key] === 'object') bags.push(data[key]);
+  });
+  return bags;
+}
+
+function readDefinedString(data, keys){
+  const bags = profileBags(data);
+  for(let i = 0; i < bags.length; i++){
+    const bag = bags[i];
+    for(let k = 0; k < keys.length; k++){
+      if(Object.prototype.hasOwnProperty.call(bag, keys[k]) && bag[keys[k]] != null){
+        return String(bag[keys[k]]).trim();
+      }
+    }
+  }
+  return undefined;
+}
+
+function readCardTitle(data){
+  if(!data || typeof data !== 'object') return undefined;
+  const bags = [];
+  ['card', 'guide', 'profile', 'me'].forEach(key => {
+    if(data[key] && typeof data[key] === 'object') bags.push(data[key]);
+  });
+  const keys = ['cardTitle', 'card_title', 'title'];
+  for(let i = 0; i < bags.length; i++){
+    const bag = bags[i];
+    for(let k = 0; k < keys.length; k++){
+      if(Object.prototype.hasOwnProperty.call(bag, keys[k]) && bag[keys[k]] != null){
+        return String(bag[keys[k]]).trim();
+      }
+    }
+  }
+  return undefined;
+}
+
+function readNeedsNames(data){
+  const bags = profileBags(data);
+  for(let i = 0; i < bags.length; i++){
+    const bag = bags[i];
+    if(Object.prototype.hasOwnProperty.call(bag, 'needsNames') && typeof bag.needsNames === 'boolean') return bag.needsNames;
+  }
+  return undefined;
+}
+
+// preferredName is the card title. progress.guideName is that same title.
+// legalName is stored for the profile form only. A missing needsNames means
+// the older backend: leave the banner hidden.
+function applyProfileNames(data, fullProfile){
+  const legal = readDefinedString(data, ['legalName', 'legal_name']);
+  const preferred = readDefinedString(data, ['preferredName', 'preferred_name']);
+  const guideName = readDefinedString(data, ['guideName']);
+  const cardTitle = readCardTitle(data);
+  const needs = readNeedsNames(data);
+  if(legal !== undefined) state.legalName = legal;
+  if(preferred !== undefined) state.preferredName = preferred;
+  if(preferred) state.guideName = preferred;
+  else if(guideName) state.guideName = guideName;
+  else if(cardTitle) state.guideName = cardTitle;
+  if(typeof needs === 'boolean') state.needsNames = needs;
+  else if(fullProfile) state.needsNames = false;
+}
+
+function guideFirstName(){
+  const name = String(state.preferredName || state.guideName || '').trim();
+  return name ? name.split(/\s+/)[0] : 'there';
+}
+
+function profileNameError(legalName, preferredName){
+  if(!String(legalName || '').trim()) return 'Add your legal name to continue';
+  if(!String(preferredName || '').trim()) return 'Add the name you go by to continue';
+  return '';
+}
+
+function namesBody(legalName, preferredName){
+  // `name` is the legacy title field. The current backend ignores it once preferredName is present.
+  return { name: preferredName, legalName: legalName, preferredName: preferredName };
+}
+
+function textName(value){
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+// Mentor and lead check-in rows take guide.name from GET /api/guides.
+// That value is the card title. Progress blobs and legal names are not shown.
+function guideCardTitle(g){
+  if(!g || typeof g !== 'object') return '';
+  return textName(g.name);
+}
+
+function presentIntakeFailure(result){
+  const data = result && typeof result === 'object' ? Object.assign({}, result) : {};
+  delete data.warnings;
+  delete data.warning;
+  const err = data.error ? String(data.error) : '';
+  if(/legal name/i.test(err) && /propert/i.test(err)) data.error = 'please try again';
+  return saveFailureMessage(data, 0);
 }
 
 function readMarianaTekEmail(data){
@@ -1789,6 +1923,75 @@ function renderMtEmailPrompt(){
   const el = document.getElementById('mt-email-prompt');
   if(!el) return;
   el.hidden = !(state.intakeComplete && state.guideEmail && !String(state.marianaTekEmail || '').trim());
+  renderNamesPrompt();
+}
+
+function renderNamesPrompt(){
+  const el = document.getElementById('names-prompt');
+  if(!el) return;
+  const show = !!(state.guideEmail && state.needsNames === true);
+  const wasHidden = el.hidden;
+  el.hidden = !show;
+  if(!show || !wasHidden) return;
+  const legal = document.getElementById('names-prompt-legal');
+  const preferred = document.getElementById('names-prompt-preferred');
+  if(legal) legal.value = state.legalName || '';
+  if(preferred) preferred.value = state.preferredName || '';
+}
+
+function prefillIntakeNames(){
+  const legalInput = document.getElementById('f-legal-name');
+  const preferredInput = document.getElementById('f-preferred-name');
+  if(!legalInput || !preferredInput) return;
+  const split = !!(state.legalName || state.preferredName || state.needsNames);
+  if(split){
+    legalInput.value = state.legalName || '';
+    preferredInput.value = state.preferredName || '';
+  } else {
+    legalInput.value = state.guideName || '';
+    preferredInput.value = state.guideName || '';
+  }
+}
+
+async function saveNamesFromPrompt(){
+  const legalInput = document.getElementById('names-prompt-legal');
+  const preferredInput = document.getElementById('names-prompt-preferred');
+  const legalName = legalInput ? legalInput.value.trim() : '';
+  const preferredName = preferredInput ? preferredInput.value.trim() : '';
+  const nameError = profileNameError(legalName, preferredName);
+  if(nameError){ showToast(nameError); return; }
+  state.guideEmail = currentGuideEmail();
+  if(!state.guideEmail){
+    showSaveError("Couldn't save — please sign in again");
+    return;
+  }
+  if(!state.city){
+    showToast('Select your city in your profile before saving your names.');
+    return;
+  }
+  const payload = Object.assign({
+    email: state.guideEmail,
+    city: state.city
+  }, namesBody(legalName, preferredName));
+  if(state.notionPageId) payload.pageId = state.notionPageId;
+  if(state.marianaTekEmail) payload.marianaTekEmail = state.marianaTekEmail;
+  const result = await callBackend('/api/intake', payload);
+  if(!result || !result.success){
+    if(guideToken()) showSaveError(presentIntakeFailure(result));
+    return;
+  }
+  if(result.pageId) state.notionPageId = result.pageId;
+  applyProfileNames(result);
+  if(readDefinedString(result, ['legalName', 'legal_name']) === undefined) state.legalName = legalName;
+  if(readDefinedString(result, ['preferredName', 'preferred_name']) === undefined){
+    state.preferredName = preferredName;
+    state.guideName = preferredName;
+  }
+  if(typeof readNeedsNames(result) !== 'boolean') state.needsNames = false;
+  const saved = await saveState();
+  paintGuideIdentity();
+  if(!saved.ok) return;
+  showToast('Names saved');
 }
 
 async function saveMarianaTekEmailFromPrompt(){
@@ -1805,17 +2008,25 @@ async function saveMarianaTekEmailFromPrompt(){
     showToast('Select your city in your profile before saving this email.');
     return;
   }
+  const publicName = state.preferredName || state.guideName || '';
   const payload = {
     email: state.guideEmail,
-    name: state.guideName || '',
-    legalName: state.guideName || '',
+    name: publicName,
     city: state.city,
     marianaTekEmail: mtEmail
   };
+  if(state.preferredName && state.legalName){
+    payload.preferredName = state.preferredName;
+    payload.legalName = state.legalName;
+  } else if(state.legalName){
+    payload.legalName = state.legalName;
+  } else if(!state.preferredName){
+    payload.legalName = publicName;
+  }
   if(state.notionPageId) payload.pageId = state.notionPageId;
   const result = await callBackend('/api/intake', payload);
   if(!result || !result.success){
-    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+    if(guideToken()) showSaveError(presentIntakeFailure(result));
     return;
   }
   if(result.pageId) state.notionPageId = result.pageId;
@@ -1831,6 +2042,9 @@ function localStateSnapshot(){
     intakeComplete: state.intakeComplete,
     hasSigned: !!state.hasSigned,
     guideName: state.guideName,
+    legalName: state.legalName || '',
+    preferredName: state.preferredName || '',
+    needsNames: state.needsNames === true,
     city: state.city,
     guideEmail: currentGuideEmail(),
     notionPageId: state.notionPageId,
@@ -1908,7 +2122,7 @@ async function loadProgressFromNotion(email, city){
   }
   if(data.progress.tasks && typeof data.progress.tasks === 'object') state.tasks = data.progress.tasks;
   if(data.progress.intakeComplete) state.intakeComplete = data.progress.intakeComplete;
-  if(data.progress.guideName) state.guideName = data.progress.guideName;
+  applyProfileNames(data, true);
   if(serverCard) state.notionPageId = serverCard;
   if(data.city) state.city = cityCode(data.city) || state.city;
   const savedMt = readMarianaTekEmail(data);
@@ -2093,7 +2307,7 @@ function updateManagerStats(){
 function mapGuide(g){
   const floorFlag = g.floorReady === true || g.floor_ready === true || /^(yes|true)$/i.test(String(g.floorReady || g.floor_ready || ''));
   return {
-    name: g.name,
+    name: guideCardTitle(g),
     pct: g.pct,
     missing: Array.isArray(g.missing) ? g.missing : [],
     status: g.status,
@@ -2554,8 +2768,10 @@ function openIntakeForEdit(){
 }
 
 async function submitIntake(){
-  const name=document.getElementById('f-name').value.trim();
-  if(!name){showToast('Add your name to continue');return;}
+  const legalName=document.getElementById('f-legal-name').value.trim();
+  const preferredName=document.getElementById('f-preferred-name').value.trim();
+  const nameError=profileNameError(legalName, preferredName);
+  if(nameError){showToast(nameError);return;}
   const city=document.getElementById('f-city').value;
   if(!city){showToast('Select your city to continue');return;}
   const email=document.getElementById('f-email').value.trim();
@@ -2571,19 +2787,26 @@ async function submitIntake(){
   const identityEmail = signed || email;
   const previous = {
     guideName: state.guideName,
+    legalName: state.legalName,
+    preferredName: state.preferredName,
+    needsNames: state.needsNames,
     city: state.city,
     guideEmail: state.guideEmail,
     intakeComplete: state.intakeComplete,
     profile: isTaskDone('profile')
   };
-  state.guideName=name;state.city=city;state.guideEmail=identityEmail;state.intakeComplete=true;
-  const first=name.split(' ')[0];
-  document.getElementById('guide-first-name').textContent=first;
+  state.legalName=legalName;
+  state.preferredName=preferredName;
+  state.guideName=preferredName;
+  state.city=city;
+  state.guideEmail=identityEmail;
+  state.intakeComplete=true;
+  paintGuideIdentity();
   document.getElementById('meta-city').textContent=city==='nyc'?'New York City':'Toronto';
   applyCprContent();
   refreshGuideHeader();
-  const payload = {
-    name, legalName: name, email: identityEmail,
+  const payload = Object.assign({
+    email: identityEmail,
     phone: document.getElementById('f-phone').value.trim(),
     gender: document.getElementById('f-gender').value,
     city,
@@ -2596,12 +2819,20 @@ async function submitIntake(){
     classes: Array.from(document.querySelectorAll('.class-checkbox:checked')).map(cb=>cb.value),
     favCategory: document.getElementById('f-fav').value,
     marianaTekEmail: mtEmail,
-  };
+  }, namesBody(legalName, preferredName));
   if(state.notionPageId) payload.pageId = state.notionPageId;
   const result = await callBackend('/api/intake', payload);
   if(result && result.success){
     if(result.pageId) state.notionPageId = result.pageId;
     state.marianaTekEmail = readMarianaTekEmail(result) || mtEmail;
+    applyProfileNames(result);
+    if(readDefinedString(result, ['legalName', 'legal_name']) === undefined) state.legalName = legalName;
+    if(readDefinedString(result, ['preferredName', 'preferred_name']) === undefined){
+      state.preferredName = preferredName;
+      state.guideName = preferredName;
+    }
+    if(typeof readNeedsNames(result) !== 'boolean') state.needsNames = false;
+    paintGuideIdentity();
     writeTaskDone('profile', true);
     const saved = await saveState();
     if(!saved.ok){
@@ -2612,14 +2843,17 @@ async function submitIntake(){
     closeModal('modal-intake');
     renderWeeks();
     loadTasksFromNotion();
-    showToast(payload.pageId ? `Crew card updated — changes saved` : `Crew card created in Notion — welcome aboard, ${first}`);
+    showToast(payload.pageId ? `Crew card updated — changes saved` : `Crew card created in Notion — welcome aboard, ${guideFirstName()}`);
   } else {
     state.guideName = previous.guideName;
+    state.legalName = previous.legalName;
+    state.preferredName = previous.preferredName;
+    state.needsNames = previous.needsNames;
     state.city = previous.city;
     state.guideEmail = previous.guideEmail;
     state.intakeComplete = previous.intakeComplete;
     paintGuideIdentity();
-    if(guideToken()) showSaveError(saveFailureMessage(result, 0));
+    if(guideToken()) showSaveError(presentIntakeFailure(result));
   }
 }
 
@@ -3122,6 +3356,9 @@ function signOutGuide(){
   state.intakeComplete = false;
   state.hasSigned = false;
   state.guideName = '';
+  state.legalName = '';
+  state.preferredName = '';
+  state.needsNames = false;
   state.city = '';
   state.guideEmail = '';
   state.notionPageId = '';
@@ -3184,6 +3421,7 @@ function openModal(id){
     if(emailInput && !emailInput.value && state.guideEmail) emailInput.value = state.guideEmail;
     const mtInput = document.getElementById('f-mt-email');
     if(mtInput) mtInput.value = state.marianaTekEmail || '';
+    prefillIntakeNames();
   }
   if(id==='modal-mt'){
     const mtTask = document.getElementById('mt-email-input');
