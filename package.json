@@ -1,0 +1,10 @@
+{
+  "name": "othership-onboarding-frontend",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/page.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
