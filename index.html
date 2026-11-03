@@ -234,6 +234,7 @@ select.form-input option{background:#271829;}
 /* DISCORD PANEL */
 .discord-usernames{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
 .discord-username{background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.3);color:#8fa0f8;font-size:12px;padding:4px 10px;border-radius:6px;font-weight:500;}
+#discord-friends[hidden]{display:none;}
 .discord-role-note{display:none;margin:12px 0 0;padding:10px 12px;border-radius:8px;background:rgba(224,122,80,0.12);border:1px solid rgba(224,122,80,0.35);color:#f0c2b0;font-size:13px;line-height:1.45;}
 .discord-role-note.show{display:block;}
 
@@ -288,6 +289,7 @@ select.form-input option{background:#271829;}
 
 /* FLOOR READY CHECKLIST */
 .floor-checklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0;}
+.floor-checklist.single{grid-template-columns:1fr;}
 .floor-check-item{display:flex;align-items:center;gap:7px;font-size:12px;padding:7px 10px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px solid rgba(236,232,227,0.06);}
 .floor-check-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .floor-check-dot.pass{background:var(--teal);}
@@ -644,18 +646,20 @@ select.form-input option{background:#271829;}
       <h3>Step 1 — Join the server</h3>
       <p>Click the link below to join the Othership Discord server.</p>
       <p><a href="https://discord.gg/WPjY2NZQK2" target="_blank">Join the Othership Discord →</a></p>
-      <h3>Step 2 — Add your team as friends</h3>
-      <p>Add the following people as Discord friends and say hello in a direct message.</p>
-      <div class="discord-usernames" id="discord-usernames"></div>
+      <div id="discord-friends">
+        <h3>Step 2 — Add your team as friends</h3>
+        <p>Add the following people as Discord friends and say hello in a direct message.</p>
+        <div class="discord-usernames" id="discord-usernames"></div>
+      </div>
     </div>
     <div class="content-panel" style="margin-top:12px;">
-      <h3>Step 3 — Enter your Discord username</h3>
+      <h3 id="discord-username-heading">Step 3 — Enter your Discord username</h3>
       <p class="step-callout">This is extremely important, as it's how you'll get added to the channels you need for onboarding.</p>
-      <p>Enter your exact Discord username below (e.g. <strong>amandalaine</strong>).</p>
+      <p>Enter your exact Discord username below (e.g. <strong>yourname</strong>).</p>
       <input type="text" id="discord-username-input" placeholder="Your Discord username" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(236,232,227,0.15);background:rgba(236,232,227,0.06);color:var(--cloud);font-size:14px;font-family:var(--font-body);margin-top:6px;box-sizing:border-box;">
     </div>
     <div class="content-panel" style="margin-top:12px;">
-      <h3>Step 4 — Introduce yourself</h3>
+      <h3 id="discord-intro-heading">Step 4 — Introduce yourself</h3>
       <p>Once you're in, introduce yourself in your wave channel so your crew knows you've arrived.</p>
     </div>
     <p id="discord-role-note" class="discord-role-note" role="status" aria-live="polite"></p>
@@ -709,9 +713,9 @@ select.form-input option{background:#271829;}
   <div class="modal modal-lg">
     <button class="modal-close" onclick="closeModal('modal-cpr')">×</button>
     <h2>CPR Certification</h2>
-    <p class="modal-sub">Required before you can work on the floor. Read the instructions for your city.</p>
+    <p class="modal-sub" id="cpr-sub">Required before you can work on the floor. Read the instructions for your city.</p>
     <div class="content-panel" id="cpr-content"></div>
-    <button class="btn-submit" style="background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);" onclick="closeModal('modal-cpr');markTask('cpr-signup');showToast('CPR noted — upload your certificate in Week 8')">Got it — I'll book my course →</button>
+    <button class="btn-submit" style="background:rgba(167,207,201,0.15);color:var(--teal);border:1px solid rgba(167,207,201,0.3);" onclick="acknowledgeCpr()">Got it — I'll book my course →</button>
   </div>
 </div>
 
@@ -1129,17 +1133,14 @@ function readFloorReady(data){
 }
 
 // CITY CONFIG
-const CITY_DISCORD = {
-  nyc: ['tanyacurley','lindsey_69123'],
-  toronto: ['tanyacurley','Lawrencekiki']
-};
+// Discord lead usernames come from /api/wave-settings discordLeads. No names are hardcoded.
 const CITY_RATE_URLS = {
   nyc: 'https://www.notion.so/othership/NYC-Guide-Pay-Rates-4e0be78a144c4f7eb6e7c31800a3e81e',
   toronto: 'https://www.notion.so/othership/Toronto-Guide-Pay-Rates-0915c64e353c480d9fa35903abc90563'
 };
 const CPR_CONTENT_HTML = {
-  nyc:`<div class="city-block"><strong>New York City</strong><p>CPR certification is <strong>required before you can work on the floor</strong> — due by end of Week 8.</p><p>In the USA it <strong>MUST</strong> be through the Red Cross. The only approved courses are:</p><ul><li><strong>Basic Life Support</strong></li><li><strong>CPR/AED for Professional Rescuers</strong></li></ul><p>Must be <strong>in-person</strong> (a portion may be online). Renewed annually.</p><p>You will be reimbursed for approved courses only. Reimbursement is issued at the <strong>3-month mark</strong> after hire.</p><p><a href="https://www.redcross.org/take-a-class/bls?latitude=40.7127753&longitude=-74.0059728&searchtype=class&zip=new%20york%2C%20ny" target="_blank">Book your Red Cross BLS course here →</a></p></div>`,
-  toronto:`<div class="city-block"><strong>Toronto</strong><p>CPR certification is <strong>required before you can work on the floor</strong> — due by end of Week 8.</p><p>Required: <strong>CPR/AED + First Aid</strong>. Must be in-person.</p><p>You will be reimbursed at the <strong>3-month mark</strong> after hire.</p><p><a href="https://www.c2cfirstaidaquatics.com/toronto/" target="_blank">Book your C2C First Aid course here →</a></p></div>`,
+  nyc:`<div class="city-block"><strong>New York City</strong><p>CPR certification is <strong>required within 30 days of going floor ready</strong>.</p><p>In the USA it <strong>MUST</strong> be through the Red Cross. The only approved courses are:</p><ul><li><strong>Basic Life Support</strong></li><li><strong>CPR/AED for Professional Rescuers</strong></li></ul><p>Must be <strong>in-person</strong> (a portion may be online). Renewed annually.</p><p>You will be reimbursed for approved courses only. Reimbursement is issued at the <strong>3-month mark</strong> after hire.</p><p><a href="https://www.redcross.org/take-a-class/bls?latitude=40.7127753&longitude=-74.0059728&searchtype=class&zip=new%20york%2C%20ny" target="_blank">Book your Red Cross BLS course here →</a></p></div>`,
+  toronto:`<div class="city-block"><strong>Toronto</strong><p>CPR certification is <strong>required before you can work on the floor</strong>.</p><p>Required: <strong>CPR/AED + First Aid</strong>. Must be in-person.</p><p>You will be reimbursed at the <strong>3-month mark</strong> after hire.</p><p><a href="https://www.c2cfirstaidaquatics.com/toronto/" target="_blank">Book your C2C First Aid course here →</a></p></div>`,
   default:`<p>Please complete your crew profile and select your city to see specific CPR instructions.</p>`
 };
 const PAYROLL_DATA = {
@@ -1283,6 +1284,7 @@ function exportPayrollCSV() {
 
 // WEEK DATA — filled from Notion. Nothing is shown until the guide's city is known.
 const WEEKS = [];
+let WEEK_LABELS = [];
 let tasksLoadError = '';
 let tasksLoading = false;
 let taskAliases = {};
@@ -1530,19 +1532,60 @@ function buildTask(t, used, siblings){
   };
 }
 
+function weekNumberFromId(id){
+  if(id === 'wunset') return null;
+  const n = Number(String(id || '').replace(/\D/g, ''));
+  return n > 0 ? n : null;
+}
+
+function readWeekLabels(data){
+  if(!data || !Array.isArray(data.weeks) || !data.weeks.length) return [];
+  return data.weeks.filter(row => row && typeof row === 'object' && row.week != null && String(row.week).trim() !== '');
+}
+
+function labelForWeek(weekNumber){
+  const meta = WEEK_LABELS.find(row => Number(row.week) === Number(weekNumber));
+  const labelText = meta && typeof meta.label === 'string' ? meta.label.trim() : '';
+  const datesText = meta && typeof meta.dates === 'string' ? meta.dates.trim() : '';
+  return {
+    label: labelText ? `Week ${weekNumber} · ${labelText}` : `Week ${weekNumber}`,
+    dates: datesText
+  };
+}
+
+function applyWeekLabel(week){
+  const n = weekNumberFromId(week && week.id);
+  if(!n) return week;
+  const view = labelForWeek(n);
+  week.label = view.label;
+  week.dates = view.dates;
+  return week;
+}
+
 function placeFloorReadyLastInWeek6(weeks){
   let card = null;
+  let source = null;
   weeks.forEach(w => {
     const idx = w.tasks.findIndex(t => t.floorReadyCard);
-    if(idx >= 0) card = w.tasks.splice(idx, 1)[0];
+    if(idx >= 0){
+      source = w;
+      card = w.tasks.splice(idx, 1)[0];
+    }
   });
   if(!card) return;
-  let week6 = weeks.find(w => w.id === 'w6');
-  if(!week6){
-    week6 = { id:'w6', label:'Week 6', dates:'', tasks:[] };
-    weeks.push(week6);
+  // A card that already has a week stays last in that week. Toronto's card is
+  // week 6, so it still ends week 6. NYC Path 1 stays in its own week (week 3).
+  // Only an unscheduled card is moved onto Week 6, which is today's behaviour.
+  const home = source && source.id !== 'wunset' ? source : null;
+  let target = home;
+  if(!target){
+    target = weeks.find(w => w.id === 'w6');
+    if(!target){
+      target = applyWeekLabel({ id:'w6', label:'Week 6', dates:'', tasks:[] });
+      weeks.push(target);
+    }
   }
-  week6.tasks.push(card);
+  target.tasks.push(card);
   for(let i = weeks.length - 1; i >= 0; i--){
     if(!weeks[i].tasks.length) weeks.splice(i, 1);
   }
@@ -1572,6 +1615,11 @@ function guideRatesTask(){
   };
 }
 
+function isPayrollAnchorTask(task){
+  const name = String((task && task.name) || '');
+  return /reviewed contractor payroll sop/i.test(name) || /read the nyc payroll guide\s*\(adp\)/i.test(name);
+}
+
 function placeGuideRatesCard(weeks){
   let card = null;
   weeks.forEach(w => {
@@ -1599,14 +1647,14 @@ function placeGuideRatesCard(weeks){
   card.aliasIds = aliases;
   if(card.id) taskAliases[card.id] = aliases;
   if(!card.legacyId) card.legacyId = 'guide-rates';
-  const payroll = weeks.map(w => ({ week:w, idx:w.tasks.findIndex(t => /reviewed contractor payroll sop/i.test(t.name || '')) })).find(hit => hit.idx >= 0);
+  const payroll = weeks.map(w => ({ week:w, idx:w.tasks.findIndex(t => isPayrollAnchorTask(t)) })).find(hit => hit.idx >= 0);
   if(payroll){
     payroll.week.tasks.splice(payroll.idx + 1, 0, card);
     return;
   }
   let week5 = weeks.find(w => w.id === 'w5');
   if(!week5){
-    week5 = { id:'w5', label:'Week 5', dates:'', tasks:[] };
+    week5 = applyWeekLabel({ id:'w5', label:'Week 5', dates:'', tasks:[] });
     weeks.push(week5);
     weeks.sort((a,b) => {
       const num = id => id === 'wunset' ? 999 : Number(String(id).replace(/\D/g,'')) || 999;
@@ -1633,6 +1681,7 @@ function loadTasksFromNotion(){
   if(city !== 'toronto' && city !== 'nyc'){
     tasksLoading = false;
     tasksLoadError = '';
+    WEEK_LABELS = [];
     WEEKS.length = 0;
     renderWeeks();
     return;
@@ -1640,6 +1689,7 @@ function loadTasksFromNotion(){
   const cityParam = city === 'toronto' ? 'Toronto' : 'NYC';
   tasksLoading = true;
   tasksLoadError = '';
+  WEEK_LABELS = [];
   WEEKS.length = 0;
   renderWeeks();
   apiFetch(`/api/tasks?city=${encodeURIComponent(cityParam)}`, { method:'GET', auth:'guide' })
@@ -1649,6 +1699,7 @@ function loadTasksFromNotion(){
       if(res.status === 401) return;
       if(!res.ok || !data.success || !Array.isArray(data.tasks)){
         tasksLoadError = data.error || 'Could not load your tasks. Refresh the page to try again.';
+        WEEK_LABELS = [];
         WEEKS.length = 0;
         renderWeeks();
         return;
@@ -1665,8 +1716,9 @@ function loadTasksFromNotion(){
       });
       const used = new Set();
       taskAliases = {};
+      WEEK_LABELS = readWeekLabels(data);
       const siblings = data.tasks;
-      const newWeeks = Object.keys(weekMap).sort((a,b)=>Number(a)-Number(b)).map(w => ({
+      const newWeeks = Object.keys(weekMap).sort((a,b)=>Number(a)-Number(b)).map(w => applyWeekLabel({
         id: `w${w}`,
         label: `Week ${w}`,
         dates: '',
@@ -1684,6 +1736,7 @@ function loadTasksFromNotion(){
     .catch(() => {
       tasksLoading = false;
       tasksLoadError = 'Could not load your tasks. Refresh the page to try again.';
+      WEEK_LABELS = [];
       WEEKS.length = 0;
       renderWeeks();
     });
@@ -1694,10 +1747,7 @@ function paintGuideIdentity(){
   if(nameEl) nameEl.textContent = guideFirstName();
   const cityEl = document.getElementById('meta-city');
   if(cityEl) cityEl.textContent = state.city === 'nyc' ? 'New York City' : state.city === 'toronto' ? 'Toronto' : '—';
-  if(state.city){
-    const cpr = document.getElementById('cpr-content');
-    if(cpr) cpr.innerHTML = CPR_CONTENT_HTML[state.city] || CPR_CONTENT_HTML.default;
-  }
+  if(state.city) applyCprContent();
   const signOut = document.getElementById('guide-signout');
   if(signOut) signOut.hidden = !isLoggedIn();
   renderMtEmailPrompt();
@@ -2322,8 +2372,66 @@ function mapGuide(g){
     isBehind: g.isBehind,
     email: g.email,
     floorReady: floorFlag,
-    progressTasks: g.progressTasks && typeof g.progressTasks === 'object' ? g.progressTasks : {}
+    progressTasks: g.progressTasks && typeof g.progressTasks === 'object' ? g.progressTasks : {},
+    track: typeof g.track === 'string' ? g.track : '',
+    floorReadyEligible: typeof g.floorReadyEligible === 'boolean' ? g.floorReadyEligible : undefined,
+    floorReadyBlockers: Array.isArray(g.floorReadyBlockers) ? g.floorReadyBlockers : undefined,
+    sgReady: g.sgReady === true,
+    sgReadyEligible: typeof g.sgReadyEligible === 'boolean' ? g.sgReadyEligible : undefined
   };
+}
+
+function usesServerFloorReady(g){
+  return !!g && typeof g.floorReadyEligible === 'boolean';
+}
+
+function isNycPath1Guide(g){
+  return !!g && g.track === 'nyc-path1';
+}
+
+function floorReadyBlockersOf(g){
+  if(!g || !Array.isArray(g.floorReadyBlockers)) return [];
+  return g.floorReadyBlockers.map(item => String(item).trim()).filter(Boolean);
+}
+
+function legacyFloorReady(g){
+  const ffStatus = g.obs && g.obs.ff;
+  const sgStatus = g.obs && g.obs.sg;
+  const cprOk = !(g.missing || []).some(m => /cpr/i.test(String(m)));
+  const training = trainingChecklist(g);
+  return {
+    ffStatus,
+    sgStatus,
+    cprOk,
+    trainingOk: training.ok,
+    trainingLabel: training.label,
+    ready: ffStatus === 'pass' && sgStatus === 'pass' && cprOk && training.ok
+  };
+}
+
+function canMarkFloorReady(g){
+  if(!g || g.floorReady) return false;
+  if(usesServerFloorReady(g)) return g.floorReadyEligible === true;
+  return legacyFloorReady(g).ready;
+}
+
+function canApproveSgReady(g){
+  return isNycPath1Guide(g) && g.floorReady === true && g.sgReady !== true;
+}
+
+function nycPath1ChecklistHTML(g){
+  const rows = [];
+  if(g.floorReadyEligible){
+    rows.push('<div class="floor-check-item"><div class="floor-check-dot pass"></div><span>Eligible for FF Ready</span></div>');
+  }
+  const blockers = floorReadyBlockersOf(g);
+  blockers.forEach(item => {
+    rows.push(`<div class="floor-check-item"><div class="floor-check-dot fail"></div><span>${escapeHtml(item)}</span></div>`);
+  });
+  if(!rows.length){
+    rows.push('<div class="floor-check-item"><div class="floor-check-dot fail"></div><span>Not eligible for floor ready yet.</span></div>');
+  }
+  return `<div class="floor-checklist single">${rows.join('')}</div>`;
 }
 
 async function loadRealGuides(){
@@ -2362,10 +2470,25 @@ async function loadRealGuides(){
   else renderManagerCards(getFilteredGuides(currentFilter || 'all'));
 }
 
+function cprNotedToast(){
+  if(state.city === 'nyc') return 'CPR noted — required within 30 days of going floor ready';
+  if(state.city === 'toronto') return 'CPR noted — required before you can work on the floor';
+  return 'CPR noted — upload your certificate when you have it';
+}
+
+function acknowledgeCpr(){
+  closeModal('modal-cpr');
+  markTask('cpr-signup');
+  showToast(cprNotedToast());
+}
+
 function applyCprContent(){
   const el = document.getElementById('cpr-content');
-  if(!el) return;
-  el.innerHTML = CPR_CONTENT_HTML[state.city] || CPR_CONTENT_HTML.default;
+  if(el) el.innerHTML = CPR_CONTENT_HTML[state.city] || CPR_CONTENT_HTML.default;
+  const sub = document.getElementById('cpr-sub');
+  if(!sub) return;
+  if(state.city === 'nyc') sub.textContent = 'Required within 30 days of going floor ready. Read the instructions for your city.';
+  else sub.textContent = 'Required before you can work on the floor. Read the instructions for your city.';
 }
 
 function refreshGuideHeader(){
@@ -2483,8 +2606,8 @@ function renderWeeks(){
       <div class="week-header" onclick="toggleWeek(this.parentElement)">
         <div class="week-icon">${isComplete?'✓':idx+1}</div>
         <div class="week-title-wrap">
-          <div class="week-label">${week.label}</div>
-          <div class="week-dates">${week.dates}</div>
+          <div class="week-label">${escapeHtml(week.label)}</div>
+          <div class="week-dates">${escapeHtml(week.dates)}</div>
         </div>
         <div class="week-tally">${wDone}/${wTotal}</div>
         <div class="week-chevron">▾</div>
@@ -2734,11 +2857,33 @@ function openPayroll(){
   document.getElementById('payroll-content').innerHTML=d.content;
   openModal('modal-payroll');
 }
+function discordLeadsFor(city){
+  const code = cityCode(city);
+  const key = code === 'toronto' ? 'Toronto' : code === 'nyc' ? 'NYC' : '';
+  const row = key ? WAVE_SETTINGS[key] : null;
+  const raw = row && Array.isArray(row.discordLeads) ? row.discordLeads : [];
+  return raw.map(item => String(item == null ? '' : item).trim().replace(/^@+/, '')).filter(Boolean);
+}
+
+function paintDiscordLeads(){
+  const cityField = document.getElementById('f-city');
+  const city = state.city || (cityField ? cityField.value : '');
+  const users = discordLeadsFor(city);
+  const block = document.getElementById('discord-friends');
+  const el = document.getElementById('discord-usernames');
+  const show = users.length > 0;
+  if(block) block.hidden = !show;
+  if(el) el.innerHTML = users.map(u => `<span class="discord-username">@${escapeHtml(u)}</span>`).join('');
+  const usernameHeading = document.getElementById('discord-username-heading');
+  const introHeading = document.getElementById('discord-intro-heading');
+  if(usernameHeading) usernameHeading.textContent = (show ? 'Step 3' : 'Step 2') + ' — Enter your Discord username';
+  if(introHeading) introHeading.textContent = (show ? 'Step 4' : 'Step 3') + ' — Introduce yourself';
+  const submit = document.querySelector('#modal-discord .btn-submit');
+  if(submit) submit.textContent = show ? "I've joined & added the team →" : "I've joined →";
+}
+
 function updateDiscordPanel(){
-  const city=state.city||document.getElementById('f-city')?.value;
-  const users=CITY_DISCORD[city]||[];
-  const el=document.getElementById('discord-usernames');
-  if(el) el.innerHTML=users.map(u=>`<span class="discord-username">@${u}</span>`).join('');
+  paintDiscordLeads();
   showDiscordRoleNote('');
 }
 
@@ -3019,14 +3164,13 @@ function renderManagerCards(guides){
       ?`<div class="missing-tags">${missing.map(m=>`<span class="mtag">${escapeHtml(m)}</span>`).join('')}</div>`
       :`<div style="font-size:12px;color:var(--teal);margin-top:4px;">All tasks complete ✓</div>`;
     const ffStatus=g.obs&&g.obs.ff;const sgStatus=g.obs&&g.obs.sg;
-    const cprOk=!missing.some(m => /cpr/i.test(String(m)));
-    const training = trainingChecklist(g);
-    const trainingOk = training.ok;
-    const isFloorReady=ffStatus==='pass'&&sgStatus==='pass'&&cprOk&&trainingOk;
-    const checklistHTML=`
+    const legacy = legacyFloorReady(g);
+    const checklistHTML = (isNycPath1Guide(g) && usesServerFloorReady(g))
+      ? nycPath1ChecklistHTML(g)
+      : `
       <div class="floor-checklist">
-        <div class="floor-check-item"><div class="floor-check-dot ${trainingOk?'pass':'pending'}"></div><span>${escapeHtml(training.label)}</span></div>
-        <div class="floor-check-item"><div class="floor-check-dot ${cprOk?'pass':'fail'}"></div><span>CPR valid</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot ${legacy.trainingOk?'pass':'pending'}"></div><span>${escapeHtml(legacy.trainingLabel)}</span></div>
+        <div class="floor-check-item"><div class="floor-check-dot ${legacy.cprOk?'pass':'fail'}"></div><span>CPR valid</span></div>
         <div class="floor-check-item"><div class="floor-check-dot ${ffStatus==='pass'?'pass':ffStatus==='fail'?'fail':'pending'}"></div><span>FF observation passed</span></div>
         <div class="floor-check-item"><div class="floor-check-dot ${sgStatus==='pass'?'pass':sgStatus==='fail'?'fail':'pending'}"></div><span>SG observation passed</span></div>
       </div>`;
@@ -3059,7 +3203,8 @@ function renderManagerCards(guides){
     const actionsHTML=`
       <div class="gcard-actions" style="margin-top:10px;">
         ${!g.floorReady?`<button class="btn-remind" onclick="openReminderFor(${JSON.stringify(g.name).replace(/"/g,'&quot;')},${JSON.stringify(missing).replace(/"/g,'&quot;')})">⚡ Remind</button>`:''}
-        ${isFloorReady&&!g.floorReady?`<button class="btn-floor-ready" onclick="markFloorReady(${gi})">✓ Mark floor ready</button>`:''}
+        ${canMarkFloorReady(g)?`<button class="btn-floor-ready" onclick="markFloorReady(${gi})">✓ Mark floor ready</button>`:''}
+        ${canApproveSgReady(g)?`<button class="btn-floor-ready" onclick="markSgReady(${gi})">Approve SG Ready</button>`:''}
         <button class="btn-mgr btn-mgr-outline" style="font-size:10px;padding:5px 11px;" onclick="genAttendanceSummary()">📋 Attendance summary</button>
       </div>`;
     el.innerHTML=`
@@ -3115,11 +3260,16 @@ async function toggleAttendance(gi,day){
 
 async function markFloorReady(gi){
   const g = GUIDES_DATA[gi];
-  if(!g) return;
-  const training = trainingChecklist(g);
-  const cprOk = !(g.missing || []).some(m => /cpr/i.test(String(m)));
-  const ready = g.obs && g.obs.ff === 'pass' && g.obs.sg === 'pass' && cprOk && training.ok && !g.floorReady;
-  if(!ready){ showToast('All four checks need to be green first.'); return; }
+  if(!g || g.floorReady) return;
+  if(!canMarkFloorReady(g)){
+    if(usesServerFloorReady(g)){
+      const blockers = floorReadyBlockersOf(g);
+      showToast(blockers.length ? blockers.join(' · ') : 'This guide is not eligible for floor ready yet.', 6000);
+    } else {
+      showToast('All four checks need to be green first.');
+    }
+    return;
+  }
   const data = await callBackend('/api/floor-ready', { email:g.email, city:cityCode(g.city) });
   if(!data || !data.success){
     showToast((data && data.error) || 'Could not mark floor ready.');
@@ -3127,6 +3277,18 @@ async function markFloorReady(gi){
   }
   if(data.discordRoleAssigned === false) showToast(data.discordError || 'Notion was updated, but the Discord role was not assigned.');
   else showToast(g.name + ' is floor ready.');
+  await loadRealGuides();
+}
+
+async function markSgReady(gi){
+  const g = GUIDES_DATA[gi];
+  if(!g || !canApproveSgReady(g)) return;
+  const data = await callBackend('/api/manager/sg-ready', { email:g.email, city:cityCode(g.city) });
+  if(!data || !data.success){
+    showToast((data && data.error) || 'Could not approve SG Ready.');
+    return;
+  }
+  showToast(g.name + ' — SG Ready approved.');
   await loadRealGuides();
 }
 
@@ -3174,6 +3336,7 @@ function loadWaveSettings(){
           if(w.city==='Toronto') WAVE_SETTINGS.Toronto=Object.assign({}, w, { trainingDays: w.trainingDays || 2 });
         });
         refreshGuideHeader();
+        paintDiscordLeads();
         if(!sessionStorage.getItem('mgr_city')){
           const label=document.getElementById('mgr-city-label');
           if(label) label.textContent=`Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'} — NYC + Toronto`;
