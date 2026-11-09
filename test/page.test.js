@@ -418,6 +418,238 @@ test('manager Toronto keeps the four checks, and NYC Path 1 uses eligibility, bl
   assert.equal(window.document.getElementById('toast').textContent, 'Riley Quinn — SG Ready approved.');
 });
 
+test('payroll report and CSV use server payroll, including alumni, and day buttons follow training slots', async () => {
+  assert.equal(sourceScript.includes('HOURLY_RATE'), false);
+  assert.equal(sourceScript.includes('guideTaskMinutes'), false);
+  assert.equal(sourceScript.includes('TRAINING_DAY_MINUTES'), false);
+
+  const window = await boot({
+    cityCode: 'nyc',
+    cityName: 'NYC',
+    guideName: 'Jordan Blake',
+    tasks: { success: true, tasks: NYC_TASKS },
+    ready: win => win.document.querySelectorAll('.week').length === 5
+  });
+
+  const calls = [];
+  const nycPayroll = {
+    success: true,
+    city: 'nyc',
+    hourlyRate: 16,
+    trainingSlots: [{ half: false }, { half: true }],
+    totals: { kajabiMinutes: 60, otherMinutes: 30, inPersonMinutes: 0, totalMinutes: 90, hours: 6, pay: 108 },
+    guides: [
+      {
+        name: 'Jordan Blake',
+        discord: 'jordan.b',
+        city: 'NYC',
+        email: 'jordan@example.com',
+        status: 'alumni',
+        payroll: {
+          kajabiMinutes: 60,
+          otherMinutes: 0,
+          inPersonMinutes: 0,
+          totalMinutes: 60,
+          hours: 5.5,
+          pay: 100,
+          hourlyRate: 16,
+          daysAttended: 1.5,
+          trainingDays: 2,
+          attendanceRecorded: true,
+          lines: [{ id: 'k1', name: 'Kajabi foundations', minutes: 60, category: 'kajabi' }],
+          skippedInPersonCards: [{ id: 'ip1', name: 'Shadow on the floor' }]
+        }
+      },
+      {
+        name: 'Riley Quinn',
+        discord: 'riley.q',
+        city: 'NYC',
+        email: 'riley@example.com',
+        status: 'track',
+        payroll: {
+          kajabiMinutes: 0,
+          otherMinutes: 30,
+          inPersonMinutes: 0,
+          totalMinutes: 30,
+          hours: 0.5,
+          pay: 8,
+          daysAttended: 0,
+          trainingDays: 2,
+          attendanceRecorded: false,
+          lines: [{ id: 'o1', name: 'Observation notes', minutes: 30, category: 'other' }],
+          skippedInPersonCards: []
+        }
+      }
+    ]
+  };
+  const torontoPayroll = {
+    success: true,
+    city: 'toronto',
+    hourlyRate: 22,
+    totals: { pay: 44, hours: 2, totalMinutes: 30 },
+    guides: [
+      {
+        name: 'Casey Morgan',
+        discord: 'casey.m',
+        city: 'Toronto',
+        email: 'casey@example.com',
+        status: 'alumni',
+        payroll: {
+          kajabiMinutes: 0,
+          otherMinutes: 30,
+          inPersonMinutes: 0,
+          totalMinutes: 30,
+          hours: 2,
+          pay: 44,
+          hourlyRate: 22,
+          daysAttended: 1,
+          trainingDays: 3,
+          attendanceRecorded: true,
+          lines: [],
+          skippedInPersonCards: []
+        }
+      }
+    ]
+  };
+
+  window.fetch = (url, opts) => {
+    const parsed = new URL(String(url));
+    calls.push({
+      path: parsed.pathname,
+      search: parsed.search,
+      method: (opts && opts.method) || 'GET',
+      body: opts && opts.body,
+      authorization: opts && opts.headers && opts.headers.Authorization
+    });
+    if (parsed.pathname === '/api/wave-settings') {
+      return jsonResponse(200, {
+        success: true,
+        waves: [
+          { city: 'NYC', waveNumber: '6', season: 'Fall', year: '2026', trainingDays: 2 },
+          { city: 'Toronto', waveNumber: '12', season: 'Fall', year: '2026', trainingDays: 3 }
+        ]
+      });
+    }
+    if (parsed.pathname === '/api/guides') {
+      const city = parsed.searchParams.get('city');
+      const guides = city === 'toronto'
+        ? [guide({ payroll: { attendanceRecorded: false } })]
+        : [guide({
+          name: 'Riley Quinn',
+          city: 'NYC',
+          email: 'riley@example.com',
+          discord: 'riley.q',
+          attendance: [true, false],
+          payroll: { attendanceRecorded: false }
+        })];
+      return jsonResponse(200, { success: true, guides });
+    }
+    if (parsed.pathname === '/api/manager/payroll') {
+      const city = parsed.searchParams.get('city');
+      return jsonResponse(200, city === 'toronto' ? torontoPayroll : nycPayroll);
+    }
+    if (parsed.pathname === '/api/manager/attendance') return jsonResponse(200, { success: true });
+    return jsonResponse(404, { success: false, error: 'missing ' + parsed.pathname });
+  };
+
+  window.sessionStorage.setItem('mgr_city', 'nyc');
+  window.sessionStorage.setItem('othership_manager_token', 'manager-token');
+  await window.loadWaveSettings();
+  await window.loadRealGuides();
+  let buttons = [...window.document.querySelectorAll('.day-btn')];
+  assert.deepEqual(buttons.map(button => button.textContent), ['D1', 'D2']);
+  assert.equal(buttons.some(button => button.classList.contains('half')), false);
+  assert.match(window.document.getElementById('gcards').textContent, /Attendance not recorded/);
+
+  calls.length = 0;
+  await window.openPayrollReport();
+  const payrollCalls = calls.filter(call => call.path === '/api/manager/payroll');
+  assert.deepEqual(payrollCalls.map(call => call.search), ['?city=nyc']);
+  assert.equal(payrollCalls.every(call => call.authorization === 'Bearer manager-token'), true);
+  assert.equal(calls.some(call => call.path === '/api/tasks'), false);
+  const report = window.document.getElementById('payroll-report-text').textContent;
+  assert.equal(window.document.getElementById('modal-payroll-report').classList.contains('open'), true);
+  assert.match(report, /Jordan Blake/);
+  assert.match(report, /alumni/);
+  assert.match(report, /Kajabi foundations/);
+  assert.match(report, /Shadow on the floor/);
+  assert.match(report, /1\.5\/2 days/);
+  assert.match(report, /5\.50 hrs × \$16 = \$100\.00/);
+  assert.match(report, /Attendance not recorded/);
+  assert.match(report, /Observation notes/);
+  assert.match(report, /CITY TOTAL: \$108\.00/);
+  assert.doesNotMatch(report, /\$16\.00/);
+  assert.doesNotMatch(report, /\$24\.00/);
+  assert.match(window.document.getElementById('payroll-report-sub').textContent, /NYC \$108\.00/);
+
+  buttons = [...window.document.querySelectorAll('.day-btn')];
+  assert.equal(buttons.length, 2);
+  assert.equal(buttons[1].classList.contains('half'), true);
+  assert.equal(buttons[1].title, 'Half day · 240 min');
+  assert.match(buttons[1].textContent, /½/);
+
+  const files = [];
+  window.URL.createObjectURL = blob => {
+    files.push(blob);
+    return 'blob:payroll';
+  };
+  window.URL.revokeObjectURL = () => {};
+  window.exportPayrollCSV();
+  assert.equal(files.length, 1);
+  const csv = await new Promise((resolve, reject) => {
+    const reader = new window.FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(files[0]);
+  });
+  assert.match(csv, /Jordan Blake/);
+  assert.match(csv, /alumni/);
+  assert.match(csv, /Kajabi foundations \(kajabi\) — 60 min/);
+  assert.match(csv, /Shadow on the floor/);
+  assert.match(csv, /5\.50/);
+  assert.match(csv, /\$100\.00/);
+  assert.match(csv, /\$108\.00/);
+  assert.match(csv, /Attendance not recorded/);
+  assert.doesNotMatch(csv, /\$16\.00/);
+  assert.equal(calls.some(call => call.path === '/api/tasks'), false);
+
+  buttons[1].click();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const posted = calls.filter(call => call.path === '/api/manager/attendance').pop();
+  assert.equal(posted.method, 'POST');
+  assert.deepEqual(JSON.parse(posted.body), { email: 'riley@example.com', city: 'nyc', days: [true, true] });
+  assert.equal(window.document.getElementById('gcards').textContent.includes('Attendance not recorded'), false);
+  window.genAttendanceSummary();
+  assert.match(window.document.getElementById('attendance-text').textContent, /1\.5\/1\.5 days: Riley Quinn/);
+
+  window.sessionStorage.setItem('mgr_city', 'toronto');
+  calls.length = 0;
+  await window.loadRealGuides();
+  buttons = [...window.document.querySelectorAll('.day-btn')];
+  assert.deepEqual(buttons.map(button => button.textContent), ['D1', 'D2', 'D3']);
+  assert.equal(buttons.some(button => button.classList.contains('half')), false);
+  await window.openPayrollReport();
+  assert.deepEqual(calls.filter(call => call.path === '/api/manager/payroll').map(call => call.search), ['?city=toronto']);
+  const torontoReport = window.document.getElementById('payroll-report-text').textContent;
+  assert.match(torontoReport, /Casey Morgan/);
+  assert.match(torontoReport, /alumni/);
+  assert.match(torontoReport, /\$22/);
+  assert.match(torontoReport, /\$44\.00/);
+  assert.doesNotMatch(torontoReport, /\$16/);
+  assert.equal(calls.some(call => call.path === '/api/tasks'), false);
+
+  window.sessionStorage.setItem('mgr_city', 'both');
+  calls.length = 0;
+  await window.openPayrollReport();
+  assert.deepEqual(calls.filter(call => call.path === '/api/manager/payroll').map(call => call.search), ['?city=nyc', '?city=toronto']);
+  assert.match(window.document.getElementById('payroll-report-text').textContent, /COMBINED PAY/);
+
+  window.closeModal('modal-payroll-report');
+  window.fetch = () => jsonResponse(401, { success: false, error: 'Sign in required.' });
+  await window.openPayrollReport();
+  assert.equal(window.document.getElementById('modal-payroll-report').classList.contains('open'), false);
+});
+
 test('a signed-out page stays on the login screen', async () => {
   const scenario = {
     signedIn: false,

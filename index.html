@@ -317,8 +317,9 @@ select.form-input option{background:#271829;}
 /* ATTENDANCE */
 .attendance-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
 .attendance-label{font-size:11px;color:rgba(236,232,227,0.35);letter-spacing:0.06em;text-transform:uppercase;}
-.day-btn{width:32px;height:32px;border-radius:6px;border:1px solid rgba(236,232,227,0.15);background:transparent;color:rgba(236,232,227,0.35);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all 0.15s;}
+.day-btn{min-width:32px;height:32px;padding:0 6px;border-radius:6px;border:1px solid rgba(236,232,227,0.15);background:transparent;color:rgba(236,232,227,0.35);font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all 0.15s;}
 .day-btn.present{background:rgba(167,207,201,0.2);border-color:var(--teal);color:var(--teal);}
+.attendance-hint{flex-basis:100%;font-size:11px;line-height:1.4;color:rgba(236,232,227,0.45);}
 
 /* REMINDER */
 .reminder-preview{background:rgba(255,255,255,0.04);border:1px solid rgba(236,232,227,0.09);border-radius:10px;padding:16px;font-size:13px;line-height:1.72;color:rgba(236,232,227,0.7);margin:14px 0;font-weight:300;min-height:90px;white-space:pre-wrap;}
@@ -926,7 +927,7 @@ select.form-input option{background:#271829;}
   <div class="modal modal-lg">
     <button class="modal-close" onclick="closeModal('modal-payroll-report')">×</button>
     <h2>Training Payroll Report</h2>
-    <p class="modal-sub" id="payroll-report-sub">Training pay at $16/hr</p>
+    <p class="modal-sub" id="payroll-report-sub">Training pay from the server</p>
     <div class="reminder-preview" id="payroll-report-text" style="min-height:220px;font-size:12px;line-height:1.9;font-family:monospace;"></div>
     <div style="display:flex;gap:10px;margin-top:4px;">
       <button class="btn-mgr btn-mgr-outline" style="flex:1" onclick="closeModal('modal-payroll-report')">Close</button>
@@ -1148,130 +1149,310 @@ const PAYROLL_DATA = {
   toronto:{sub:'Toronto — Contractor Invoicing (7shifts)',content:`<h3>7shifts Invoicing</h3><p>As a Toronto Guide you are a <strong>contractor</strong> — you invoice per ship.</p><ul><li>Bill training, Zoom, and newsletter time to <strong>ADEL or YKVL</strong></li><li>Your punch in numbers are in the 7shifts app</li><li>Your training honorarium will be extended at the end of onboarding</li></ul>`}
 };
 
-const HOURLY_RATE = 16;
-const TRAINING_DAY_MINUTES = 480;
+const FULL_DAY_MINUTES = 480;
+const HALF_DAY_MINUTES = 240;
+let PAYROLL_SNAPSHOT = [];
 
-function minsToHrsPay(mins) {
-  const hrs = mins / 60;
-  const pay = hrs * HOURLY_RATE;
-  return { hrs: hrs.toFixed(2), pay: pay.toFixed(2) };
+function payrollCities(){
+  const raw = sessionStorage.getItem('mgr_city') || 'nyc';
+  if(raw === 'both') return ['nyc', 'toronto'];
+  const code = cityCode(raw);
+  if(code === 'toronto' || code === 'nyc') return [code];
+  return [code || 'nyc'];
 }
 
-let PAYROLL_CATALOG = [];
-
-function taskTicked(ticks, task){
-  if(Object.prototype.hasOwnProperty.call(ticks, task.id)) return ticks[task.id] === true;
-  return !!(task.legacyId && ticks[task.legacyId] === true);
+function payrollOf(guide){
+  return guide && guide.payroll && typeof guide.payroll === 'object' ? guide.payroll : {};
 }
 
-function guideTaskMinutes(g){
-  const ticks = g.progressTasks || {};
-  const cityName = cityCode(g.city) === 'toronto' ? 'Toronto' : 'NYC';
-  let mins = 0;
-  const seen = new Set();
-  PAYROLL_CATALOG.filter(t => t.city === cityName).forEach(t => {
-    if(!t.id || seen.has(t.id) || !taskTicked(ticks, t)) return;
-    seen.add(t.id);
-    mins += t.min;
-  });
-  return mins;
+function formatDayCount(value){
+  if(value == null || value === '') return '—';
+  const n = Number(value);
+  if(!Number.isFinite(n)) return String(value);
+  const rounded = Math.round(n * 10) / 10;
+  if(Math.abs(rounded - Math.round(rounded)) < 1e-9) return String(Math.round(rounded));
+  return String(rounded);
 }
 
-function payrollGuides(){
-  const city = sessionStorage.getItem('mgr_city') || 'nyc';
-  return GUIDES_DATA.filter(g => {
-    if(g.status === 'alumni') return false;
-    if(city === 'both') return true;
-    return cityCode(g.city) === cityCode(city);
-  });
+function formatHours(value){
+  if(value == null || value === '') return '—';
+  const n = Number(value);
+  if(!Number.isFinite(n)) return String(value);
+  return n.toFixed(2);
 }
 
-async function loadPayrollCatalog(){
-  const city = sessionStorage.getItem('mgr_city') || 'nyc';
-  const codes = city === 'both' ? ['nyc','toronto'] : [cityCode(city)];
-  const all = [];
-  for(const code of codes){
-    const param = code === 'toronto' ? 'Toronto' : 'NYC';
-    const res = await apiFetch('/api/tasks?city=' + encodeURIComponent(param), { method:'GET', auth:'manager' });
-    const data = res.data || {};
-    if(res.status === 401) return false;
-    if(!data.success || !Array.isArray(data.tasks)){
-      showToast(data.error || 'Could not load task minutes for payroll.');
-      return false;
-    }
-    data.tasks.forEach(t => all.push({ id:String(t.id || ''), legacyId:t.legacyId || '', min:Number(t.minToComplete) || 0, city:param }));
+function formatMoney(value){
+  if(value == null || value === '') return '';
+  const n = Number(value);
+  if(!Number.isFinite(n)) return String(value);
+  return '$' + n.toFixed(2);
+}
+
+function rateLabel(value){
+  if(value == null || value === '') return '';
+  const n = Number(value);
+  if(!Number.isFinite(n)) return String(value);
+  return '$' + (Math.abs(n - Math.round(n)) < 1e-9 ? String(Math.round(n)) : n.toFixed(2));
+}
+
+function guideHourlyRate(guide, report){
+  const payroll = payrollOf(guide);
+  if(payroll.hourlyRate != null && payroll.hourlyRate !== '') return payroll.hourlyRate;
+  if(report && report.hourlyRate != null && report.hourlyRate !== '') return report.hourlyRate;
+  return null;
+}
+
+function reportRate(report){
+  const rates = [];
+  const push = value => {
+    if(value == null || value === '') return;
+    const key = String(value);
+    if(rates.indexOf(key) < 0) rates.push(key);
+  };
+  push(report && report.hourlyRate);
+  (report && report.guides || []).forEach(guide => push(payrollOf(guide).hourlyRate));
+  if(!rates.length) return null;
+  if(rates.length === 1) return rates[0];
+  return 'mixed';
+}
+
+function cityPayTotal(report){
+  const totals = report && report.totals;
+  if(typeof totals === 'number' && Number.isFinite(totals)) return totals;
+  if(totals && typeof totals === 'object' && totals.pay != null && totals.pay !== '' && Number.isFinite(Number(totals.pay))){
+    return Number(totals.pay);
   }
-  PAYROLL_CATALOG = all;
-  return true;
+  let sum = 0;
+  let any = false;
+  (report && report.guides || []).forEach(guide => {
+    const n = Number(payrollOf(guide).pay);
+    if(Number.isFinite(n)){ sum += n; any = true; }
+  });
+  return any ? sum : null;
 }
 
-async function openPayrollReport() {
-  const ready = await loadPayrollCatalog();
-  if(!ready) return;
-  const guides = payrollGuides();
+function totalField(report, key){
+  const totals = report && report.totals;
+  if(!totals || typeof totals !== 'object') return null;
+  if(totals[key] == null || totals[key] === '') return null;
+  return totals[key];
+}
+
+function skippedCardLabel(item){
+  if(typeof item === 'string') return item.trim();
+  if(!item || typeof item !== 'object') return '';
+  return String(item.name || item.title || item.label || item.id || '').trim();
+}
+
+function countedLineLabel(line){
+  if(!line || typeof line !== 'object') return '';
+  const name = String(line.name || line.id || 'Card').trim();
+  const category = line.category ? ' (' + line.category + ')' : '';
+  const minutes = line.minutes == null || line.minutes === '' ? '—' : line.minutes;
+  return name + category + ' — ' + minutes + ' min';
+}
+
+function csvCell(value){
+  const text = value == null ? '' : String(value);
+  if(/[",\n]/.test(text)) return '"' + text.replace(/"/g, '""') + '"';
+  return text;
+}
+
+function payrollCityTitle(code){
+  return cityCode(code) === 'toronto' ? 'TORONTO' : 'NYC';
+}
+
+function buildPayrollReport(reports){
   const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  const mgrCity = sessionStorage.getItem('mgr_city') || 'nyc';
-  const titleCity = mgrCity === 'toronto' ? 'TORONTO' : mgrCity === 'both' ? 'NYC + TORONTO' : 'NYC';
-  let report = `OTHERSHIP ${titleCity} — TRAINING PAYROLL REPORT\n`;
-  report += `Rate: $${HOURLY_RATE}/hr  |  Generated: ${today}\n`;
-  report += `Minutes include only tasks each guide has ticked.\n`;
+  const list = Array.isArray(reports) ? reports : [];
+  const title = list.length > 1 ? 'NYC + TORONTO' : payrollCityTitle(list[0] && list[0].city);
+  let report = `OTHERSHIP ${title} — TRAINING PAYROLL REPORT\n`;
+  report += `Generated: ${today}\n`;
+  report += `Pay, hours, and minutes come from the server. Kajabi, other ticked cards (including shadows and observations), and in-person attendance are already included. Finished and alumni guides stay in this report.\n`;
   report += `${'─'.repeat(52)}\n\n`;
-  let grandTotal = 0;
-  guides.forEach(g => {
-    const code = cityCode(g.city);
-    const key = code === 'toronto' ? 'Toronto' : 'NYC';
-    const trainingDays = (WAVE_SETTINGS[key] && WAVE_SETTINGS[key].trainingDays) || 2;
-    const daysAttended = Array.isArray(g.attendance) ? g.attendance.filter(Boolean).length : 0;
-    const dayMins = daysAttended * TRAINING_DAY_MINUTES;
-    const taskMins = guideTaskMinutes(g);
-    const totalMins = taskMins + dayMins;
-    const { hrs, pay } = minsToHrsPay(totalMins);
-    grandTotal += parseFloat(pay);
-    const attendanceNote = Array.isArray(g.attendance) ? '' : ' (attendance not on the card yet)';
-    report += `${g.name} (@${g.discord || '—'}) — ${g.city || key}\n`;
-    report += `  Completed tasks:        ${taskMins} min\n`;
-    report += `  In-person training days: ${daysAttended}/${trainingDays} days (${dayMins} min)${attendanceNote}\n`;
-    report += `  ─────────────────────────────────────\n`;
-    report += `  TOTAL: ${hrs} hrs × $${HOURLY_RATE} = $${pay}\n\n`;
+  list.forEach(cityReport => {
+    const guides = Array.isArray(cityReport.guides) ? cityReport.guides : [];
+    const rate = reportRate(cityReport);
+    report += `${payrollCityTitle(cityReport.city)}`;
+    if(rate && rate !== 'mixed') report += ` — ${rateLabel(rate)}/hr`;
+    else if(rate === 'mixed') report += ` — rate varies by guide`;
+    report += `\n\n`;
+    guides.forEach(guide => {
+      const payroll = payrollOf(guide);
+      const rateForGuide = guideHourlyRate(guide, cityReport);
+      const status = guide.status ? ' — ' + guide.status : '';
+      report += `${guide.name || guide.email || 'Guide'} (@${guide.discord || '—'}) — ${guide.city || payrollCityTitle(cityReport.city)}${status}\n`;
+      report += `  Kajabi:              ${payroll.kajabiMinutes == null ? '—' : payroll.kajabiMinutes} min\n`;
+      report += `  Other ticked cards:  ${payroll.otherMinutes == null ? '—' : payroll.otherMinutes} min\n`;
+      report += `  In-person training:  ${formatDayCount(payroll.daysAttended)}/${formatDayCount(payroll.trainingDays)} days (${payroll.inPersonMinutes == null ? '—' : payroll.inPersonMinutes} min)\n`;
+      if(payroll.attendanceRecorded === false){
+        report += `  Attendance not recorded — in-person pay is $0 until a training day is marked.\n`;
+      }
+      const lines = Array.isArray(payroll.lines) ? payroll.lines.map(countedLineLabel).filter(Boolean) : [];
+      if(lines.length){
+        report += `  Counted:\n`;
+        lines.forEach(line => { report += `    · ${line}\n`; });
+      }
+      const skipped = Array.isArray(payroll.skippedInPersonCards) ? payroll.skippedInPersonCards.map(skippedCardLabel).filter(Boolean) : [];
+      if(skipped.length){
+        report += `  Not paid from the tick (in-person days are paid once, from attendance): ${skipped.join('; ')}\n`;
+      }
+      const hours = formatHours(payroll.hours);
+      const pay = formatMoney(payroll.pay);
+      const rateText = rateForGuide == null ? '' : ` × ${rateLabel(rateForGuide)}`;
+      report += `  ─────────────────────────────────────\n`;
+      report += `  TOTAL: ${payroll.totalMinutes == null ? '—' : payroll.totalMinutes} min · ${hours} hrs${rateText}${pay ? ' = ' + pay : ''}\n\n`;
+    });
+    if(!guides.length) report += `  No guides returned for this city.\n\n`;
+    const payTotal = cityPayTotal(cityReport);
+    const bits = [];
+    const kajabi = totalField(cityReport, 'kajabiMinutes');
+    const other = totalField(cityReport, 'otherMinutes');
+    const inPerson = totalField(cityReport, 'inPersonMinutes');
+    const totalMinutes = totalField(cityReport, 'totalMinutes');
+    const hours = totalField(cityReport, 'hours');
+    if(kajabi != null) bits.push(`Kajabi ${kajabi} min`);
+    if(other != null) bits.push(`Other ${other} min`);
+    if(inPerson != null) bits.push(`In-person ${inPerson} min`);
+    if(totalMinutes != null) bits.push(`${totalMinutes} min`);
+    if(hours != null) bits.push(`${formatHours(hours)} hrs`);
+    if(bits.length) report += `  ${bits.join(' · ')}\n`;
+    report += `  CITY TOTAL: ${payTotal == null ? '—' : formatMoney(payTotal)}\n`;
+    report += `  Guides included: ${guides.length}\n\n`;
   });
   report += `${'═'.repeat(52)}\n`;
-  report += `TOTAL PAYROLL: $${grandTotal.toFixed(2)}\n`;
-  report += `Guides included: ${guides.length}\n`;
-  report += `\nNote: CPR reimbursement handled separately at 3-month mark. The hourly rate on this page is $${HOURLY_RATE} for both cities.`;
-  document.getElementById('payroll-report-sub').textContent = `${guides.length} guides — $${grandTotal.toFixed(2)} total`;
-  document.getElementById('payroll-report-text').textContent = report;
-  openModal('modal-payroll-report');
+  if(list.length > 1){
+    const combined = list.reduce((sum, cityReport) => {
+      const pay = cityPayTotal(cityReport);
+      return sum + (pay == null ? 0 : pay);
+    }, 0);
+    report += `COMBINED PAY (each city keeps its own rate): ${formatMoney(combined)}\n`;
+  }
+  report += `Note: CPR reimbursement is handled separately at the 3-month mark.`;
+  return report;
 }
 
-function copyPayrollReport() {
+function payrollSubtitle(reports){
+  const list = Array.isArray(reports) ? reports : [];
+  const guides = list.reduce((sum, cityReport) => sum + ((cityReport.guides || []).length), 0);
+  const parts = list.map(cityReport => {
+    const pay = cityPayTotal(cityReport);
+    return `${payrollCityTitle(cityReport.city)} ${pay == null ? '—' : formatMoney(pay)}`;
+  });
+  return `${guides} guide${guides === 1 ? '' : 's'} — ${parts.join(' · ') || '—'}`;
+}
+
+function buildPayrollCsv(reports){
+  const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const list = Array.isArray(reports) ? reports : [];
+  const mgrCity = sessionStorage.getItem('mgr_city') || 'nyc';
+  let csv = 'Othership Training Payroll Report\n';
+  csv += `${mgrCity} | Generated: ${today}\n`;
+  csv += 'Pay, hours, and minutes come from the server. Finished and alumni guides are included.\n';
+  csv += 'CPR reimbursement is handled separately at the 3-month mark.\n\n';
+  csv += 'Name,City,Discord,Status,Kajabi Minutes,Other Minutes,In-person Minutes,Days Attended,Training Days,Total Minutes,Hours,Hourly Rate,Pay,Attendance Recorded,Counted Cards,Skipped In-person Cards,Notes\n';
+  list.forEach(cityReport => {
+    const guides = Array.isArray(cityReport.guides) ? cityReport.guides : [];
+    guides.forEach(guide => {
+      const payroll = payrollOf(guide);
+      const lines = Array.isArray(payroll.lines) ? payroll.lines.map(countedLineLabel).filter(Boolean).join(' | ') : '';
+      const skipped = Array.isArray(payroll.skippedInPersonCards) ? payroll.skippedInPersonCards.map(skippedCardLabel).filter(Boolean).join('; ') : '';
+      const notes = payroll.attendanceRecorded === false ? 'Attendance not recorded — in-person pay is $0 until a training day is marked.' : '';
+      const row = [
+        guide.name || guide.email || '',
+        guide.city || payrollCityTitle(cityReport.city),
+        guide.discord ? '@' + guide.discord : '',
+        guide.status || '',
+        payroll.kajabiMinutes == null ? '' : payroll.kajabiMinutes,
+        payroll.otherMinutes == null ? '' : payroll.otherMinutes,
+        payroll.inPersonMinutes == null ? '' : payroll.inPersonMinutes,
+        payroll.daysAttended == null ? '' : formatDayCount(payroll.daysAttended),
+        payroll.trainingDays == null ? '' : formatDayCount(payroll.trainingDays),
+        payroll.totalMinutes == null ? '' : payroll.totalMinutes,
+        formatHours(payroll.hours),
+        guideHourlyRate(guide, cityReport) == null ? '' : rateLabel(guideHourlyRate(guide, cityReport)),
+        formatMoney(payroll.pay),
+        payroll.attendanceRecorded == null ? '' : String(payroll.attendanceRecorded),
+        lines,
+        skipped,
+        notes
+      ];
+      csv += row.map(csvCell).join(',') + '\n';
+    });
+    const payTotal = cityPayTotal(cityReport);
+    const totalHours = totalField(cityReport, 'hours');
+    const totalRow = [
+      'TOTAL',
+      payrollCityTitle(cityReport.city),
+      '',
+      '',
+      totalField(cityReport, 'kajabiMinutes') == null ? '' : totalField(cityReport, 'kajabiMinutes'),
+      totalField(cityReport, 'otherMinutes') == null ? '' : totalField(cityReport, 'otherMinutes'),
+      totalField(cityReport, 'inPersonMinutes') == null ? '' : totalField(cityReport, 'inPersonMinutes'),
+      '',
+      '',
+      totalField(cityReport, 'totalMinutes') == null ? '' : totalField(cityReport, 'totalMinutes'),
+      totalHours == null ? '' : formatHours(totalHours),
+      '',
+      payTotal == null ? '' : formatMoney(payTotal),
+      '',
+      '',
+      '',
+      ''
+    ];
+    csv += totalRow.map(csvCell).join(',') + '\n';
+  });
+  return csv;
+}
+
+function rememberTrainingSlots(code, slots){
+  if(!Array.isArray(slots) || !slots.length) return;
+  const key = code === 'toronto' ? 'Toronto' : code === 'nyc' ? 'NYC' : null;
+  if(!key) return;
+  WAVE_SETTINGS[key] = Object.assign({}, WAVE_SETTINGS[key] || {}, { trainingSlots: slots });
+}
+
+async function loadPayrollReports(){
+  const reports = [];
+  for(const code of payrollCities()){
+    const res = await apiFetch('/api/manager/payroll?city=' + encodeURIComponent(code), { method:'GET', auth:'manager' });
+    const data = res.data || {};
+    if(res.status === 401) return null;
+    if(!res.ok || data.success === false || !Array.isArray(data.guides)){
+      showToast(data.error || 'Could not load payroll.');
+      return null;
+    }
+    rememberTrainingSlots(code, data.trainingSlots);
+    reports.push(Object.assign({}, data, { city: cityCode(data.city || code) }));
+  }
+  PAYROLL_SNAPSHOT = reports;
+  return reports;
+}
+
+async function openPayrollReport(){
+  const reports = await loadPayrollReports();
+  if(!reports) return;
+  document.getElementById('payroll-report-sub').textContent = payrollSubtitle(reports);
+  document.getElementById('payroll-report-text').textContent = buildPayrollReport(reports);
+  openModal('modal-payroll-report');
+  if(currentMgrFilter !== 'newsletters' && guidesStatus === 'ready'){
+    renderManagerCards(getFilteredGuides(currentFilter || 'all'));
+  }
+}
+
+function copyPayrollReport(){
   const text = document.getElementById('payroll-report-text').textContent;
   navigator.clipboard.writeText(text).then(() => showToast('Payroll report copied to clipboard'));
 }
 
-function exportPayrollCSV() {
-  const guides = payrollGuides();
+function exportPayrollCSV(){
+  if(!PAYROLL_SNAPSHOT.length){
+    showToast('Open the payroll report first.');
+    return;
+  }
+  const csv = buildPayrollCsv(PAYROLL_SNAPSHOT);
   const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const mgrCity = sessionStorage.getItem('mgr_city') || 'nyc';
-  let csv = `Othership Training Payroll Report\n`;
-  csv += `${mgrCity} | Rate: $${HOURLY_RATE}/hr | Generated: ${today}\n`;
-  csv += `Task minutes count only ticked tasks.\n\n`;
-  csv += `Name,City,Discord,Task Minutes,Training Days Attended,Training Day Minutes,Total Minutes,Total Hours,Total Pay,Notes\n`;
-  let grandTotal = 0;
-  guides.forEach(g => {
-    const code = cityCode(g.city);
-    const key = code === 'toronto' ? 'Toronto' : 'NYC';
-    const trainingDays = (WAVE_SETTINGS[key] && WAVE_SETTINGS[key].trainingDays) || 2;
-    const daysAttended = Array.isArray(g.attendance) ? g.attendance.filter(Boolean).length : 0;
-    const dayMins = daysAttended * TRAINING_DAY_MINUTES;
-    const taskMins = guideTaskMinutes(g);
-    const totalMins = taskMins + dayMins;
-    const hrs = (totalMins / 60).toFixed(2);
-    const pay = (parseFloat(hrs) * HOURLY_RATE).toFixed(2);
-    grandTotal += parseFloat(pay);
-    csv += `"${g.name}","${g.city || key}","@${g.discord || ''}",${taskMins},${daysAttended}/${trainingDays},${dayMins},${totalMins},${hrs},$${pay},CPR reimbursement separate\n`;
-  });
-  csv += `\nTOTAL,,,,,,,,,$${grandTotal.toFixed(2)},\n`;
-  csv += `\nNote: CPR reimbursement handled separately at 3-month mark.`;
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1280,6 +1461,31 @@ function exportPayrollCSV() {
   a.click();
   URL.revokeObjectURL(url);
   showToast('CSV downloaded — open in Excel');
+}
+
+function normalizeTrainingSlot(slot, index){
+  const source = slot && typeof slot === 'object' ? slot : {};
+  const half = source.half === true;
+  let label = String(source.label || source.name || source.title || source.date || '').trim();
+  const iso = label.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(iso) label = Number(iso[2]) + '/' + Number(iso[3]);
+  if(!label) label = 'D' + (index + 1);
+  return { half: half, label: label, minutes: half ? HALF_DAY_MINUTES : FULL_DAY_MINUTES };
+}
+
+function trainingSlotsForKey(cityKey){
+  const ws = (cityKey && WAVE_SETTINGS[cityKey]) || {};
+  if(Array.isArray(ws.trainingSlots) && ws.trainingSlots.length) return ws.trainingSlots.map(normalizeTrainingSlot);
+  const count = Number(ws.trainingDays);
+  const n = Number.isFinite(count) && count > 0 ? Math.round(count) : 2;
+  return Array.from({ length: n }, (_, i) => normalizeTrainingSlot(null, i));
+}
+
+function trainingSlotsForGuide(guide){
+  const code = cityCode(guide && guide.city);
+  if(code === 'toronto') return trainingSlotsForKey('Toronto');
+  if(code === 'nyc') return trainingSlotsForKey('NYC');
+  return trainingSlotsForKey(null);
 }
 
 // WEEK DATA — filled from Notion. Nothing is shown until the guide's city is known.
@@ -2377,7 +2583,8 @@ function mapGuide(g){
     floorReadyEligible: typeof g.floorReadyEligible === 'boolean' ? g.floorReadyEligible : undefined,
     floorReadyBlockers: Array.isArray(g.floorReadyBlockers) ? g.floorReadyBlockers : undefined,
     sgReady: g.sgReady === true,
-    sgReadyEligible: typeof g.sgReadyEligible === 'boolean' ? g.sgReadyEligible : undefined
+    sgReadyEligible: typeof g.sgReadyEligible === 'boolean' ? g.sgReadyEligible : undefined,
+    payroll: g.payroll && typeof g.payroll === 'object' ? g.payroll : null
   };
 }
 
@@ -3192,12 +3399,20 @@ function renderManagerCards(guides){
           </div>
         </div>
       </div>`;
-    const cityKey = /toronto/i.test(g.city || '') ? 'Toronto' : /nyc/i.test(g.city || '') ? 'NYC' : null;
-    const cityTrainingDays = (cityKey && WAVE_SETTINGS[cityKey].trainingDays) || 2;
+    const slots = trainingSlotsForGuide(g);
+    const attendanceHint = g.payroll && g.payroll.attendanceRecorded === false
+      ? '<span class="attendance-hint">Attendance not recorded — in-person pay is $0</span>'
+      : '';
     const attendanceHTML=`
       <div class="attendance-row">
         <span class="attendance-label">Training days</span>
-        ${Array.from({length: cityTrainingDays}, (_,d)=>`<button class="day-btn ${g.attendance[d]?'present':''}" onclick="toggleAttendance(${gi},${d},this)">D${d+1}</button>`).join('')}
+        ${slots.map((slot, d) => {
+          const present = Array.isArray(g.attendance) && g.attendance[d] === true;
+          const shown = slot.half && !/½|1\/2|half/i.test(slot.label) ? slot.label + '½' : slot.label;
+          const title = slot.half ? 'Half day · ' + slot.minutes + ' min' : 'Full day · ' + slot.minutes + ' min';
+          return `<button class="day-btn${slot.half ? ' half' : ''}${present ? ' present' : ''}" title="${escapeHtml(title)}" onclick="toggleAttendance(${gi},${d},this)">${escapeHtml(shown)}</button>`;
+        }).join('')}
+        ${attendanceHint}
       </div>`;
     const trainingHTML='';
     const actionsHTML=`
@@ -3245,16 +3460,23 @@ async function setObs(gi,type,result){
 async function toggleAttendance(gi,day){
   const g = GUIDES_DATA[gi];
   if(!g) return;
-  if(!Array.isArray(g.attendance)) g.attendance = [];
-  const prev = g.attendance.slice();
-  while(g.attendance.length <= day) g.attendance.push(false);
-  g.attendance[day] = !g.attendance[day];
+  const slots = trainingSlotsForGuide(g);
+  if(day < 0 || day >= slots.length) return;
+  const prev = Array.isArray(g.attendance) ? g.attendance.slice() : [];
+  const next = slots.map((_, i) => prev[i] === true);
+  next[day] = !next[day];
+  g.attendance = next;
   renderManagerCards(getFilteredGuides(currentFilter));
-  const data = await callBackend('/api/manager/attendance', { email:g.email, city:cityCode(g.city), days:g.attendance });
+  const data = await callBackend('/api/manager/attendance', { email:g.email, city:cityCode(g.city), days:next });
   if(!data.success){
     g.attendance = prev;
     renderManagerCards(getFilteredGuides(currentFilter));
     showToast(data.error || 'Could not save attendance.');
+    return;
+  }
+  if(g.payroll && typeof g.payroll === 'object'){
+    g.payroll.attendanceRecorded = true;
+    renderManagerCards(getFilteredGuides(currentFilter));
   }
 }
 
@@ -3306,17 +3528,21 @@ function genAttendanceSummary(){
   let summary = '';
   codes.forEach(code => {
     const key = code === 'toronto' ? 'Toronto' : 'NYC';
-    const trainingDays = (WAVE_SETTINGS[key] && WAVE_SETTINGS[key].trainingDays) || 2;
-    const groups = {};
-    for(let i = trainingDays; i >= 0; i--) groups[i] = [];
+    const slots = trainingSlotsForKey(key);
+    const total = slots.reduce((sum, slot) => sum + (slot.half ? 0.5 : 1), 0);
+    const groups = new Map();
     GUIDES_DATA.filter(g => cityCode(g.city) === code && g.status !== 'alumni').forEach(g => {
-      const count = Array.isArray(g.attendance) ? g.attendance.filter(Boolean).length : 0;
-      if(groups[count] !== undefined) groups[count].push(g.name);
+      const attended = slots.reduce((sum, slot, i) => {
+        return sum + ((Array.isArray(g.attendance) && g.attendance[i] === true) ? (slot.half ? 0.5 : 1) : 0);
+      }, 0);
+      const label = formatDayCount(attended);
+      if(!groups.has(label)) groups.set(label, { attended: attended, names: [] });
+      groups.get(label).names.push(g.name);
     });
     summary += `Attendance summary for Wave ${WAVE_SETTINGS[key].waveNumber || '—'} ${key} in-person training days:\n\n`;
-    for(let i = trainingDays; i >= 0; i--){
-      if(groups[i] && groups[i].length) summary += `${i}/${trainingDays} days: ${groups[i].join(', ')}\n`;
-    }
+    [...groups.values()].sort((a, b) => b.attended - a.attended).forEach(group => {
+      summary += `${formatDayCount(group.attended)}/${formatDayCount(total)} days: ${group.names.join(', ')}\n`;
+    });
     summary += `\n`;
   });
   document.getElementById('attendance-text').textContent = summary.trim();
@@ -3326,7 +3552,7 @@ function genAttendanceSummary(){
 let WAVE_SETTINGS = { NYC: { waveNumber: '', season: '', year: '', trainingDays: 2 }, Toronto: { waveNumber: '', season: '', year: '', trainingDays: 3 } };
 
 function loadWaveSettings(){
-  apiFetch('/api/wave-settings', { method:'GET' })
+  return apiFetch('/api/wave-settings', { method:'GET' })
     .then(res => {
       const data = res.data || {};
       if(res.status === 401) return;
@@ -3337,6 +3563,9 @@ function loadWaveSettings(){
         });
         refreshGuideHeader();
         paintDiscordLeads();
+        if(guidesStatus === 'ready' && currentMgrFilter !== 'newsletters'){
+          renderManagerCards(getFilteredGuides(currentFilter || 'all'));
+        }
         if(!sessionStorage.getItem('mgr_city')){
           const label=document.getElementById('mgr-city-label');
           if(label) label.textContent=`Wave ${WAVE_SETTINGS.NYC.waveNumber || '—'}/${WAVE_SETTINGS.Toronto.waveNumber || '—'} — NYC + Toronto`;
